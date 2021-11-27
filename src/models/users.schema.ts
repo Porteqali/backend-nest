@@ -1,59 +1,96 @@
 import { Document, Schema } from "mongoose";
-import { Role } from "./permissionGroups.schema";
+import { Commission } from "./commissions.schema";
+import { PermissionGroup } from "./permissionGroups.schema";
+import { Permission } from "./permissions.schema";
+import { UsanceType } from "./usanceTypes.schema";
 
 export type UserDocument = User & Document;
 
 export const UserSchema = new Schema({
-    image: {
+    image: { type: String },
+    name: { type: String, required: true },
+    family: { type: String, required: true },
+    email: { type: String, required: true },
+    emailVerifiedAt: { type: Date },
+    mobile: { type: String },
+    mobileVerifiedAt: { type: Date },
+    mobileVerificationCode: { type: Date },
+    tel: { type: String },
+    password: { type: String, required: true },
+    role: {
         type: String,
-    },
-    name: {
-        type: String,
+        enum: ["admin", "teacher", "user", "marketer"],
         required: true,
     },
-    family: {
-        type: String,
+    walletBalance: {
+        type: Number,
+        default: 0,
         required: true,
     },
-    email: {
-        type: String,
-        required: true,
-    },
-    emailVerifiedAt: {
-        type: Date,
-    },
-    password: {
-        type: String,
-        required: true,
+    permissions: [{ type: String }],
+    permissionGroups: {
+        type: Schema.Types.ObjectId,
+        ref: "PermissionGroup",
     },
     status: {
         type: String,
         required: true,
         enum: ["active", "deactive"],
+        default: "deactive",
     },
-    googleId: {
-        type: String,
-    },
-    role: {
+    googleId: { type: String },
+    createdAt: { type: Date, default: new Date(Date.now()) },
+
+    address: { type: String },
+    postalCode: { type: Number },
+    marketingCode: { type: String },
+
+    description: { type: String },
+    nationalCode: { type: Number },
+    nationalNumber: { type: Number },
+    birthDate: { type: Date },
+    fatherName: { type: String },
+    commission: {
         type: Schema.Types.ObjectId,
-        ref: "Role",
+        ref: "Commission",
     },
-    createdAt: {
-        type: Date,
-        default: new Date(Date.now()),
+    usanceType: {
+        type: Schema.Types.ObjectId,
+        ref: "UsanceType",
     },
 });
 
 export interface User {
     _id: Schema.Types.ObjectId;
-    image: string;
+    image?: string;
     name: string;
     family: string;
     email: string;
-    emailVerifiedAt: Date;
+    emailVerifiedAt?: Date;
+    mobile?: string;
+    mobileVerifiedAt?: string;
+    mobileVerificationCode?: string;
+    tel?: string;
     password: string;
     status: string;
-    googleId: string;
-    role: Role | Schema.Types.ObjectId;
+    googleId?: string;
+    role: string;
+    walletBalance: number;
+    permissions: Permission | Schema.Types.ObjectId;
+    permissionGroups?: PermissionGroup | Schema.Types.ObjectId;
     createdAt: Date;
+
+    // marketer info
+    address?: string;
+    postalCode?: number;
+    marketingCode?: string;
+
+    // teacher info
+    description?: string;
+    nationalCode?: number;
+    nationalNumber?: number;
+    birthDate?: Date;
+    fatherName?: string;
+    commission?: Commission | Schema.Types.ObjectId;
+    usanceType?: UsanceType | Schema.Types.ObjectId;
 }
