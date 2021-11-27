@@ -40,10 +40,18 @@ export const UserSchema = new Schema({
     },
     googleId: { type: String },
     createdAt: { type: Date, default: new Date(Date.now()) },
+    registeredWith: new Schema({
+        marketer: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+        },
+        period: { type: Number }, // in days
+    }),
 
     address: { type: String },
     postalCode: { type: Number },
     marketingCode: { type: String },
+    period: { type: Number }, // in days
 
     description: { type: String },
     nationalCode: { type: Number },
@@ -79,11 +87,13 @@ export interface User {
     permissions: Permission | Schema.Types.ObjectId;
     permissionGroups?: PermissionGroup | Schema.Types.ObjectId;
     createdAt: Date;
+    registeredWith?: registeredWith;
 
     // marketer info
     address?: string;
     postalCode?: number;
     marketingCode?: string;
+    period?: number;
 
     // teacher info
     description?: string;
@@ -93,4 +103,9 @@ export interface User {
     fatherName?: string;
     commission?: Commission | Schema.Types.ObjectId;
     usanceType?: UsanceType | Schema.Types.ObjectId;
+}
+
+export interface registeredWith {
+    marketer: User | Schema.Types.ObjectId;
+    period: number;
 }
