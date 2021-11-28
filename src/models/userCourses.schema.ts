@@ -8,12 +8,19 @@ export const UserCourseSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: "User",
+        required: true,
     },
     course: {
         type: Schema.Types.ObjectId,
         ref: "Course",
+        required: true,
+    },
+    marketer: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
     },
     teacherCut: { type: Number, required: true },
+    marketerCut: { type: Number, default: 0 },
     coursePrice: { type: Number, required: true },
     dicount: {
         amount: { type: Number },
@@ -38,7 +45,9 @@ export interface UserCourse {
     _id: Schema.Types.ObjectId;
     user: User | Schema.Types.ObjectId;
     course: Course | Schema.Types.ObjectId;
+    marketer?: User | Schema.Types.ObjectId;
     teacherCut: number;
+    marketerCut?: number;
     coursePrice: number;
     dicount: Discount;
     payablePrice: number;

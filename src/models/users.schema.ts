@@ -27,6 +27,11 @@ export const UserSchema = new Schema({
         default: 0,
         required: true,
     },
+    commissionBalance: {
+        type: Number,
+        default: 0,
+        required: true,
+    },
     permissions: [{ type: String }],
     permissionGroups: {
         type: Schema.Types.ObjectId,
