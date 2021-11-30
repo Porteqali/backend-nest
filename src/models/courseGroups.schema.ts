@@ -4,6 +4,9 @@ import { User } from "./users.schema";
 export type CourseGroupDocument = CourseGroup & Document;
 
 export const CourseGroupSchema = new Schema({
+    icon: {
+        type: String,
+    },
     name: {
         type: String,
         required: true,
@@ -24,6 +27,7 @@ export const CourseGroupSchema = new Schema({
 
 export interface CourseGroup {
     _id: Schema.Types.ObjectId;
+    icon: string;
     name: string;
     topGroup: string;
     status: string;
