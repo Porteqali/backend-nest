@@ -53,11 +53,13 @@ export const UserSchema = new Schema({
         period: { type: Number }, // in days
     }),
 
+    // marketer info
     address: { type: String },
     postalCode: { type: Number },
     marketingCode: { type: String },
     period: { type: Number }, // in days
 
+    // teacher info
     description: { type: String },
     nationalCode: { type: Number },
     nationalNumber: { type: Number },
@@ -71,6 +73,10 @@ export const UserSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "UsanceType",
     },
+    socials: new Schema({
+        name: { type: String },
+        link: { type: String },
+    }),
 });
 
 export interface User {
@@ -92,7 +98,7 @@ export interface User {
     permissions: Permission | Schema.Types.ObjectId;
     permissionGroups?: PermissionGroup | Schema.Types.ObjectId;
     createdAt: Date;
-    registeredWith?: registeredWith;
+    registeredWith?: RegisteredWith[];
 
     // marketer info
     address?: string;
@@ -108,9 +114,15 @@ export interface User {
     fatherName?: string;
     commission?: Commission | Schema.Types.ObjectId;
     usanceType?: UsanceType | Schema.Types.ObjectId;
+    socials?: Social[];
 }
 
-export interface registeredWith {
+export interface RegisteredWith {
     marketer: User | Schema.Types.ObjectId;
     period: number;
+}
+
+export interface Social {
+    name: string;
+    link: string;
 }
