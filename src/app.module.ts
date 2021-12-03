@@ -10,12 +10,14 @@ import { SessionSchema } from "./models/sessions.schema";
 import { UserSchema } from "./models/users.schema";
 import { serverOnly } from "./middlewares/server.middleware";
 import { AuthCheckMiddleware, GuestMiddleware } from "./middlewares/auth.middleware";
+import { ContactRequestModule } from "./modules/contactRequest.module";
 
 @Module({
     imports: [
         UsersModule,
         AuthModule,
         FilesModule,
+        ContactRequestModule,
         ConfigModule.forRoot(),
         MongooseModule.forRoot(process.env.MONGO_URL),
         MongooseModule.forFeature([

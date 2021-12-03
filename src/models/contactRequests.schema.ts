@@ -1,5 +1,4 @@
 import { Document, Schema } from "mongoose";
-import { User } from "./users.schema";
 
 export type ContactRequestDocument = ContactRequest & Document;
 
