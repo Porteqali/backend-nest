@@ -4,9 +4,15 @@ import { UnprocessableEntityException, ValidationPipe } from "@nestjs/common";
 import * as cookieParser from "cookie-parser";
 import * as helmet from "helmet";
 import * as csurf from "csurf";
+import * as bcrypt from "bcrypt";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    // let hash = "$2y$10$yw03I3FlAuw/THtxAw4m5.T1ZNhqBILOIGNRg6o8xaM8HwaweMLk6"; // orginal laravel hashed password
+    // let hash = "$2a$10$yw03I3FlAuw/THtxAw4m5.T1ZNhqBILOIGNRg6o8xaM8HwaweMLk6"; // modified laravel hashed password (first 'y' turned into 'a')
+    // hash = hash.replace(/^\$2y(.+)$/i, '$2a$1'); // modification regex
+    // console.log(bcrypt.compareSync("12345678", hash));
 
     // added validation pipe
     app.useGlobalPipes(

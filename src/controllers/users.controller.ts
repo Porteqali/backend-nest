@@ -4,14 +4,14 @@ import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { PermissionDocument } from "src/models/permissions.schema";
-import { RoleDocument } from "src/models/permissionGroups.schema";
+import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
 import { UserDocument } from "src/models/users.schema";
 
 @Controller("users")
 export class UsersController {
     constructor(
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
-        @InjectModel("Role") private readonly RoleModel: Model<RoleDocument>,
+        @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("Permission") private readonly PermissionModel: Model<PermissionDocument>,
     ) {}
 

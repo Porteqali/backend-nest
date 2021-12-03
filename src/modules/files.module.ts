@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { FilesController } from "src/controllers/files.controller";
-import { RoleSchema } from "src/models/permissionGroups.schema";
+import { PermissionGroupSchema } from "src/models/permissionGroups.schema";
 import { SessionSchema } from "src/models/sessions.schema";
 import { UserSchema } from "src/models/users.schema";
 
@@ -10,7 +10,7 @@ import { UserSchema } from "src/models/users.schema";
         MongooseModule.forFeature([
             { name: "User", schema: UserSchema },
             { name: "Session", schema: SessionSchema },
-            { name: "Role", schema: RoleSchema },
+            { name: "PermissionGroup", schema: PermissionGroupSchema },
         ]),
     ],
     controllers: [FilesController],
