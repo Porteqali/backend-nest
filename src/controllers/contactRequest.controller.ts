@@ -11,7 +11,7 @@ export class ContactRequestController {
     constructor(@InjectModel("ContactRequest") private readonly ContactRequestModel: Model<ContactRequestDocument>) {}
 
     @Post("/")
-    async getUser(@Body() input: SendContactRequestDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
+    async sendContactRequest(@Body() input: SendContactRequestDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
         await this.ContactRequestModel.create({
             name: input.name,
             family: input.family,

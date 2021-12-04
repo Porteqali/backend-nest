@@ -11,13 +11,17 @@ import { UserSchema } from "./models/users.schema";
 import { serverOnly } from "./middlewares/server.middleware";
 import { AuthCheckMiddleware, GuestMiddleware } from "./middlewares/auth.middleware";
 import { ContactRequestModule } from "./modules/contactRequest.module";
+import { FaqsModule } from "./modules/faqs.module";
+import { CollaborateRequestModule } from "./modules/collaborateRequest.module";
 
 @Module({
     imports: [
         UsersModule,
         AuthModule,
         FilesModule,
+        FaqsModule,
         ContactRequestModule,
+        CollaborateRequestModule,
         ConfigModule.forRoot(),
         MongooseModule.forRoot(process.env.MONGO_URL),
         MongooseModule.forFeature([

@@ -4,11 +4,7 @@ import { ContactRequestController } from "src/controllers/contactRequest.control
 import { ContactRequestSchema } from "src/models/contactRequests.schema";
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([
-            { name: "ContactRequest", schema: ContactRequestSchema },
-        ]),
-    ],
+    imports: [MongooseModule.forFeature([{ name: "ContactRequest", schema: ContactRequestSchema }])],
     controllers: [ContactRequestController],
     providers: [],
     exports: [],

@@ -1,9 +1,9 @@
 import { Document, Schema } from "mongoose";
 import { User } from "./users.schema";
 
-export type FaqDocument = Faq & Document;
+export type CommissionPaymentDocument = CommissionPayment & Document;
 
-export const FaqSchema = new Schema({
+export const CommissionPaymentSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: "User",
@@ -28,7 +28,7 @@ export const FaqSchema = new Schema({
     },
 });
 
-export interface Faq {
+export interface CommissionPayment {
     _id: Schema.Types.ObjectId;
     user: User | Schema.Types.ObjectId;
     commissionAmountBeforePayment: number;
