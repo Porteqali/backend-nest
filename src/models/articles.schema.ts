@@ -1,4 +1,5 @@
 import { Document, Schema } from "mongoose";
+import { ArticleCategory } from "./articleCategories.schema";
 import { User } from "./users.schema";
 
 export type ArticleDocument = Article & Document;
@@ -14,6 +15,10 @@ export const ArticleSchema = new Schema({
     slug: { type: String, required: true },
     description: { type: String, required: true },
     body: { type: String, required: true },
+    category: {
+        type: Schema.Types.ObjectId,
+        ref: "ArticleCategory",
+    },
     tags: [{ type: String }],
     metadata: new Schema({
         thumbnail: { type: String },
@@ -22,6 +27,11 @@ export const ArticleSchema = new Schema({
         author: { type: String },
         keywords: { type: String },
     }),
+    url_code: {
+        type: String,
+        unique: true,
+        required: true,
+    },
     status: {
         type: String,
         enum: ["published", "pending"],
@@ -42,8 +52,10 @@ export interface Article {
     slug: string;
     description: string;
     body: string;
+    category: ArticleCategory | Schema.Types.ObjectId;
     tags?: string[];
     metadata: MetaData;
+    url_code: string,
     status: string;
     publishedAt: Date;
     createdAt: Date;
