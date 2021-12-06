@@ -12,7 +12,7 @@ export const ArticleSchema = new Schema({
     image: { type: String },
     imageVertical: { type: String },
     title: { type: String, required: true },
-    slug: { type: String, required: true },
+    slug: { type: String, required: true, unique: true },
     description: { type: String, required: true },
     body: { type: String, required: true },
     category: {
@@ -36,6 +36,10 @@ export const ArticleSchema = new Schema({
         type: String,
         enum: ["published", "pending"],
     },
+    likes: {
+        type: Number,
+        default: 0,
+    },
     publishedAt: { type: Date },
     createdAt: {
         type: Date,
@@ -55,8 +59,9 @@ export interface Article {
     category: ArticleCategory | Schema.Types.ObjectId;
     tags?: string[];
     metadata: MetaData;
-    url_code: string,
+    url_code: string;
     status: string;
+    likes: number;
     publishedAt: Date;
     createdAt: Date;
 }

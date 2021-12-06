@@ -13,6 +13,7 @@ import { AuthCheckMiddleware, GuestMiddleware } from "./middlewares/auth.middlew
 import { ContactRequestModule } from "./modules/contactRequest.module";
 import { FaqsModule } from "./modules/faqs.module";
 import { CollaborateRequestModule } from "./modules/collaborateRequest.module";
+import { ArticlesModule } from "./modules/articles.module";
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { CollaborateRequestModule } from "./modules/collaborateRequest.module";
         AuthModule,
         FilesModule,
         FaqsModule,
+        ArticlesModule,
         ContactRequestModule,
         CollaborateRequestModule,
         ConfigModule.forRoot(),

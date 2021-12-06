@@ -10,7 +10,7 @@ export class FaqsController {
     constructor(@InjectModel("Faqs") private readonly FaqsModel: Model<FaqDocument>) {}
 
     @Get("/")
-    async getUser(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+    async getFaqs(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
         const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 50;
 

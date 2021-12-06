@@ -8,7 +8,10 @@ export const ArticleCategorySchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User",
     },
-    name: { type: String },
+    name: {
+        type: String,
+        unique: true,
+    },
     createdAt: {
         type: Date,
         default: new Date(Date.now()),
