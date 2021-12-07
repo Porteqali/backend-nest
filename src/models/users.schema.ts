@@ -8,6 +8,7 @@ export type UserDocument = User & Document;
 
 export const UserSchema = new Schema({
     image: { type: String },
+    title: { type: String },
     name: { type: String, required: true },
     family: { type: String, required: true },
     email: { type: String, required: true },
@@ -81,6 +82,7 @@ export const UserSchema = new Schema({
 
 export interface User {
     _id: Schema.Types.ObjectId;
+    title?: string;
     image?: string;
     name: string;
     family: string;

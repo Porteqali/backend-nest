@@ -110,6 +110,38 @@ export class ArticlesController {
         });
     }
 
-    @Get("/article")
-    async getSingleArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {}
+    @Get("/article-categories")
+    async getArticlesCategories(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const categories = await this.ArticleCategoryModel.find({}).exec();
+
+        let options = {};
+        categories.forEach((category) => {
+            options[category.name] = { name: category.name, value: category.name };
+        });
+
+        return res.json(options);
+    }
+
+    @Get("/article/:slug")
+    async getSingleArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const article = await this.ArticleModel.findOne({ slug: req.params.slug, status: "published" })
+            .populate("author", "-_id name family title description socials")
+            .populate("category", "-_id name")
+            .exec();
+
+        const newArticles = await this.ArticleModel.find({ status: "published" })
+            .sort({ publishedAt: "desc" })
+            .limit(3)
+            .populate("author", "-_id name family title description socials")
+            .populate("category", "-_id name")
+            .exec();
+
+        // TODO
+        const similarArticles = [];
+
+        // TODO
+        const popularArticles = [];
+
+        return res.json({ article, newArticles, similarArticles, popularArticles });
+    }
 }
