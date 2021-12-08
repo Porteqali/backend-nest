@@ -14,6 +14,10 @@ async function bootstrap() {
     // hash = hash.replace(/^\$2y(.+)$/i, '$2a$1'); // modification regex
     // console.log(bcrypt.compareSync("12345678", hash));
 
+    // TODO
+    // check if static files exist or not... if not create them
+    const staticFileList = ["about_us.json", "banner.json", "contact_info.json"];
+
     // added validation pipe
     app.useGlobalPipes(
         new ValidationPipe({

@@ -3,13 +3,13 @@ import { Request, Response } from "express";
 import * as fs from "fs/promises";
 import { AuthService } from "src/services/auth.service";
 
-@Controller("files")
+@Controller("file")
 export class FilesController {
     constructor() {}
 
     @Get("/*")
     async register(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const filepath = `storage${req.url.replace("/files", "")}`;
+        const filepath = `storage${req.url.replace("/file", "")}`;
         // TODO
         // get file from "/storage"
         // if file is private and needs special permission, we can check it here
