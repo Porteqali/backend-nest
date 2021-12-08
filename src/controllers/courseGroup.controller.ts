@@ -3,34 +3,34 @@ import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { FaqDocument } from "src/models/faqs.schema";
+import { CourseGroupDocument } from "src/models/courseGroups.schema";
 
-@Controller("faqs")
-export class FaqsController {
-    constructor(@InjectModel("Faqs") private readonly FaqsModel: Model<FaqDocument>) {}
+@Controller("course-groups")
+export class CourseGroupController {
+    constructor(@InjectModel("CourseGroup") private readonly CourseGroupModel: Model<CourseGroupDocument>) {}
 
     @Get("/")
-    async getFaqs(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+    async getAllCourseGroups(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
         const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 50;
 
         const search = req.query.search ? req.query.search.toString() : "";
-        const group = req.query.group ? req.query.group.toString() : "";
 
         // the base query object
         let query = {};
-        if (!!group) {
-            query["group"] = group;
-        }
 
         // making the model with query
-        let data = this.FaqsModel.aggregate();
+        let data = this.CourseGroupModel.aggregate();
         data.match(query);
         data.match({
-            $or: [{ question: { $regex: new RegExp(`.*${search}.*`, "i") } }, { answer: { $regex: new RegExp(`.*${search}.*`, "i") } }],
+            $or: [
+                { name: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                { topGroup: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                { status: { $regex: new RegExp(`.*${search}.*`, "i") } },
+            ],
         });
         data.sort({ createdAt: "desc" });
-        data.project("question answer group");
+        data.project("_id icon name topGroup");
 
         // paginating
         data = data.facet({

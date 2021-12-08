@@ -14,6 +14,7 @@ import { ContactRequestModule } from "./modules/contactRequest.module";
 import { FaqsModule } from "./modules/faqs.module";
 import { CollaborateRequestModule } from "./modules/collaborateRequest.module";
 import { ArticlesModule } from "./modules/articles.module";
+import { CourseGroupModule } from "./modules/courseGroup.module";
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { ArticlesModule } from "./modules/articles.module";
         ArticlesModule,
         ContactRequestModule,
         CollaborateRequestModule,
+        CourseGroupModule,
         ConfigModule.forRoot(),
         MongooseModule.forRoot(process.env.MONGO_URL),
         MongooseModule.forFeature([

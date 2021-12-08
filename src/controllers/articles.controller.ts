@@ -125,9 +125,10 @@ export class ArticlesController {
     @Get("/article/:slug")
     async getSingleArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const article = await this.ArticleModel.findOne({ slug: req.params.slug, status: "published" })
-            .populate("author", "-_id name family title description socials")
+            .populate("author", "-_id image name family title description socials")
             .populate("category", "-_id name")
             .exec();
+        if (!article) return res.status(404).end();
 
         const newArticles = await this.ArticleModel.find({ status: "published" })
             .sort({ publishedAt: "desc" })
@@ -136,11 +137,19 @@ export class ArticlesController {
             .populate("category", "-_id name")
             .exec();
 
-        // TODO
-        const similarArticles = [];
+        const similarArticles = await this.ArticleModel.find({ tags: { $in: article.tags || [] }, _id: { $ne: article._id }, status: "published" })
+            .sort({ publishedAt: "desc" })
+            .limit(4)
+            .populate("author", "-_id name family title description socials")
+            .populate("category", "-_id name")
+            .exec();
 
-        // TODO
-        const popularArticles = [];
+        const popularArticles = await this.ArticleModel.find({ status: "published" })
+            .sort({ likes: "desc" })
+            .limit(4)
+            .populate("author", "-_id name family title description socials")
+            .populate("category", "-_id name")
+            .exec();
 
         return res.json({ article, newArticles, similarArticles, popularArticles });
     }
