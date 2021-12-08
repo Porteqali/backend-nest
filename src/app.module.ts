@@ -16,6 +16,7 @@ import { CollaborateRequestModule } from "./modules/collaborateRequest.module";
 import { ArticlesModule } from "./modules/articles.module";
 import { CourseGroupModule } from "./modules/courseGroup.module";
 import { AboutUsController } from "./controllers/web/aboutUs.controller";
+import { ContactInfoController } from "./controllers/web/contactInfo.controller";
 
 @Module({
     imports: [
@@ -34,7 +35,7 @@ import { AboutUsController } from "./controllers/web/aboutUs.controller";
             { name: "User", schema: UserSchema },
         ]),
     ],
-    controllers: [AppController, AboutUsController],
+    controllers: [AppController, AboutUsController, ContactInfoController],
     providers: [AppService],
 })
 export class AppModule implements NestModule {

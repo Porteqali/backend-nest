@@ -1,22 +1,20 @@
-import { Controller, Get, Post, Req, Res } from "@nestjs/common";
+import { readFile } from "fs/promises";
+import { Controller, Get, InternalServerErrorException, Post, Req, Res } from "@nestjs/common";
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { UserDocument } from "src/models/users.schema";
 
 @Controller("contact-info")
-export class AboutUsController {
-    constructor(@InjectModel("User") private readonly UserModel: Model<UserDocument>) {}
+export class ContactInfoController {
+    constructor() {}
 
-    @Get("/teachers")
+    @Get("/")
     async getTeachers(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const teachers = await this.UserModel.find({ role: "teacher", status: "active" })
-            .select("-_id image title name family description socials")
-            .sort({ createdAt: "desc" })
-            .limit(8)
-            .exec();
-
-        return res.json(teachers);
+        const rawdata = await readFile("./static/contact_info.json")
+            .then((data) => data)
+            .catch((e) => {
+                throw InternalServerErrorException;
+            });
+        const contact_info = JSON.parse(rawdata.toString());
+        return res.json(contact_info);
     }
 }

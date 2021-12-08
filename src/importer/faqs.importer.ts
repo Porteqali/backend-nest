@@ -1,4 +1,4 @@
-import * as fs from "fs/promises";
+import { readFile } from "fs/promises";
 import { Body, Controller, Get, ImATeapotException, NotAcceptableException, NotFoundException, Post, Req, Res } from "@nestjs/common";
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
@@ -12,7 +12,7 @@ export class FaqsImporter {
 
     @Get("/")
     async getUser(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const rawdata = await fs.readFile("./src/importer/json/faqs.json").then((data) => data);
+        const rawdata = await readFile("./src/importer/json/faqs.json").then((data) => data);
         const faqs = JSON.parse(rawdata.toString());
 
         faqs.forEach((faq) => {
