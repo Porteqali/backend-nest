@@ -9,7 +9,11 @@ export class FilesController {
 
     @Get("/*")
     async register(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const filepath = `storage${req.url.replace("/file", "")}`;
+        const exampleUrl = "/file/private/4235ni432dbi324di2bjn423onf2.mp4";
+
+        let filepath = `storage${req.url.replace("/file", "")}`;
+        filepath = filepath.split("../").join("");
+
         // TODO
         // get file from "/storage"
         // if file is private and needs special permission, we can check it here

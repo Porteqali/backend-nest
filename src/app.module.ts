@@ -17,6 +17,7 @@ import { ArticlesModule } from "./modules/articles.module";
 import { CourseGroupModule } from "./modules/courseGroup.module";
 import { AboutUsController } from "./controllers/web/aboutUs.controller";
 import { ContactInfoController } from "./controllers/web/contactInfo.controller";
+import { LatestNewsController } from "./controllers/web/latestNews.controller";
 
 @Module({
     imports: [
@@ -35,12 +36,12 @@ import { ContactInfoController } from "./controllers/web/contactInfo.controller"
             { name: "User", schema: UserSchema },
         ]),
     ],
-    controllers: [AppController, AboutUsController, ContactInfoController],
+    controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController],
     providers: [AppService],
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(serverOnly).forRoutes({ path: "*", method: RequestMethod.ALL });
+        // consumer.apply(serverOnly).forRoutes({ path: "*", method: RequestMethod.ALL });
 
         consumer.apply(AuthCheckMiddleware).forRoutes(
             { path: "auth/refresh", method: RequestMethod.POST },

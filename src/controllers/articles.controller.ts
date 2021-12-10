@@ -17,7 +17,7 @@ export class ArticlesController {
     async getTopArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const article = await this.ArticleModel.findOne({ status: "published" })
             .sort({ publishedAt: "desc" })
-            .populate("author", "-_id name family")
+            .populate("author", "-_id image name family")
             .populate("category", "-_id name")
             .exec();
         return res.json(article);
@@ -28,7 +28,7 @@ export class ArticlesController {
         const article = await this.ArticleModel.find({ status: "published" })
             .sort({ likes: "desc" })
             .limit(10)
-            .populate("author", "-_id name family")
+            .populate("author", "-_id image name family")
             .populate("category", "-_id name")
             .exec();
         return res.json(article);
@@ -88,7 +88,7 @@ export class ArticlesController {
             ],
         });
         data.sort(sort);
-        data.project("author.name author.family image imageVertical title slug description category.name likes publishedAt");
+        data.project("author.image author.name author.family image imageVertical title slug description category.name likes publishedAt");
 
         // paginating
         data = data.facet({
@@ -133,21 +133,21 @@ export class ArticlesController {
         const newArticles = await this.ArticleModel.find({ status: "published" })
             .sort({ publishedAt: "desc" })
             .limit(3)
-            .populate("author", "-_id name family title description socials")
+            .populate("author", "-_id image name family title description socials")
             .populate("category", "-_id name")
             .exec();
 
         const similarArticles = await this.ArticleModel.find({ tags: { $in: article.tags || [] }, _id: { $ne: article._id }, status: "published" })
             .sort({ publishedAt: "desc" })
             .limit(4)
-            .populate("author", "-_id name family title description socials")
+            .populate("author", "-_id image name family title description socials")
             .populate("category", "-_id name")
             .exec();
 
         const popularArticles = await this.ArticleModel.find({ status: "published" })
             .sort({ likes: "desc" })
             .limit(4)
-            .populate("author", "-_id name family title description socials")
+            .populate("author", "-_id image name family title description socials")
             .populate("category", "-_id name")
             .exec();
 

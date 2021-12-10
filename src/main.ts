@@ -16,7 +16,8 @@ async function bootstrap() {
 
     // TODO
     // check if static files exist or not... if not create them
-    const staticFileList = ["about_us.json", "banner.json", "contact_info.json"];
+    const staticFileList = ["about_us.json", "banner.json", "contact_info.json", "latest_news.json"];
+    // also generate storage folder structure
 
     // added validation pipe
     app.useGlobalPipes(
