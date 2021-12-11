@@ -27,7 +27,12 @@ export class AuthController {
 
     @Post("login")
     async login(@Body() credentials: LoginDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        await this.authService.authenticate(credentials.username, credentials.password);
+        let field = "mobile";
+        const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(credentials.username);
+        if (isEmail) field = "email";
+
+        const user = await this.authService.authenticate(field, credentials.username, credentials.password);
+        req.user = user.id;
 
         // create a session
         const sessionId = await this.authService.getSession(req);

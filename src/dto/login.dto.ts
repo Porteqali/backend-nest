@@ -1,12 +1,11 @@
-import { IsEmail, IsNotEmpty, IsString, Length } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
 
 export class LoginDto {
-    @IsNotEmpty({ message: "Username is requeired" })
-    @IsEmail({}, { message: "Username must be an email address" })
+    @IsNotEmpty({ message: "نام کاربری خود را وارد کنید" })
     readonly username: string;
 
-    @IsNotEmpty({ message: "Password is requeired" })
-    @Length(8, 15, { message: "Password must be between 8 to 15 characters" })
-    @IsString({ message: "Password must be string" })
+    @MinLength(8, { message: "رمزعبور حداقل 8 کاراکتر است" })
+    @IsString({ message: "رمزعبور خود را وارد کنید" })
+    @IsNotEmpty({ message: "رمزعبور خود را وارد کنید" })
     readonly password: string;
 }

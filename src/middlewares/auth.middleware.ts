@@ -7,7 +7,7 @@ import { Model } from "mongoose";
 import { SessionDocument } from "src/models/sessions.schema";
 import { UserDocument } from "src/models/users.schema";
 
-const sessionExpireTime = 60 * 15; //15 minutes
+const sessionExpireTime = parseInt(process.env.SESSION_EXPIRE_TIME); //15 minutes
 
 /*
     Making sure the user is logged in

@@ -1,7 +1,6 @@
 import { Document, Schema } from "mongoose";
 import { Commission } from "./commissions.schema";
 import { PermissionGroup } from "./permissionGroups.schema";
-import { Permission } from "./permissions.schema";
 import { UsanceType } from "./usanceTypes.schema";
 
 export type UserDocument = User & Document;
@@ -13,9 +12,10 @@ export const UserSchema = new Schema({
     family: { type: String, required: true },
     email: { type: String, required: true },
     emailVerifiedAt: { type: Date },
+    emailVerificationCode: { type: String },
     mobile: { type: String },
     mobileVerifiedAt: { type: Date },
-    mobileVerificationCode: { type: Date },
+    mobileVerificationCode: { type: String },
     tel: { type: String },
     password: { type: String, required: true },
     role: {
@@ -34,7 +34,7 @@ export const UserSchema = new Schema({
         required: true,
     },
     permissions: [{ type: String }],
-    permissionGroups: {
+    permissionGroup: {
         type: Schema.Types.ObjectId,
         ref: "PermissionGroup",
     },
@@ -88,6 +88,7 @@ export interface User {
     family: string;
     email: string;
     emailVerifiedAt?: Date;
+    emailVerificationCode?: string;
     mobile?: string;
     mobileVerifiedAt?: string;
     mobileVerificationCode?: string;
@@ -97,8 +98,9 @@ export interface User {
     googleId?: string;
     role: string;
     walletBalance: number;
-    permissions: Permission | Schema.Types.ObjectId;
-    permissionGroups?: PermissionGroup | Schema.Types.ObjectId;
+    commissionBalance: number;
+    permissions: string[];
+    permissionGroup?: PermissionGroup & Schema.Types.ObjectId;
     createdAt: Date;
     registeredWith?: RegisteredWith[];
 

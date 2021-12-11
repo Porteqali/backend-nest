@@ -10,7 +10,7 @@ import { RegisterDto } from "src/dto/register.dto";
 
 @Injectable()
 export class AuthService {
-    private sessionExpireTime = 60 * 15; //15 minutes
+    private sessionExpireTime = parseInt(process.env.SESSION_EXPIRE_TIME); //15 minutes
 
     constructor(
         @InjectModel("Session") private readonly SessionModel: Model<SessionDocument>,
@@ -58,23 +58,30 @@ export class AuthService {
         return newUser;
     }
 
-    async authenticate(username: string, password: string) {
-        const user = await this.UserModel.findOne({ email: username });
-        if (!user) throw new UnauthorizedException("نام کاربری یا رمزعبور نادرست است");
+    async authenticate(username_field: string = "email", username: string, password: string) {
+        const user = await this.UserModel.findOne({ [username_field]: username });
+        if (!user) throw new UnauthorizedException([{ property: "", errors: ["نام کاربری یا رمزعبور نادرست است"] }]);
 
-        const passOk = await compare(password, user.password);
-        if (!passOk) throw new UnauthorizedException("نام کاربری یا رمزعبور نادرست است");
+        let hash = user.password.replace(/^\$2y(.+)$/i, "$2a$1"); // modification regex
+        const passOk = await compare(password, hash);
+        if (!passOk) throw new UnauthorizedException([{ property: "", errors: ["نام کاربری یا رمزعبور نادرست است"] }]);
+
+        return user;
     }
 
     async authorize(req: Request, role: string, permissions: string[] = []) {
         // check the role
         if (req.user["user"].role.name !== role) return false;
 
+        // TODO
+        // list the user's permissions base on both permissionGroup and permissions
+        // then check the requested permission list agains it
+
         // check the permission list
         for (let i = 0; i < permissions.length; i++) {
             if (!req.user["user"].role.permissions.includes(permissions[i])) return false;
         }
-        
+
         return true;
     }
 }
