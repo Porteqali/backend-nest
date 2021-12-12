@@ -9,18 +9,20 @@ export const UserSchema = new Schema({
     image: { type: String },
     title: { type: String },
     name: { type: String, required: true },
-    family: { type: String, required: true },
-    email: { type: String, required: true },
+    family: { type: String },
+    email: { type: String },
     emailVerifiedAt: { type: Date },
     emailVerificationCode: { type: String },
     mobile: { type: String },
     mobileVerifiedAt: { type: Date },
     mobileVerificationCode: { type: String },
+    verficationCodeSentAt: { type: Date },
     tel: { type: String },
-    password: { type: String, required: true },
+    password: { type: String },
     role: {
         type: String,
         enum: ["admin", "teacher", "user", "marketer"],
+        default: "user",
         required: true,
     },
     walletBalance: {
@@ -37,12 +39,14 @@ export const UserSchema = new Schema({
     permissionGroup: {
         type: Schema.Types.ObjectId,
         ref: "PermissionGroup",
+        default: null,
+        required: true,
     },
     status: {
         type: String,
-        required: true,
         enum: ["active", "deactive"],
         default: "deactive",
+        required: true,
     },
     googleId: { type: String },
     createdAt: { type: Date, default: new Date(Date.now()) },
@@ -90,8 +94,9 @@ export interface User {
     emailVerifiedAt?: Date;
     emailVerificationCode?: string;
     mobile?: string;
-    mobileVerifiedAt?: string;
+    mobileVerifiedAt?: Date;
     mobileVerificationCode?: string;
+    verficationCodeSentAt?: Date;
     tel?: string;
     password: string;
     status: string;

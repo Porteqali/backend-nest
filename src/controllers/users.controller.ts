@@ -19,19 +19,23 @@ export class UsersController {
     async getUser(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const user = await this.UserModel.findOne({ _id: req.user["payload"].user_id })
             .select("-_v -password -createdAt")
-            .populate("PermissionGroup", "-_id name permissions")
+            .populate("permissionGroup", "-_id name permissions")
             .exec();
         if (!user) throw NotFoundException;
 
         // TODO
         // test this
         const permissions = new Set();
-        user.permissions.forEach(permission => {
-            permissions.add(permission)
-        });
-        user.permissionGroup.permissions.forEach((permission)=>{
-            permissions.add(permission);
-        });
+        if (!!user.permissions) {
+            user.permissions.forEach((permission) => {
+                permissions.add(permission);
+            });
+        }
+        if (!!user.permissionGroup) {
+            user.permissionGroup.permissions.forEach((permission) => {
+                permissions.add(permission);
+            });
+        }
 
         return res.json({
             image: user.image,

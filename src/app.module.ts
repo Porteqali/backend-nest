@@ -41,7 +41,7 @@ import { LatestNewsController } from "./controllers/web/latestNews.controller";
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        // consumer.apply(serverOnly).forRoutes({ path: "*", method: RequestMethod.ALL });
+        consumer.apply(serverOnly).forRoutes({ path: "*", method: RequestMethod.ALL });
 
         consumer.apply(AuthCheckMiddleware).forRoutes(
             { path: "auth/refresh", method: RequestMethod.POST },
@@ -53,6 +53,8 @@ export class AppModule implements NestModule {
         );
 
         consumer.apply(GuestMiddleware).forRoutes(
+            { path: "auth/send-code", method: RequestMethod.ALL },
+            { path: "auth/verify", method: RequestMethod.ALL },
             { path: "auth/register", method: RequestMethod.ALL },
             { path: "auth/login", method: RequestMethod.ALL },
 

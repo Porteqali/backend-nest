@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        .body{
+            font-family: 'vazir','roboto' !important; direction: rtl;
+            display: block;
+            background-color: #fff; margin: 0; width: 100%;
+        }
+        .a{ text-decoration: none; color: #ff51b1; }
+        .p{ display: block; margin: 0; padding: .5rem; text-align: right; font-family: 'vazir','roboto' !important; color: #333 !important; }
+        .h1{ margin: 1rem 0; margin-top: 2rem; font-family: 'vazir','roboto' !important; }
+        .hr{ border: 1px solid #eee; width: 100%; margin: 2rem auto; }
+
+        .card{
+            display: block; margin: auto; text-align: right;
+            background-color: #fff; border: 1px solid #eee;
+            border-radius: 3px; width: 100%; max-width: 480px; padding: 2rem;
+        }
+
+        .text-sm{font-size: .75rem;}
+        .text-md{font-size: 1rem;}
+        .text-lg{font-size: 1.25rem;}
+
+        .header{ width: 100%; display: block; margin: auto; text-align: center; }
+        .img{ width: auto; max-width: 210px; height: auto; object-fit: contain; display: block; }
+        
+        .main{ font-family: 'vazir','roboto' !important; width: 100%; display: block; margin: auto; text-align: center; }
+        .code{
+            background-color: #f4f4f4;
+            padding: 1rem 0; width: 100%; margin-top: 1rem;
+            text-align: center; color: #333; font-size: 2rem;
+        }
+
+        .footer{
+            display: block; margin: auto; text-align: center;
+            width: 100%; max-width: 768px;
+        }
+    </style>
+</head>
+<body class="body">
+    <table class="card">
+        <tbody>
+            <tr>
+                <td>
+                    <header class="header">
+                        <img class="img" src="{{url}}/logo_orange.png" alt="گروه آموزشی پرتقال">
+                    </header>
+                    <main class="main">
+                        <h1 class="h1">تایید ایمیل برای ورود به حساب کاربری</h1>
+                        <p class="p text-md">برای ایجاد حساب کاربری یا ورود به حساب خود لطفا ایمیل خود را از طریق کد زیر تایید کنید.</p>
+                        <p class="p text-md">لطفا کد زیر را برای تایید ایمیل خود وارد کنید:</p>
+                        <div class="code">{{code}}</div>
+                    </main>
+                    <hr class="hr">
+                    <footer class="footer">
+                        <p class="text-sm">اگر شما سعی نکرده اید که وارد حساب کاربری خود شوید اما این ایمیل را دریافت کرده اید، لطفاً این ایمیل را نادیده بگیرید</p>
+                        <br><br>
+                        <a class="a text-sm" href="{{url}}">گروه آموزشی پرتقال</a>
+                    </footer>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

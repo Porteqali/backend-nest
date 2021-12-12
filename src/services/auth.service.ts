@@ -6,7 +6,7 @@ import { Request } from "src/interfaces/Request";
 import { Model } from "mongoose";
 import { SessionDocument } from "src/models/sessions.schema";
 import { UserDocument } from "src/models/users.schema";
-import { RegisterDto } from "src/dto/register.dto";
+import { RegisterDto } from "src/dto/auth/register.dto";
 
 @Injectable()
 export class AuthService {
@@ -38,24 +38,6 @@ export class AuthService {
 
         const session = await this.SessionModel.findOne({ user: req.user, userAgent: req.headers["user-agent"], ip: ip });
         return session.id;
-    }
-
-    async addUser(inputs: RegisterDto): Promise<UserDocument> {
-        // check if email is unique
-        const user = await this.UserModel.findOne({ email: inputs.email }).exec();
-        if (user) throw new BadRequestException("Email already exists");
-
-        const role = await this.UserModel.findOne({ name: "user" }).exec();
-        const newUser = await this.UserModel.create({
-            name: inputs.name,
-            family: inputs.family,
-            email: inputs.email,
-            password: await hash(inputs.password, 5),
-            status: "active",
-            role: role.id,
-        });
-
-        return newUser;
     }
 
     async authenticate(username_field: string = "email", username: string, password: string) {
