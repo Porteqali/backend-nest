@@ -8,7 +8,7 @@ export type UserDocument = User & Document;
 export const UserSchema = new Schema({
     image: { type: String },
     title: { type: String },
-    name: { type: String, required: true },
+    name: { type: String },
     family: { type: String },
     email: { type: String },
     emailVerifiedAt: { type: Date },

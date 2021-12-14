@@ -39,7 +39,7 @@ export class AuthCheckMiddleware implements NestMiddleware {
             // if (new Date(payload["iat"] * 1000) >= session.expireAt) throw new UnauthorizedException(-1);
             if (payload["iat"] * 1000 < Date.now() - sessionExpireTime * 1000) throw new UnauthorizedException(-3);
 
-            const user = await this.UserModel.findOne({ _id: payload["user_id"] }).populate("role").exec();
+            const user = await this.UserModel.findOne({ _id: payload["user_id"] }).exec();
             if (!user) throw new UnauthorizedException(-4);
 
             req.user = { payload, user };

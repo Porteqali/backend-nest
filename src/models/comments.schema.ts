@@ -12,7 +12,7 @@ export const CommentSchema = new Schema({
     },
     commentedOn: {
         type: String,
-        enum: ["Course", "Article"],
+        enum: ["course", "article"],
     },
     commentedOnId: {
         type: Schema.Types.ObjectId,

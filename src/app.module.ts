@@ -18,6 +18,7 @@ import { CourseGroupModule } from "./modules/courseGroup.module";
 import { AboutUsController } from "./controllers/web/aboutUs.controller";
 import { ContactInfoController } from "./controllers/web/contactInfo.controller";
 import { LatestNewsController } from "./controllers/web/latestNews.controller";
+import { CommentsModule } from "./modules/comments.module";
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { LatestNewsController } from "./controllers/web/latestNews.controller";
         FilesModule,
         FaqsModule,
         ArticlesModule,
+        CommentsModule,
         ContactRequestModule,
         CollaborateRequestModule,
         CourseGroupModule,
@@ -50,6 +52,8 @@ export class AppModule implements NestModule {
             { path: "users/info", method: RequestMethod.GET },
 
             { path: "admin/*", method: RequestMethod.ALL },
+            
+            { path: "comments/send", method: RequestMethod.POST },
         );
 
         consumer.apply(GuestMiddleware).forRoutes(
@@ -58,8 +62,7 @@ export class AppModule implements NestModule {
             { path: "auth/register", method: RequestMethod.ALL },
             { path: "auth/login", method: RequestMethod.ALL },
 
-            { path: "auth/login/google", method: RequestMethod.ALL },
-            { path: "auth/login/google/callback", method: RequestMethod.ALL },
+            { path: "auth/continue-with-google", method: RequestMethod.ALL },
         );
     }
 }
