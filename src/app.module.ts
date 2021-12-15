@@ -40,6 +40,7 @@ import { CommentsModule } from "./modules/comments.module";
     ],
     controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController],
     providers: [AppService],
+    exports: [],
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
@@ -52,8 +53,9 @@ export class AppModule implements NestModule {
             { path: "users/info", method: RequestMethod.GET },
 
             { path: "admin/*", method: RequestMethod.ALL },
-            
+
             { path: "comments/send", method: RequestMethod.POST },
+            { path: "like-article/*", method: RequestMethod.POST },
         );
 
         consumer.apply(GuestMiddleware).forRoutes(

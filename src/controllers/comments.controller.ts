@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Req, Res, UnprocessableEntityException } from "@nestjs/common";
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
+import * as Jmoment from "jalali-moment";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { SendCommentDto } from "src/dto/sendComment.dto";
@@ -15,10 +16,10 @@ export class CommentsController {
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
         const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 10;
 
-        const commentedOn = req.query.type ? req.query.type.toString() : "";
+        const commentedOn = !!req.query.type ? req.query.type.toString() : "";
         if (!commentedOn) throw new UnprocessableEntityException([{ property: "", errors: ["امکان نمایش نظر وجود ندارد"] }]);
 
-        const commentedOnId = req.query.commentedOn ? req.query.commentedOn.toString() : "";
+        const commentedOnId = !!req.query.commentedOn ? req.query.commentedOn.toString() : "";
         if (!commentedOnId) throw new UnprocessableEntityException([{ property: "", errors: ["امکان نمایش نظر وجود ندارد"] }]);
 
         // the base query object
@@ -53,6 +54,12 @@ export class CommentsController {
         });
         const total = results[0].total[0] ? results[0].total[0].count : 0;
 
+        // transform data
+        results[0].data.map((row) => {
+            row.createdAt = Jmoment(row.createdAt).locale("fa").fromNow();
+            return row;
+        });
+
         return res.json({
             records: results[0].data,
             page: page,
@@ -66,13 +73,13 @@ export class CommentsController {
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
         const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 10;
 
-        const commentId = req.query.type ? req.query.type.toString() : "";
+        const commentId = req.query.commentId ? req.query.commentId.toString() : "";
         if (!commentId) throw new UnprocessableEntityException([{ property: "", errors: ["امکان نمایش نظر وجود ندارد"] }]);
 
         // the base query object
         let query = {
             status: "active",
-            topComment: commentId,
+            topComment: new Types.ObjectId(commentId),
         };
 
         // making the model with query
@@ -98,6 +105,12 @@ export class CommentsController {
             throw e;
         });
         const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        // transform data
+        results[0].data.map((row) => {
+            row.createdAt = Jmoment(row.createdAt).locale("fa").fromNow();
+            return row;
+        });
 
         return res.json({
             records: results[0].data,

@@ -1,4 +1,4 @@
-import { IsNotEmpty, Length, IsString, IsIn, IsMongoId } from "class-validator";
+import { IsNotEmpty, Length, IsString, IsIn, IsMongoId, IsOptional } from "class-validator";
 
 export class SendCommentDto {
     @Length(1, 500, { message: "متن پیام حداکثر 500 کاراکتر" })
@@ -15,6 +15,7 @@ export class SendCommentDto {
     @IsNotEmpty({ message: "نوع پیام خود را مشخص کنید" })
     readonly commentedOn: string;
 
+    @IsOptional()
     @IsMongoId({ message: "امکان ارسال نظر وجود ندارد" })
     @IsNotEmpty({ message: "نوع پیام خود را مشخص کنید" })
     readonly topComment?: string;
