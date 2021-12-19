@@ -19,6 +19,7 @@ import { AboutUsController } from "./controllers/web/aboutUs.controller";
 import { ContactInfoController } from "./controllers/web/contactInfo.controller";
 import { LatestNewsController } from "./controllers/web/latestNews.controller";
 import { CommentsModule } from "./modules/comments.module";
+import { CoursesModule } from "./modules/courses.module";
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { CommentsModule } from "./modules/comments.module";
         ContactRequestModule,
         CollaborateRequestModule,
         CourseGroupModule,
+        CoursesModule,
         ConfigModule.forRoot(),
         MongooseModule.forRoot(process.env.MONGO_URL),
         MongooseModule.forFeature([

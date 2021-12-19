@@ -27,7 +27,7 @@ export const CourseGroupSchema = new Schema({
 
 export interface CourseGroup {
     _id: Schema.Types.ObjectId;
-    icon: string;
+    icon?: string;
     name: string;
     topGroup: string;
     status: string;

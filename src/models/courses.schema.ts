@@ -6,6 +6,7 @@ import { User } from "./users.schema";
 export type CourseDocument = Course & Document;
 
 export const CourseSchema = new Schema({
+    oid: { type: Number },
     image: { type: String },
     name: { type: String, required: true },
     teacher: {
@@ -27,20 +28,20 @@ export const CourseSchema = new Schema({
     viewCount: { type: Number, default: 0 },
     score: { type: Number, default: 0 },
     showInNew: { type: Boolean, default: false },
-    topics: new Schema({
+    topics: [new Schema({
         order: { type: Number },
         name: { type: String },
         time: {
-            hours: { type: Number },
-            minutes: { type: Number },
-            seconds: { type: Number },
+            hours: { type: String },
+            minutes: { type: String },
+            seconds: { type: String },
         },
         description: { type: String },
         file: { type: String },
         isFree: { type: Boolean, default: false },
         isFreeForUsers: { type: Boolean, default: false },
         status: { type: String, enum: ["active", "deactive"] },
-    }),
+    })],
     createdAt: {
         type: Date,
         default: new Date(Date.now()),
@@ -49,6 +50,7 @@ export const CourseSchema = new Schema({
 
 export interface Course {
     _id: Schema.Types.ObjectId;
+    oid?: number;
     image: string;
     name: string;
     teacher: User | Schema.Types.ObjectId;
@@ -63,12 +65,12 @@ export interface Course {
     viewCount: number;
     score: number;
     showInNew: boolean;
-    topics: string;
+    topics: Array<CourseTopic>;
     createdAt: Date;
 }
 
 export interface CourseTopic {
-    _id: Schema.Types.ObjectId;
+    _id?: Schema.Types.ObjectId;
     order: number;
     name: string;
     time: Time;
@@ -80,7 +82,7 @@ export interface CourseTopic {
 }
 
 export interface Time {
-    hours: number;
-    minutes: number;
-    seconds: number;
+    hours: string;
+    minutes: string;
+    seconds: string;
 }
