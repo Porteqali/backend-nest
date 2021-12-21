@@ -1,5 +1,6 @@
 import { Document, Schema } from "mongoose";
 import { Commission } from "./commissions.schema";
+import { CourseGroup } from "./courseGroups.schema";
 import { PermissionGroup } from "./permissionGroups.schema";
 import { UsanceType } from "./usanceTypes.schema";
 
@@ -65,6 +66,7 @@ export const UserSchema = new Schema({
     period: { type: Number }, // in days
 
     // teacher info
+    groups: [{ type: Schema.Types.ObjectId, ref: "CourseGroup" }],
     description: { type: String },
     nationalCode: { type: Number },
     nationalNumber: { type: Number },
@@ -116,6 +118,7 @@ export interface User {
     period?: number;
 
     // teacher info
+    groups?: Array<CourseGroup & Schema.Types.ObjectId>;
     description?: string;
     nationalCode?: number;
     nationalNumber?: number;

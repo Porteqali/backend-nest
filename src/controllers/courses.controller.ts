@@ -18,7 +18,7 @@ export class CoursesController {
             .populate("teacher", "-_id image name family")
             .populate("groups", "-_id icon name topGroup")
             .sort({ viewCount: "desc" })
-            .limit(2)
+            .limit(10)
             .exec();
         return res.json(courses);
     }

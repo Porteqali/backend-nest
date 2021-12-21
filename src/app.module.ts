@@ -20,6 +20,7 @@ import { ContactInfoController } from "./controllers/web/contactInfo.controller"
 import { LatestNewsController } from "./controllers/web/latestNews.controller";
 import { CommentsModule } from "./modules/comments.module";
 import { CoursesModule } from "./modules/courses.module";
+import { TeachersController } from "./controllers/web/teachers.controller";
 
 @Module({
     imports: [
@@ -40,7 +41,7 @@ import { CoursesModule } from "./modules/courses.module";
             { name: "User", schema: UserSchema },
         ]),
     ],
-    controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController],
+    controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController, TeachersController],
     providers: [AppService],
     exports: [],
 })
