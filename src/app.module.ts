@@ -21,6 +21,10 @@ import { LatestNewsController } from "./controllers/web/latestNews.controller";
 import { CommentsModule } from "./modules/comments.module";
 import { CoursesModule } from "./modules/courses.module";
 import { TeachersController } from "./controllers/web/teachers.controller";
+import { CourseSchema } from "./models/courses.schema";
+import { ArticleSchema } from "./models/articles.schema";
+import { SearchController } from "./controllers/web/search.controller";
+import { SearchService } from "./services/search.service";
 
 @Module({
     imports: [
@@ -39,10 +43,12 @@ import { TeachersController } from "./controllers/web/teachers.controller";
         MongooseModule.forFeature([
             { name: "Session", schema: SessionSchema },
             { name: "User", schema: UserSchema },
+            { name: "Course", schema: CourseSchema },
+            { name: "Article", schema: ArticleSchema },
         ]),
     ],
-    controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController, TeachersController],
-    providers: [AppService],
+    controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController, TeachersController, SearchController],
+    providers: [AppService, SearchService],
     exports: [],
 })
 export class AppModule implements NestModule {

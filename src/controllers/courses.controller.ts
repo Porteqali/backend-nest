@@ -69,7 +69,6 @@ export class CoursesController {
             });
         }
 
-        // return res.json(modifiedTeachers);
         return res.json(teachers);
     }
 
@@ -162,5 +161,17 @@ export class CoursesController {
             total: total,
             pageTotal: Math.ceil(total / pp),
         });
+    }
+
+    @Get("/suggested-courses")
+    async getSuggestedCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const courses = await this.CourseModel.find({ status: "active" })
+            .select("name groups topics")
+            .populate("groups", "icon name topGroup")
+            .sort({ createdAt: "desc" })
+            .limit(7)
+            .exec();
+
+        return res.json(courses);
     }
 }
