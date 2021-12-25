@@ -25,7 +25,5 @@ export class SearchController {
                 await this.searchService.searchCourses(req, res, search);
                 break;
         }
-
-        return res.json({});
     }
 }
