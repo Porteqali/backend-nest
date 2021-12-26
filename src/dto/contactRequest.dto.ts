@@ -29,3 +29,9 @@ export class SendContactRequestDto {
     @IsNotEmpty({ message: "متن پیام خود را وارد کنید" })
     readonly text: string;
 }
+
+export class NewsletterSubscriptionDto {
+    @IsEmail({ message: "فرمت ایمیل صحیح نیست" })
+    @IsNotEmpty({ message: "ایمیل خود را وارد کنید" })
+    readonly email: string;
+}
