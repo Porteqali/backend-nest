@@ -5,6 +5,7 @@ import { CourseImporter } from "src/importer/course.importer";
 import { CourseTopicImporter } from "src/importer/courseTopic.importer";
 import { CourseGroupSchema } from "src/models/courseGroups.schema";
 import { CourseSchema } from "src/models/courses.schema";
+import { UserCourseSchema } from "src/models/userCourses.schema";
 import { UserSchema } from "src/models/users.schema";
 
 @Module({
@@ -13,6 +14,7 @@ import { UserSchema } from "src/models/users.schema";
             { name: "CourseGroup", schema: CourseGroupSchema },
             { name: "Course", schema: CourseSchema },
             { name: "User", schema: UserSchema },
+            { name: "UserCourse", schema: UserCourseSchema },
         ]),
     ],
     controllers: [CoursesController, CourseImporter, CourseTopicImporter],

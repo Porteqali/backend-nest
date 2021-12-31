@@ -6,16 +6,22 @@ import { Model } from "mongoose";
 import { CourseDocument } from "src/models/courses.schema";
 import { UserDocument } from "src/models/users.schema";
 import { duration } from "jalali-moment";
+import { loadUser } from "src/helpers/auth.helper";
+import { UserCourseDocument } from "src/models/userCourses.schema";
 
 @Controller()
 export class CoursesController {
-    constructor(@InjectModel("Course") private readonly CourseModel: Model<CourseDocument>, @InjectModel("User") private readonly UserModel: Model<UserDocument>) {}
+    constructor(
+        @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
+        @InjectModel("User") private readonly UserModel: Model<UserDocument>,
+        @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+    ) {}
 
     @Get("/most-viewed-courses")
     async getMostViewdCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const courses = await this.CourseModel.find({ status: "active" })
             .select("-oid -exerciseFiles -tags -status -commission -buyCount -topics.order -topics.file -topics.isFree -topics.isFreeForUsers")
-            .populate("teacher", "-_id image name family")
+            .populate("teacher", "image name family")
             .populate("groups", "-_id icon name topGroup")
             .sort({ viewCount: "desc" })
             .limit(10)
@@ -129,7 +135,7 @@ export class CoursesController {
             ],
         });
         data.sort(sort);
-        data.project("teacher.image teacher.name teacher.family image name description price groups buyCount score topics.time");
+        data.project("teacher._id teacher.image teacher.name teacher.family image name description price groups buyCount score topics.time");
 
         // paginating
         data = data.facet({
@@ -173,5 +179,32 @@ export class CoursesController {
             .exec();
 
         return res.json(courses);
+    }
+
+    @Get("/course/:id")
+    async getCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const course = await this.CourseModel.findOne({ _id: req.params.id, status: "active" })
+            .select("-oid -status -commission")
+            .populate("teacher", "image name family")
+            .populate("groups", "-_id icon name topGroup")
+            .exec();
+        if (!course) return res.status(404).end();
+
+        // TODO : categoryTag = discount percentage | free | new | nothing
+
+        // check if user bougth the course
+        const loadedUser = await loadUser(req);
+        let purchased = false;
+        if (!!loadedUser) purchased = await this.UserCourseModel.exists({ user: loadedUser.user._id, course: course._id, status: "ok" });
+
+        const similarArticles = await this.CourseModel.find({ tags: { $in: course.tags || [] }, _id: { $ne: course._id }, status: "active" })
+            .select("-oid -exerciseFiles -tags -status -commission -buyCount -topics.order -topics.file -topics.isFree -topics.isFreeForUsers")
+            .populate("teacher", "image name family")
+            .populate("groups", "-_id icon name topGroup")
+            .sort({ createdAt: "desc" })
+            .limit(6)
+            .exec();
+
+        return res.json({ course, purchased, similarArticles });
     }
 }
