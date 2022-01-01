@@ -8,6 +8,7 @@ import { UserDocument } from "src/models/users.schema";
 import { duration } from "jalali-moment";
 import { loadUser } from "src/helpers/auth.helper";
 import { UserCourseDocument } from "src/models/userCourses.schema";
+import { CourseRatingDocument } from "src/models/courseRatings.schema";
 
 @Controller()
 export class CoursesController {
@@ -15,6 +16,7 @@ export class CoursesController {
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+        @InjectModel("CourseRating") private readonly CourseRatingModel: Model<CourseRatingDocument>,
     ) {}
 
     @Get("/most-viewed-courses")
@@ -56,7 +58,9 @@ export class CoursesController {
             as: "courses",
         });
         teachersQuery.limit(2);
-        teachersQuery.project("image title name family description socials courses.name courses.description courses.groups.icon courses.groups.name courses.topics");
+        teachersQuery.project(
+            "image title name family description socials courses._id courses.name courses.description courses.groups.icon courses.groups.name courses.topics",
+        );
         const teachers = await teachersQuery.exec().catch((e) => {
             throw e;
         });
@@ -185,7 +189,7 @@ export class CoursesController {
     async getCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const course = await this.CourseModel.findOne({ _id: req.params.id, status: "active" })
             .select("-oid -status -commission")
-            .populate("teacher", "image name family")
+            .populate("teacher", "image name family description")
             .populate("groups", "-_id icon name topGroup")
             .exec();
         if (!course) return res.status(404).end();
@@ -197,14 +201,17 @@ export class CoursesController {
         let purchased = false;
         if (!!loadedUser) purchased = await this.UserCourseModel.exists({ user: loadedUser.user._id, course: course._id, status: "ok" });
 
-        const similarArticles = await this.CourseModel.find({ tags: { $in: course.tags || [] }, _id: { $ne: course._id }, status: "active" })
-            .select("-oid -exerciseFiles -tags -status -commission -buyCount -topics.order -topics.file -topics.isFree -topics.isFreeForUsers")
+        const numberOfVotes = await this.CourseRatingModel.countDocuments({ course: course._id }).exec();
+        const numberOfTopVotes = await this.CourseRatingModel.countDocuments({ course: course._id, rating: 8 }).exec();
+
+        const similarCourses = await this.CourseModel.find({ tags: { $in: course.tags || [] }, _id: { $ne: course._id }, status: "active" })
+            .select("-oid -exerciseFiles -tags -status -commission -topics.order -topics.file -topics.isFree -topics.isFreeForUsers")
             .populate("teacher", "image name family")
             .populate("groups", "-_id icon name topGroup")
             .sort({ createdAt: "desc" })
-            .limit(6)
+            .limit(10)
             .exec();
 
-        return res.json({ course, purchased, similarArticles });
+        return res.json({ course, purchased, similarCourses, numberOfVotes, numberOfTopVotes });
     }
 }

@@ -4,6 +4,7 @@ import { CoursesController } from "src/controllers/courses.controller";
 import { CourseImporter } from "src/importer/course.importer";
 import { CourseTopicImporter } from "src/importer/courseTopic.importer";
 import { CourseGroupSchema } from "src/models/courseGroups.schema";
+import { CourseRatingSchema } from "src/models/courseRatings.schema";
 import { CourseSchema } from "src/models/courses.schema";
 import { UserCourseSchema } from "src/models/userCourses.schema";
 import { UserSchema } from "src/models/users.schema";
@@ -15,6 +16,7 @@ import { UserSchema } from "src/models/users.schema";
             { name: "Course", schema: CourseSchema },
             { name: "User", schema: UserSchema },
             { name: "UserCourse", schema: UserCourseSchema },
+            { name: "CourseRating", schema: CourseRatingSchema },
         ]),
     ],
     controllers: [CoursesController, CourseImporter, CourseTopicImporter],

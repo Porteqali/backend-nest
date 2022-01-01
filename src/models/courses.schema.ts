@@ -16,7 +16,7 @@ export const CourseSchema = new Schema({
     },
     description: { type: String },
     price: { type: Number, min: 0, required: true },
-    exerciseFiles: [{ type: String }],
+    exerciseFiles: [{ name: { type: String }, file: { type: String } }],
     groups: [{ type: Schema.Types.ObjectId, ref: "CourseGroup" }],
     tags: [{ type: String }],
     status: {
@@ -28,20 +28,22 @@ export const CourseSchema = new Schema({
     viewCount: { type: Number, default: 0 },
     score: { type: Number, default: 0 },
     showInNew: { type: Boolean, default: false },
-    topics: [new Schema({
-        order: { type: Number },
-        name: { type: String },
-        time: {
-            hours: { type: String },
-            minutes: { type: String },
-            seconds: { type: String },
-        },
-        description: { type: String },
-        file: { type: String },
-        isFree: { type: Boolean, default: false },
-        isFreeForUsers: { type: Boolean, default: false },
-        status: { type: String, enum: ["active", "deactive"] },
-    })],
+    topics: [
+        new Schema({
+            order: { type: Number },
+            name: { type: String },
+            time: {
+                hours: { type: String },
+                minutes: { type: String },
+                seconds: { type: String },
+            },
+            description: { type: String },
+            file: { type: String },
+            isFree: { type: Boolean, default: false },
+            isFreeForUsers: { type: Boolean, default: false },
+            status: { type: String, enum: ["active", "deactive"] },
+        }),
+    ],
     createdAt: {
         type: Date,
         default: new Date(Date.now()),
