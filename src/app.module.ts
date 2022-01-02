@@ -53,7 +53,7 @@ import { SearchService } from "./services/search.service";
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        // consumer.apply(serverOnly).forRoutes({ path: "*", method: RequestMethod.ALL });
+        consumer.apply(serverOnly).forRoutes({ path: "*", method: RequestMethod.ALL });
 
         consumer.apply(AuthCheckMiddleware).forRoutes(
             { path: "auth/refresh", method: RequestMethod.POST },
@@ -65,6 +65,8 @@ export class AppModule implements NestModule {
 
             { path: "comments/send", method: RequestMethod.POST },
             { path: "like-article/*", method: RequestMethod.POST },
+
+            { path: "/course/*/score", method: RequestMethod.POST },
         );
 
         consumer.apply(GuestMiddleware).forRoutes(

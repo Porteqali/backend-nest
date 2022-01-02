@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import { Body, Controller, Get, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
 import { FileService } from "src/services/file.service";
+import { loadUser } from "src/helpers/auth.helper";
 
 @Controller("file")
 export class FilesController {
@@ -16,8 +17,10 @@ export class FilesController {
         // get file from "/storage"
         // if file is private and needs special permission, we can check it here
 
+        const loadedUser = await loadUser(req);
+
         const filepathArray = filepath.split("/");
-        if (filepathArray[2] === "course_videos") await this.fileService.courseCheck(req, filepathArray);
+        if (filepathArray[2] === "course_videos") await this.fileService.courseCheck(req, filepathArray, loadedUser);
 
         const isFileExists = await fs
             .access(filepath)

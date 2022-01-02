@@ -220,6 +220,14 @@ export class CoursesController {
             .limit(10)
             .exec();
 
-        return res.json({ course, purchased, similarCourses, numberOfVotes, numberOfTopVotes });
+        return res.json({ course, purchased: true, similarCourses, numberOfVotes, numberOfTopVotes });
+    }
+
+    @Post("/course/:id/score")
+    async giveCourseScore(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        // TODO
+        // check if user exists
+        // check if user purchased te course
+        // if user already gave courrse a score then replace with new one else save the score
     }
 }
