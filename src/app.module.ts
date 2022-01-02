@@ -53,7 +53,7 @@ import { SearchService } from "./services/search.service";
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(serverOnly).forRoutes({ path: "*", method: RequestMethod.ALL });
+        // consumer.apply(serverOnly).forRoutes({ path: "*", method: RequestMethod.ALL });
 
         consumer.apply(AuthCheckMiddleware).forRoutes(
             { path: "auth/refresh", method: RequestMethod.POST },

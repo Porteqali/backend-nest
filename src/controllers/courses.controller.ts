@@ -187,7 +187,7 @@ export class CoursesController {
 
     @Get("/course/:id")
     async getCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const course = await this.CourseModel.findOne({ _id: req.params.id, status: "active" })
+        let course = await this.CourseModel.findOne({ _id: req.params.id, status: "active" })
             .select("-oid -status -commission")
             .populate("teacher", "image name family description")
             .populate("groups", "-_id icon name topGroup")
@@ -200,6 +200,14 @@ export class CoursesController {
         const loadedUser = await loadUser(req);
         let purchased = false;
         if (!!loadedUser) purchased = await this.UserCourseModel.exists({ user: loadedUser.user._id, course: course._id, status: "ok" });
+
+        course.topics = course.topics.map((topic: any) => {
+            topic.canPlay = false;
+            if (topic.isFree) topic.canPlay = true;
+            if (topic.isFreeForUsers && !!loadedUser) topic.canPlay = true;
+            if (purchased) topic.canPlay = true;
+            return topic;
+        });
 
         const numberOfVotes = await this.CourseRatingModel.countDocuments({ course: course._id }).exec();
         const numberOfTopVotes = await this.CourseRatingModel.countDocuments({ course: course._id, rating: 8 }).exec();

@@ -1,22 +1,23 @@
+import * as fs from "fs/promises";
 import { Body, Controller, Get, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
-import * as fs from "fs/promises";
-import { AuthService } from "src/services/auth.service";
+import { FileService } from "src/services/file.service";
 
 @Controller("file")
 export class FilesController {
-    constructor() {}
+    constructor(private readonly fileService: FileService) {}
 
     @Get("/*")
-    async register(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const exampleUrl = "/file/private/4235ni432dbi324di2bjn423onf2.mp4";
-
+    async getFile(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         let filepath = `storage${req.url.replace("/file", "")}`;
         filepath = filepath.split("../").join("");
 
         // TODO
         // get file from "/storage"
         // if file is private and needs special permission, we can check it here
+
+        const filepathArray = filepath.split("/");
+        if (filepathArray[2] === "course_videos") await this.fileService.courseCheck(req, filepathArray);
 
         const isFileExists = await fs
             .access(filepath)

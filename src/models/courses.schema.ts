@@ -41,6 +41,7 @@ export const CourseSchema = new Schema({
             file: { type: String },
             isFree: { type: Boolean, default: false },
             isFreeForUsers: { type: Boolean, default: false },
+            canPlay: { type: Boolean, default: false },
             status: { type: String, enum: ["active", "deactive"] },
         }),
     ],
@@ -80,6 +81,7 @@ export interface CourseTopic {
     file: string;
     isFree: boolean;
     isFreeForUsers: boolean;
+    canPlay?: boolean;
     status: string;
 }
 
