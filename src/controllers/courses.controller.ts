@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res } from "@nestjs/common";
+import { Controller, ForbiddenException, Get, Post, Req, Res } from "@nestjs/common";
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
@@ -9,10 +9,12 @@ import { duration } from "jalali-moment";
 import { loadUser } from "src/helpers/auth.helper";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { CourseRatingDocument } from "src/models/courseRatings.schema";
+import { DiscountService } from "src/services/discount.service";
 
 @Controller()
 export class CoursesController {
     constructor(
+        private readonly discountService: DiscountService,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
@@ -187,12 +189,15 @@ export class CoursesController {
 
     @Get("/course/:id")
     async getCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        let course = await this.CourseModel.findOne({ _id: req.params.id, status: "active" })
+        const course = await this.CourseModel.findOne({ _id: req.params.id, status: "active" })
             .select("-oid -status -commission")
             .populate("teacher", "image name family description")
             .populate("groups", "-_id icon name topGroup")
             .exec();
         if (!course) return res.status(404).end();
+
+        // count the views
+        await this.CourseModel.updateOne({ _id: req.params.id, status: "active" }, { viewCount: course.viewCount + 1 }).exec();
 
         // TODO : categoryTag = discount percentage | free | new | nothing
 
@@ -212,6 +217,13 @@ export class CoursesController {
         const numberOfVotes = await this.CourseRatingModel.countDocuments({ course: course._id }).exec();
         const numberOfTopVotes = await this.CourseRatingModel.countDocuments({ course: course._id, rating: 8 }).exec();
 
+        let userScore = 0;
+        if (!!loadedUser) {
+            // if user logged in and did rated the course get it and send it into front
+            const courseRating = await this.CourseRatingModel.findOne({ user: loadedUser.user._id, course: course._id }).exec();
+            if (courseRating) userScore = courseRating.rating;
+        }
+
         const similarCourses = await this.CourseModel.find({ tags: { $in: course.tags || [] }, _id: { $ne: course._id }, status: "active" })
             .select("-oid -exerciseFiles -tags -status -commission -topics.order -topics.file -topics.isFree -topics.isFreeForUsers")
             .populate("teacher", "image name family")
@@ -220,14 +232,40 @@ export class CoursesController {
             .limit(10)
             .exec();
 
-        return res.json({ course, purchased: true, similarCourses, numberOfVotes, numberOfTopVotes });
+        return res.json({ course, purchased, similarCourses, numberOfVotes, numberOfTopVotes, userScore });
     }
 
     @Post("/course/:id/score")
     async giveCourseScore(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        // check if user exists
-        // check if user purchased te course
-        // if user already gave courrse a score then replace with new one else save the score
+        let newScore = 0;
+        const score = req.body.score;
+        if (!score) throw new ForbiddenException();
+        if (!req.user) throw new ForbiddenException();
+
+        const course = await this.CourseModel.findOne({ _id: req.params.id, status: "active" }).exec();
+        if (!course) throw new ForbiddenException();
+
+        let purchased = await this.UserCourseModel.exists({ user: req.user.payload["user_id"], course: course._id, status: "ok" });
+        if (!purchased) throw new ForbiddenException();
+
+        const totalVotes = await this.CourseRatingModel.countDocuments({ course: course._id }).exec();
+        const scoreSum = totalVotes * course.score;
+
+        const courseRating = await this.CourseRatingModel.findOne({ user: req.user.payload["user_id"], course: course._id }).exec();
+        if (courseRating) {
+            // if score is an update
+            // we can find the persons old rating and calc the difrentional then add it to the multiply of total votes in current score and devide it to total vote
+            let dif = score - courseRating.rating;
+            newScore = (scoreSum + dif) / totalVotes;
+        } else {
+            // if score is new
+            // we can multiply the number of votes in current score and add user score to it then devide it by old vote count +1
+            newScore = (scoreSum + score) / (totalVotes + 1);
+        }
+
+        await this.CourseRatingModel.updateOne({ user: req.user.payload["user_id"], course: course._id }, { rating: score }, { upsert: true });
+        await this.CourseModel.updateOne({ _id: course._id, status: "active" }, { score: newScore }).exec();
+
+        return res.json({ newScore });
     }
 }
