@@ -25,6 +25,8 @@ import { CourseSchema } from "./models/courses.schema";
 import { ArticleSchema } from "./models/articles.schema";
 import { SearchController } from "./controllers/web/search.controller";
 import { SearchService } from "./services/search.service";
+import { DiscountService } from "./services/discount.service";
+import { DiscountSchema } from "./models/discount.schema";
 
 @Module({
     imports: [
@@ -45,10 +47,11 @@ import { SearchService } from "./services/search.service";
             { name: "User", schema: UserSchema },
             { name: "Course", schema: CourseSchema },
             { name: "Article", schema: ArticleSchema },
+            { name: "Discount", schema: DiscountSchema },
         ]),
     ],
     controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController, TeachersController, SearchController],
-    providers: [AppService, SearchService],
+    providers: [AppService, SearchService, DiscountService],
     exports: [],
 })
 export class AppModule implements NestModule {

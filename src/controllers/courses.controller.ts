@@ -23,13 +23,20 @@ export class CoursesController {
 
     @Get("/most-viewed-courses")
     async getMostViewdCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const courses = await this.CourseModel.find({ status: "active" })
-            .select("-oid -exerciseFiles -tags -status -commission -buyCount -topics.order -topics.file -topics.isFree -topics.isFreeForUsers")
+        const courses: any = await this.CourseModel.find({ status: "active" })
+            .select("-oid -exerciseFiles -tags -status -commission -topics.order -topics.file -topics.isFree -topics.isFreeForUsers")
             .populate("teacher", "image name family")
             .populate("groups", "-_id icon name topGroup")
             .sort({ viewCount: "desc" })
             .limit(10)
             .exec();
+
+        // calculate the discount and tag
+        for (let i = 0; i < courses.length; i++) {
+            courses[i] = courses[i].toJSON();
+            courses[i].discountInfo = await this.discountService.courseDiscount(req, courses[i]._id);
+        }
+
         return res.json(courses);
     }
 
@@ -155,15 +162,20 @@ export class CoursesController {
         });
         const total = results[0].total[0] ? results[0].total[0].count : 0;
 
+        // calculate the discount and tag
+        for (let i = 0; i < results[0].data.length; i++) {
+            results[0].data[i].discountInfo = await this.discountService.courseDiscount(req, results[0].data[i]._id);
+        }
+
         // transform data
         results[0].data.map((row) => {
-            // TODO : course category
             let seconds = 0;
             row.topics.forEach((topic) => {
                 seconds += parseInt(topic.time.hours) * 3600 + parseInt(topic.time.minutes) * 60 + parseInt(topic.time.seconds);
             });
             delete row.topics;
             row.totalTime = new Date(seconds * 1000).toUTCString().match(/(\d\d:\d\d:\d\d)/)[0];
+
             return row;
         });
 
@@ -199,7 +211,7 @@ export class CoursesController {
         // count the views
         await this.CourseModel.updateOne({ _id: req.params.id, status: "active" }, { viewCount: course.viewCount + 1 }).exec();
 
-        // TODO : categoryTag = discount percentage | free | new | nothing
+        const discountAndTag = await this.discountService.courseDiscount(req, course._id);
 
         // check if user bougth the course
         const loadedUser = await loadUser(req);
@@ -232,7 +244,7 @@ export class CoursesController {
             .limit(10)
             .exec();
 
-        return res.json({ course, purchased, similarCourses, numberOfVotes, numberOfTopVotes, userScore });
+        return res.json({ course, purchased, similarCourses, numberOfVotes, numberOfTopVotes, userScore, discountAndTag });
     }
 
     @Post("/course/:id/score")

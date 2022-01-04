@@ -6,10 +6,12 @@ import { Model } from "mongoose";
 import { UserDocument } from "src/models/users.schema";
 import { CourseDocument } from "src/models/courses.schema";
 import { ArticleDocument } from "src/models/articles.schema";
+import { DiscountService } from "./discount.service";
 
 @Injectable()
 export class SearchService {
     constructor(
+        private readonly discountService: DiscountService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("Article") private readonly ArticleModel: Model<ArticleDocument>,
@@ -78,9 +80,13 @@ export class SearchService {
         });
         const total = results[0].total[0] ? results[0].total[0].count : 0;
 
+        // calculate the discount and tag
+        for (let i = 0; i < results[0].data.length; i++) {
+            results[0].data[i].discountInfo = await this.discountService.courseDiscount(req, results[0].data[i]._id);
+        }
+
         // transform data
         results[0].data.map((row) => {
-            // TODO : course category
             let seconds = 0;
             row.topics.forEach((topic) => {
                 seconds += parseInt(topic.time.hours) * 3600 + parseInt(topic.time.minutes) * 60 + parseInt(topic.time.seconds);

@@ -6,10 +6,15 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { UserDocument } from "src/models/users.schema";
 import { CourseDocument } from "src/models/courses.schema";
+import { DiscountService } from "src/services/discount.service";
 
 @Controller("teachers")
 export class TeachersController {
-    constructor(@InjectModel("User") private readonly UserModel: Model<UserDocument>, @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>) {}
+    constructor(
+        private readonly discountService: DiscountService,
+        @InjectModel("User") private readonly UserModel: Model<UserDocument>,
+        @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
+    ) {}
 
     @Get("/")
     async getAllTeachers(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
@@ -31,7 +36,6 @@ export class TeachersController {
 
     @Get("/:id/info")
     async getTeacherInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        
         if (!req.params.id) throw new UnprocessableEntityException();
         const id: any = req.params.id.toString() || "";
 
@@ -113,9 +117,13 @@ export class TeachersController {
         });
         const total = results[0].total[0] ? results[0].total[0].count : 0;
 
+        // calculate the discount and tag
+        for (let i = 0; i < results[0].data.length; i++) {
+            results[0].data[i].discountInfo = await this.discountService.courseDiscount(req, results[0].data[i]._id);
+        }
+
         // transform data
         results[0].data.map((row) => {
-            // TODO : course category
             let seconds = 0;
             row.topics.forEach((topic) => {
                 seconds += parseInt(topic.time.hours) * 3600 + parseInt(topic.time.minutes) * 60 + parseInt(topic.time.seconds);

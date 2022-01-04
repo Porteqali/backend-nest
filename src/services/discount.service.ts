@@ -23,7 +23,7 @@ export class DiscountService {
     ) {}
 
     // returns the course discount amount and type + tag title
-    async courseDiscount(req: Request, res: Response, courseId): Promise<courseDiscountOutput> {
+    async courseDiscount(req: Request, courseId): Promise<courseDiscountOutput> {
         const course = await this.CourseModel.findOne({ _id: courseId }).exec();
         const courseGroupId: any = course.groups[0];
         const courseTeacherId: any = course.teacher;
@@ -72,7 +72,7 @@ export class DiscountService {
         let discountSingleUserPrice = course.price;
         if (!!discountSingleUser) discountSingleUserPrice = this.calcDiscount(discountSingleUser, course.price);
 
-        const maxDiscountPrice = Math.max(
+        let maxDiscountPrice = Math.max(
             discountAllCoursesPrice,
             discountSingleCoursePrice,
             discountCourseGroupPrice,
@@ -83,19 +83,19 @@ export class DiscountService {
         let discount = { discountAmount: 0, discountType: "percent" };
         switch (maxDiscountPrice) {
             case discountAllCoursesPrice:
-                discount = { discountAmount: discountAllCourses.amount, discountType: discountAllCourses.amountType };
+                if (discountAllCourses) discount = { discountAmount: discountAllCourses.amount, discountType: discountAllCourses.amountType };
                 break;
             case discountSingleCoursePrice:
-                discount = { discountAmount: discountSingleCourse.amount, discountType: discountSingleCourse.amountType };
+                if (discountSingleCourse) discount = { discountAmount: discountSingleCourse.amount, discountType: discountSingleCourse.amountType };
                 break;
             case discountCourseGroupPrice:
-                discount = { discountAmount: discountCourseGroup.amount, discountType: discountCourseGroup.amountType };
+                if (discountCourseGroup) discount = { discountAmount: discountCourseGroup.amount, discountType: discountCourseGroup.amountType };
                 break;
             case discountTeacherCoursesPrice:
-                discount = { discountAmount: discountTeacherCourses.amount, discountType: discountTeacherCourses.amountType };
+                if (discountTeacherCourses) discount = { discountAmount: discountTeacherCourses.amount, discountType: discountTeacherCourses.amountType };
                 break;
             case discountSingleUserPrice:
-                discount = { discountAmount: discountSingleUser.amount, discountType: discountSingleUser.amountType };
+                if (discountSingleUser) discount = { discountAmount: discountSingleUser.amount, discountType: discountSingleUser.amountType };
                 break;
         }
 
@@ -108,11 +108,11 @@ export class DiscountService {
         return { ...discount, tag };
     }
 
-    async getDiscount(query) {
+    private async getDiscount(query) {
         return await this.DiscountModel.findOne(query).sort({ createdAt: "desc" }).exec();
     }
 
-    calcDiscount(discount, coursePrice) {
+    private calcDiscount(discount, coursePrice) {
         let discountedPrice = coursePrice;
         if (discount.amountType == "percent") discountedPrice = coursePrice - (coursePrice * discount.amount) / 100;
         else discountedPrice = coursePrice - discount.amount;
