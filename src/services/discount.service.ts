@@ -11,6 +11,7 @@ import { loadUser } from "src/helpers/auth.helper";
 interface courseDiscountOutput {
     discountAmount: number;
     discountType: string;
+    discountedPrice: number;
     tag: string;
 }
 
@@ -72,7 +73,7 @@ export class DiscountService {
         let discountSingleUserPrice = course.price;
         if (!!discountSingleUser) discountSingleUserPrice = this.calcDiscount(discountSingleUser, course.price);
 
-        let maxDiscountPrice = Math.max(
+        let maxDiscountPrice = Math.min(
             discountAllCoursesPrice,
             discountSingleCoursePrice,
             discountCourseGroupPrice,
@@ -80,22 +81,47 @@ export class DiscountService {
             discountSingleUserPrice,
         );
 
-        let discount = { discountAmount: 0, discountType: "percent" };
+        let discount = { discountAmount: 0, discountType: "percent", discountedPrice: course.price };
         switch (maxDiscountPrice) {
             case discountAllCoursesPrice:
-                if (discountAllCourses) discount = { discountAmount: discountAllCourses.amount, discountType: discountAllCourses.amountType };
+                if (discountAllCourses)
+                    discount = {
+                        discountAmount: discountAllCourses.amount,
+                        discountType: discountAllCourses.amountType,
+                        discountedPrice: discountAllCoursesPrice,
+                    };
                 break;
             case discountSingleCoursePrice:
-                if (discountSingleCourse) discount = { discountAmount: discountSingleCourse.amount, discountType: discountSingleCourse.amountType };
+                if (discountSingleCourse)
+                    discount = {
+                        discountAmount: discountSingleCourse.amount,
+                        discountType: discountSingleCourse.amountType,
+                        discountedPrice: discountSingleCoursePrice,
+                    };
                 break;
             case discountCourseGroupPrice:
-                if (discountCourseGroup) discount = { discountAmount: discountCourseGroup.amount, discountType: discountCourseGroup.amountType };
+                if (discountCourseGroup)
+                    discount = {
+                        discountAmount: discountCourseGroup.amount,
+                        discountType: discountCourseGroup.amountType,
+                        discountedPrice: discountCourseGroupPrice,
+                    };
                 break;
             case discountTeacherCoursesPrice:
-                if (discountTeacherCourses) discount = { discountAmount: discountTeacherCourses.amount, discountType: discountTeacherCourses.amountType };
+                if (discountTeacherCourses)
+                    discount = {
+                        discountAmount: discountTeacherCourses.amount,
+                        discountType: discountTeacherCourses.amountType,
+                        discountedPrice: discountTeacherCoursesPrice,
+                    };
                 break;
             case discountSingleUserPrice:
-                if (discountSingleUser) discount = { discountAmount: discountSingleUser.amount, discountType: discountSingleUser.amountType };
+                if (discountSingleUser)
+                    discount = {
+                        discountAmount: discountSingleUser.amount,
+                        discountType: discountSingleUser.amountType,
+                        discountedPrice: discountSingleUserPrice,
+                    };
                 break;
         }
 

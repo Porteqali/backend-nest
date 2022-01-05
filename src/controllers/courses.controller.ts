@@ -201,17 +201,19 @@ export class CoursesController {
 
     @Get("/course/:id")
     async getCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const course = await this.CourseModel.findOne({ _id: req.params.id, status: "active" })
+        const courseItem = await this.CourseModel.findOne({ _id: req.params.id, status: "active" })
             .select("-oid -status -commission")
             .populate("teacher", "image name family description")
             .populate("groups", "-_id icon name topGroup")
             .exec();
-        if (!course) return res.status(404).end();
+        if (!courseItem) return res.status(404).end();
+        const course: any = courseItem.toJSON();
 
         // count the views
         await this.CourseModel.updateOne({ _id: req.params.id, status: "active" }, { viewCount: course.viewCount + 1 }).exec();
 
         const discountAndTag = await this.discountService.courseDiscount(req, course._id);
+        course.discountInfo = discountAndTag;
 
         // check if user bougth the course
         const loadedUser = await loadUser(req);
