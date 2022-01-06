@@ -4,6 +4,7 @@ export type DiscountDocument = Discount & Document;
 
 export const DiscountSchema = new Schema({
     name: { type: String, required: true },
+    code: { type: String },
     amount: { type: Number },
     amountType: {
         type: String,
@@ -34,6 +35,7 @@ export const DiscountSchema = new Schema({
 export interface Discount {
     _id: Schema.Types.ObjectId;
     name: string;
+    code?: string;
     amount: number;
     amountType: string;
     type: string;

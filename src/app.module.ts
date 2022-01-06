@@ -27,6 +27,7 @@ import { SearchController } from "./controllers/web/search.controller";
 import { SearchService } from "./services/search.service";
 import { DiscountService } from "./services/discount.service";
 import { DiscountSchema } from "./models/discount.schema";
+import { CartModule } from "./modules/cart.module";
 
 @Module({
     imports: [
@@ -40,6 +41,7 @@ import { DiscountSchema } from "./models/discount.schema";
         CollaborateRequestModule,
         CourseGroupModule,
         CoursesModule,
+        CartModule,
         ConfigModule.forRoot(),
         MongooseModule.forRoot(process.env.MONGO_URL),
         MongooseModule.forFeature([
@@ -68,8 +70,9 @@ export class AppModule implements NestModule {
 
             { path: "comments/send", method: RequestMethod.POST },
             { path: "like-article/*", method: RequestMethod.POST },
-
             { path: "/course/*/score", method: RequestMethod.POST },
+
+            { path: "/payment", method: RequestMethod.ALL },
         );
 
         consumer.apply(GuestMiddleware).forRoutes(

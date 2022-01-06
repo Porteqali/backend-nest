@@ -44,7 +44,7 @@ export const UserCourseSchema = new Schema({
 export interface UserCourse {
     _id: Schema.Types.ObjectId;
     user: User | Schema.Types.ObjectId;
-    course: Course | Schema.Types.ObjectId;
+    course: Course | Schema.Types.ObjectId | any;
     marketer?: User | Schema.Types.ObjectId;
     teacherCut: number;
     marketerCut?: number;
