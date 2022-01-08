@@ -8,7 +8,7 @@ import { CourseDocument } from "src/models/courses.schema";
 import { DiscountDocument } from "src/models/discount.schema";
 import { loadUser } from "src/helpers/auth.helper";
 
-interface courseDiscountOutput {
+export interface courseDiscountOutput {
     discountAmount: number;
     discountType: string;
     discountedPrice: number;

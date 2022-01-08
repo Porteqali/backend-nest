@@ -26,12 +26,12 @@ export const UserSchema = new Schema({
         default: "user",
         required: true,
     },
-    walletBalance: {
+    walletBalance: { // in tomans
         type: Number,
         default: 0,
         required: true,
     },
-    commissionBalance: {
+    commissionBalance: { // in tomans
         type: Number,
         default: 0,
         required: true,
@@ -57,6 +57,7 @@ export const UserSchema = new Schema({
             ref: "User",
         },
         period: { type: Number }, // in days
+        endsAt: { type: Date, default: new Date(Date.now()) },
     }),
 
     // marketer info
@@ -109,7 +110,7 @@ export interface User {
     permissions: string[];
     permissionGroup?: PermissionGroup & Schema.Types.ObjectId;
     createdAt: Date;
-    registeredWith?: RegisteredWith[];
+    registeredWith?: RegisteredWith;
 
     // marketer info
     address?: string;
@@ -132,6 +133,7 @@ export interface User {
 export interface RegisteredWith {
     marketer: User | Schema.Types.ObjectId;
     period: number;
+    endsAt: Date;
 }
 
 export interface Social {

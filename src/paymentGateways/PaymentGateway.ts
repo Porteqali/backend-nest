@@ -1,17 +1,9 @@
 import { Request } from "express";
-import { ForbiddenException, Injectable } from "@nestjs/common";
 import { GatewayInterface, TransactionResponse, VerficationResponseInterface } from "src/interfaces/Gateway";
-import { Gateway as Zarinpal } from "src/paymentGateways/zarinpal";
+import { Gateway as Zarinpal } from "src/paymentGateways/methods/zarinpal";
+import { Gateway as Wallet } from "src/paymentGateways/methods/wallet";
 
-interface cartInfo {
-    totalPrice: number;
-    totalDiscount: number;
-    totalDiscountPercent: number;
-    payablePrice: number;
-}
-
-@Injectable()
-export class PaymentGatewayService {
+export class PaymentGateway {
     public method: string;
     private apiKey: string;
     private gateway: GatewayInterface;
@@ -23,10 +15,12 @@ export class PaymentGatewayService {
                 this.apiKey = process.env.ZARINPAL_KEY;
                 this.gateway = new Zarinpal();
                 break;
-            case "pay_ir":
-                throw new ForbiddenException();
-                // this.apiKey = process.env.PAY_IR_KEY;
-                // this.gateway = new PayIr();
+            case "wallet":
+                this.apiKey = "";
+                this.gateway = new Wallet();
+                break;
+            default:
+                this.gateway = null;
                 break;
         }
     }

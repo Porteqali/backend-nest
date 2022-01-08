@@ -5,8 +5,10 @@ import { GatewayInterface, TransactionResponse, VerficationResponseInterface } f
 export class Gateway implements GatewayInterface {
     public async getIdentifier(apiKey: string, amount: number, redirect: string, description: string, mobile?): Promise<string> {
         let identifier = "";
+        const url = `https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
+        // const url = `https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
         await axios
-            .post("https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json", {
+            .post(url, {
                 MerchantID: apiKey,
                 Amount: amount,
                 CallbackURL: redirect,
@@ -23,18 +25,16 @@ export class Gateway implements GatewayInterface {
     }
 
     public getGatewayUrl(identifier: string): string {
-        return `https://www.zarinpal.com/pg/StartPay/${identifier}`;
-        return `https://www.zarinpal.com/pg/StartPay/${identifier}/ZarinGate`;
+        return `https://sandbox.zarinpal.com/pg/StartPay/${identifier}`;
+        // return `https://www.zarinpal.com/pg/StartPay/${identifier}`;
+        // return `https://www.zarinpal.com/pg/StartPay/${identifier}/ZarinGate`;
     }
 
     public getTransactionResponse(req: Request): TransactionResponse {
-        const response = {
-            status: "",
+        return {
+            status: req.query.Status == "OK" ? "OK" : "NOK",
             identifier: req.query.Authority.toString(),
         };
-        if (req.query.Status == "OK") response.status = "OK";
-        else response.status = "NOK";
-        return response;
     }
 
     public async verify(apiKey: string, identifier: string, extra?): Promise<VerficationResponseInterface> {

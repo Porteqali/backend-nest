@@ -73,6 +73,7 @@ export class AppModule implements NestModule {
             { path: "/course/*/score", method: RequestMethod.POST },
 
             { path: "/payment", method: RequestMethod.ALL },
+            { path: "/payment-callback/*", method: RequestMethod.ALL },
         );
 
         consumer.apply(GuestMiddleware).forRoutes(
