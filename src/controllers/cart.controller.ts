@@ -134,7 +134,7 @@ export class CartController {
         if (method == "wallet") {
             // check if user have enough money in wallet
             if (req.user.user.walletBalance < userCourses[0].totalPrice) {
-                return res.json({ redirectUrl: "/purchase-result?status=422&message=WalletBalanceNotEnough" });
+                return res.json({ redirectUrl: "/purchase-result?status=421&message=WalletBalanceNotEnough" });
             }
         }
 
