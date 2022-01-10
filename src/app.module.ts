@@ -65,6 +65,11 @@ export class AppModule implements NestModule {
             { path: "auth/logout", method: RequestMethod.POST },
 
             { path: "users/info", method: RequestMethod.GET },
+            { path: "users/edit-info", method: RequestMethod.POST },
+            { path: "users/edit-avatar-image", method: RequestMethod.POST },
+            { path: "users/delete-avatar-image", method: RequestMethod.DELETE },
+            { path: "users/send-verification-code", method: RequestMethod.POST },
+            { path: "users/verify", method: RequestMethod.POST },
 
             { path: "admin/*", method: RequestMethod.ALL },
 
