@@ -28,6 +28,8 @@ import { SearchService } from "./services/search.service";
 import { DiscountService } from "./services/discount.service";
 import { DiscountSchema } from "./models/discount.schema";
 import { CartModule } from "./modules/cart.module";
+import { UserProfileController } from "./controllers/web/userProfile.controller";
+import { UserCourseSchema } from "./models/userCourses.schema";
 
 @Module({
     imports: [
@@ -48,11 +50,12 @@ import { CartModule } from "./modules/cart.module";
             { name: "Session", schema: SessionSchema },
             { name: "User", schema: UserSchema },
             { name: "Course", schema: CourseSchema },
+            { name: "UserCourse", schema: UserCourseSchema },
             { name: "Article", schema: ArticleSchema },
             { name: "Discount", schema: DiscountSchema },
         ]),
     ],
-    controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController, TeachersController, SearchController],
+    controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController, TeachersController, SearchController, UserProfileController],
     providers: [AppService, SearchService, DiscountService],
     exports: [],
 })
@@ -64,6 +67,13 @@ export class AppModule implements NestModule {
             { path: "auth/refresh", method: RequestMethod.POST },
             { path: "auth/logout", method: RequestMethod.POST },
 
+            { path: "comments/send", method: RequestMethod.POST },
+            { path: "like-article/*", method: RequestMethod.POST },
+            { path: "/course/*/score", method: RequestMethod.POST },
+
+            { path: "/payment", method: RequestMethod.ALL },
+            { path: "/payment-callback/*", method: RequestMethod.ALL },
+
             { path: "users/info", method: RequestMethod.GET },
             { path: "users/edit-info", method: RequestMethod.POST },
             { path: "users/edit-avatar-image", method: RequestMethod.POST },
@@ -71,14 +81,9 @@ export class AppModule implements NestModule {
             { path: "users/send-verification-code", method: RequestMethod.POST },
             { path: "users/verify", method: RequestMethod.POST },
 
+            { path: "user-profile/courses", method: RequestMethod.GET },
+
             { path: "admin/*", method: RequestMethod.ALL },
-
-            { path: "comments/send", method: RequestMethod.POST },
-            { path: "like-article/*", method: RequestMethod.POST },
-            { path: "/course/*/score", method: RequestMethod.POST },
-
-            { path: "/payment", method: RequestMethod.ALL },
-            { path: "/payment-callback/*", method: RequestMethod.ALL },
         );
 
         consumer.apply(GuestMiddleware).forRoutes(
