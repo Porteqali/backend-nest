@@ -52,7 +52,7 @@ export class CartController {
         return res.json(cartInfo);
     }
 
-    @Post("payment")
+    @Post("course-payment")
     async payment(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const method = req.body.method || "wallet";
         const list = req.body.list;
@@ -97,8 +97,8 @@ export class CartController {
             identifier = await paymentGateway.getIdentifier(
                 paymentGateway.getApiKey(),
                 cartInfo.payablePrice,
-                process.env.PAYMENTS_CALLBACK_URL.replace(":method", method),
-                "خرید از گروه آموزشی پرتقال",
+                `${process.env.PAYMENT_CALLBACK_BASE_URL}/course/${method}`,
+                "خرید دوره از گروه آموزشی پرتقال",
                 req.user.user.mobile,
             );
         } catch (e) {
@@ -116,7 +116,7 @@ export class CartController {
         return res.json({ url: paymentGateway.getGatewayUrl(identifier) });
     }
 
-    @Get("payment-callback/:method")
+    @Get("course-payment-callback/:method")
     async paymentCallback(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const method = req.params.method || null;
         if (!method) return res.json({ redirectUrl: "/purchase-result?status=422&message=NoMethod" });

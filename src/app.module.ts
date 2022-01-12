@@ -30,6 +30,9 @@ import { DiscountSchema } from "./models/discount.schema";
 import { CartModule } from "./modules/cart.module";
 import { UserProfileController } from "./controllers/web/userProfile.controller";
 import { UserCourseSchema } from "./models/userCourses.schema";
+import { UserWalletController } from "./controllers/web/userWallet.controller";
+import { WalletTransactionSchema } from "./models/walletTransactions.schema";
+import { CommentSchema } from "./models/comments.schema";
 
 @Module({
     imports: [
@@ -51,11 +54,22 @@ import { UserCourseSchema } from "./models/userCourses.schema";
             { name: "User", schema: UserSchema },
             { name: "Course", schema: CourseSchema },
             { name: "UserCourse", schema: UserCourseSchema },
+            { name: "Comment", schema: CommentSchema },
             { name: "Article", schema: ArticleSchema },
             { name: "Discount", schema: DiscountSchema },
+            { name: "WalletTransaction", schema: WalletTransactionSchema },
         ]),
     ],
-    controllers: [AppController, AboutUsController, ContactInfoController, LatestNewsController, TeachersController, SearchController, UserProfileController],
+    controllers: [
+        AppController,
+        AboutUsController,
+        ContactInfoController,
+        LatestNewsController,
+        TeachersController,
+        SearchController,
+        UserProfileController,
+        UserWalletController,
+    ],
     providers: [AppService, SearchService, DiscountService],
     exports: [],
 })
@@ -71,8 +85,8 @@ export class AppModule implements NestModule {
             { path: "like-article/*", method: RequestMethod.POST },
             { path: "/course/*/score", method: RequestMethod.POST },
 
-            { path: "/payment", method: RequestMethod.ALL },
-            { path: "/payment-callback/*", method: RequestMethod.ALL },
+            { path: "/course-payment", method: RequestMethod.ALL },
+            { path: "/course-payment-callback/*", method: RequestMethod.ALL },
 
             { path: "users/info", method: RequestMethod.GET },
             { path: "users/edit-info", method: RequestMethod.POST },
@@ -82,6 +96,9 @@ export class AppModule implements NestModule {
             { path: "users/verify", method: RequestMethod.POST },
 
             { path: "user-profile/courses", method: RequestMethod.GET },
+            { path: "user-profile/comments", method: RequestMethod.GET },
+            { path: "wallet-payment", method: RequestMethod.ALL },
+            { path: "wallet-payment-callback/*", method: RequestMethod.ALL },
 
             { path: "admin/*", method: RequestMethod.ALL },
         );
