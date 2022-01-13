@@ -6,12 +6,14 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { CommentDocument } from "src/models/comments.schema";
+import { WalletTransactionDocument } from "src/models/walletTransactions.schema";
 
 @Controller("user-profile")
 export class UserProfileController {
     constructor(
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
         @InjectModel("Comment") private readonly CommentModel: Model<CommentDocument>,
+        @InjectModel("WalletTransaction") private readonly WalletTransactionModel: Model<WalletTransactionDocument>,
     ) {}
 
     @Get("/courses")
@@ -127,6 +129,92 @@ export class UserProfileController {
             if (row.article[0]) row.item = { name: row.article[0].title, image: row.article[0].image, type: "مقاله" };
             return row;
         });
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+        });
+    }
+
+    @Get("/transactions/wallet")
+    async getUserWalletTransactions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 10;
+
+        // the base query object
+        let query = {
+            user: req.user.user._id,
+        };
+
+        // sort
+        let sort = { createdAt: "desc" };
+
+        // making the model with query
+        let data = this.WalletTransactionModel.aggregate();
+        data.match(query);
+        data.sort(sort);
+        data.project("chargeAmount paidAmount transactionCode paymentMethod status createdAt");
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        const results = await data.exec().catch((e) => {
+            throw e;
+        });
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+        });
+    }
+
+    @Get("/transactions/course")
+    async getUserCourseTransactions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 10;
+
+        // the base query object
+        let query = {
+            user: req.user.user._id,
+        };
+
+        // sort
+        let sort = { createdAt: "desc" };
+
+        // making the model with query
+        // let data = this.UserCourseModel.aggregate([{ $group: { _id: "$authority" } }]);
+        let data = this.UserCourseModel.aggregate();
+        data.match(query);
+        data.lookup({
+            from: "courses",
+            localField: "course",
+            foreignField: "_id",
+            as: "course",
+        });
+        data.sort(sort);
+        data.project("course.image course.name totalPrice paidAmount authority transactionCode paymentMethod status createdAt");
+        data.group({ _id: "$authority", info: { $push: "$$ROOT" } });
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        const results = await data.exec().catch((e) => {
+            throw e;
+        });
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
 
         return res.json({
             records: results[0].data,

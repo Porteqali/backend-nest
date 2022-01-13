@@ -80,7 +80,8 @@ export class UserWalletController {
             .verify(paymentGateway.getApiKey(), transactionResponse.identifier, { amount: walletTransaction.chargeAmount })
             .then(async (response) => {
                 verficationResponse = response;
-                return true;
+                if (response.status > 0) return true;
+                else return false;
             })
             .catch(async (error) => {
                 // change the booked record status and save error
@@ -91,7 +92,12 @@ export class UserWalletController {
                 return false;
             });
 
+        console.log(verficationResponse);
+        console.log(transactionVerified);
+
         if (!transactionVerified) return res.json({ redirectUrl: "/purchase-result?status=412&message=TransactionFailedAndWillBounce" });
+
+        if (walletTransaction.status != "waiting_for_payment") return res.json({ redirectUrl: "/purchase-result?status=413&message=TransactionIsDoneBefore" });
 
         const transactionCode = verficationResponse.transactionCode;
         await this.WalletTransactionModel.updateOne(

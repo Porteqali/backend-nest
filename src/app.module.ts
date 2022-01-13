@@ -88,6 +88,9 @@ export class AppModule implements NestModule {
             { path: "/course-payment", method: RequestMethod.ALL },
             { path: "/course-payment-callback/*", method: RequestMethod.ALL },
 
+            { path: "wallet-payment", method: RequestMethod.ALL },
+            { path: "wallet-payment-callback/*", method: RequestMethod.ALL },
+
             { path: "users/info", method: RequestMethod.GET },
             { path: "users/edit-info", method: RequestMethod.POST },
             { path: "users/edit-avatar-image", method: RequestMethod.POST },
@@ -97,8 +100,8 @@ export class AppModule implements NestModule {
 
             { path: "user-profile/courses", method: RequestMethod.GET },
             { path: "user-profile/comments", method: RequestMethod.GET },
-            { path: "wallet-payment", method: RequestMethod.ALL },
-            { path: "wallet-payment-callback/*", method: RequestMethod.ALL },
+            { path: "user-profile/transactions/wallet", method: RequestMethod.GET },
+            { path: "user-profile/transactions/course", method: RequestMethod.GET },
 
             { path: "admin/*", method: RequestMethod.ALL },
         );

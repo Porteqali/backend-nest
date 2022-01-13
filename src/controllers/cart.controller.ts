@@ -149,7 +149,8 @@ export class CartController {
             .verify(paymentGateway.getApiKey(), transactionResponse.identifier, { amount: userCourses[0].totalPrice })
             .then(async (response) => {
                 verficationResponse = response;
-                return true;
+                if (response.status > 0) return true;
+                else return false;
             })
             .catch(async (error) => {
                 // change the booked record status and save error
