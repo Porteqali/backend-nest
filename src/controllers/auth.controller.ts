@@ -221,10 +221,9 @@ export class AuthController {
         return res.json({ token, user: req.user });
     }
 
-    @Post("logout")
+    @Post("check-if-admin")
     async logout(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        req.user = req.user["payload"].user_id;
+        if (req.user.user.role !== "admin") throw new ForbiddenException();
         return res.end();
     }
 }
