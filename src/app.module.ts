@@ -33,6 +33,7 @@ import { UserCourseSchema } from "./models/userCourses.schema";
 import { UserWalletController } from "./controllers/web/userWallet.controller";
 import { WalletTransactionSchema } from "./models/walletTransactions.schema";
 import { CommentSchema } from "./models/comments.schema";
+import { SeederModule } from "./modules/seeder.module";
 
 @Module({
     imports: [
@@ -47,6 +48,7 @@ import { CommentSchema } from "./models/comments.schema";
         CourseGroupModule,
         CoursesModule,
         CartModule,
+        SeederModule,
         ConfigModule.forRoot(),
         MongooseModule.forRoot(process.env.MONGO_URL),
         MongooseModule.forFeature([

@@ -36,8 +36,6 @@ export class UsersController {
             .exec();
         if (!user) throw NotFoundException;
 
-        // TODO
-        // test this
         const permissions = new Set();
         if (!!user.permissions) {
             user.permissions.forEach((permission) => {
@@ -57,7 +55,7 @@ export class UsersController {
             email: user.email,
             mobile: user.mobile,
             wallet: user.walletBalance,
-            permissions: permissions,
+            permissions: [...permissions],
         });
     }
 

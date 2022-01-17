@@ -14,6 +14,10 @@ export const PermissionSchema = new Schema({
         type: String,
         required: true,
     },
+    groupLabel: {
+        type: String,
+        required: true,
+    },
     createdAt: {
         type: Date,
         default: new Date(Date.now()),
@@ -24,6 +28,6 @@ export interface Permission {
     _id: string;
     label: string;
     group: string;
-    type: string;
+    groupLabel: string;
     createdAt: Date;
 }
