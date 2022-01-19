@@ -37,16 +37,8 @@ export class UsersController {
         if (!user) throw NotFoundException;
 
         const permissions = new Set();
-        if (!!user.permissions) {
-            user.permissions.forEach((permission) => {
-                permissions.add(permission);
-            });
-        }
-        if (!!user.permissionGroup) {
-            user.permissionGroup.permissions.forEach((permission) => {
-                permissions.add(permission);
-            });
-        }
+        if (!!user.permissions) user.permissions.forEach((permission) => permissions.add(permission));
+        if (!!user.permissionGroup) user.permissionGroup.permissions.forEach((permission) => permissions.add(permission));
 
         return res.json({
             image: user.image,

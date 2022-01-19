@@ -51,19 +51,32 @@ export class AuthService {
         return user;
     }
 
-    async authorize(req: Request, role: string, permissions: string[] = []) {
+    async authorize(req: Request, role: string, permissionsToCheck: string[] = [], style: "OR" | "AND" = "OR") {
         // check the role
         if (req.user["user"].role.name !== role) return false;
 
-        // TODO
-        // list the user's permissions base on both permissionGroup and permissions
-        // then check the requested permission list agains it
+        // get the user
+        const user = await this.UserModel.findOne({ _id: req.user["payload"].user_id })
+            .select("-_v -password -createdAt")
+            .populate("permissionGroup", "-_id name permissions")
+            .exec();
+        if (!user) return false;
 
-        // check the permission list
-        for (let i = 0; i < permissions.length; i++) {
-            if (!req.user["user"].role.permissions.includes(permissions[i])) return false;
+        // list the user's permissions base on both permissionGroup and permissions
+        const userPermissionsSet = new Set();
+        if (!!user.permissions) user.permissions.forEach((permission) => userPermissionsSet.add(permission));
+        if (!!user.permissionGroup) user.permissionGroup.permissions.forEach((permission) => userPermissionsSet.add(permission));
+        const userPermissions = [...userPermissionsSet];
+        
+        // then check the requested permission list agains it
+        if (style == "AND") {
+            for (let i = 0; i < permissionsToCheck.length; i++) if (userPermissions.indexOf(permissionsToCheck[i]) == -1) return false;
+            return true;
+        } else {
+            for (let i = 0; i < permissionsToCheck.length; i++) if (userPermissions.indexOf(permissionsToCheck[i]) != -1) return true;
+            return false;
         }
 
-        return true;
+        return false;
     }
 }
