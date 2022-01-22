@@ -8,6 +8,7 @@ import { PermissionSchema } from "src/models/permissions.schema";
 import { SessionSchema } from "src/models/sessions.schema";
 import { UserSchema } from "src/models/users.schema";
 import { ArticleSchema } from "src/models/articles.schema";
+import { AdminListController } from "src/controllers/admin/adminList.controller";
 
 @Module({
     imports: [
@@ -20,7 +21,7 @@ import { ArticleSchema } from "src/models/articles.schema";
             { name: "Article", schema: ArticleSchema },
         ]),
     ],
-    controllers: [PermissionGroupController],
+    controllers: [PermissionGroupController, AdminListController],
     providers: [AuthService],
     exports: [],
 })
