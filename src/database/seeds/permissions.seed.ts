@@ -15,6 +15,7 @@ export const records = [
     { _id: "admin.marketers.add", label: "ایجاد بازاریاب جدید", group: "marketers", groupLabel: "بازاریابان" },
     { _id: "admin.marketers.edit", label: "ویرایش بازاریابان", group: "marketers", groupLabel: "بازاریابان" },
     { _id: "admin.marketers.delete", label: "حذف بازاریاب", group: "marketers", groupLabel: "بازاریابان" },
+    { _id: "admin.marketers.pay", label: "پرداخت کمیسیون بازاریاب", group: "marketers", groupLabel: "بازاریابان" },
 
     // { _id: "admin.marketers-commissions.view", label: "مشاهده لیست ادمین ها", group: "marketers-commissions", groupLabel: "کمیسیون بازاریابان" },
     // { _id: "admin.marketers-commissions.add", label: "ایجاد ادمین جدید", group: "marketers-commissions", groupLabel: "کمیسیون بازاریابان" },

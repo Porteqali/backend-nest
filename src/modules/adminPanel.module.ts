@@ -9,6 +9,7 @@ import { SessionSchema } from "src/models/sessions.schema";
 import { UserSchema } from "src/models/users.schema";
 import { ArticleSchema } from "src/models/articles.schema";
 import { AdminListController } from "src/controllers/admin/adminList.controller";
+import { MarketerController } from "src/controllers/admin/marketer.controller";
 
 @Module({
     imports: [
@@ -21,7 +22,7 @@ import { AdminListController } from "src/controllers/admin/adminList.controller"
             { name: "Article", schema: ArticleSchema },
         ]),
     ],
-    controllers: [PermissionGroupController, AdminListController],
+    controllers: [PermissionGroupController, AdminListController, MarketerController],
     providers: [AuthService],
     exports: [],
 })

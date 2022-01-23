@@ -26,16 +26,10 @@ export const UserSchema = new Schema({
         default: "user",
         required: true,
     },
-    walletBalance: { // in tomans
-        type: Number,
-        default: 0,
-        required: true,
-    },
-    commissionBalance: { // in tomans
-        type: Number,
-        default: 0,
-        required: true,
-    },
+
+    walletBalance: { type: Number, default: 0, required: true }, // in tomans
+    commissionBalance: { type: Number, default: 0, required: true }, // in tomans
+
     permissions: [{ type: String }],
     permissionGroup: {
         type: Schema.Types.ObjectId,
@@ -43,6 +37,7 @@ export const UserSchema = new Schema({
         default: null,
         required: true,
     },
+    
     status: {
         type: String,
         enum: ["active", "deactive"],
@@ -61,6 +56,7 @@ export const UserSchema = new Schema({
     }),
 
     // marketer info
+    marketingUrlCode: { type: String },
     address: { type: String },
     postalCode: { type: Number },
     marketingCode: { type: String },
@@ -113,6 +109,7 @@ export interface User {
     registeredWith?: RegisteredWith;
 
     // marketer info
+    marketingUrlCode?: string;
     address?: string;
     postalCode?: number;
     marketingCode?: string;
