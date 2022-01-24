@@ -37,7 +37,7 @@ export const UserSchema = new Schema({
         default: null,
         required: true,
     },
-    
+
     status: {
         type: String,
         enum: ["active", "deactive"],
@@ -56,7 +56,6 @@ export const UserSchema = new Schema({
     }),
 
     // marketer info
-    marketingUrlCode: { type: String },
     address: { type: String },
     postalCode: { type: Number },
     marketingCode: { type: String },
@@ -65,8 +64,8 @@ export const UserSchema = new Schema({
     // teacher info
     groups: [{ type: Schema.Types.ObjectId, ref: "CourseGroup" }],
     description: { type: String },
-    nationalCode: { type: Number },
-    nationalNumber: { type: Number },
+    nationalCode: { type: Number }, // کد ملی
+    nationalNumber: { type: Number }, // شماره شناسنامه
     birthDate: { type: Date },
     fatherName: { type: String },
     commission: {
@@ -109,7 +108,6 @@ export interface User {
     registeredWith?: RegisteredWith;
 
     // marketer info
-    marketingUrlCode?: string;
     address?: string;
     postalCode?: number;
     marketingCode?: string;

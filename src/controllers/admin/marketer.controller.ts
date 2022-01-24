@@ -9,11 +9,11 @@ import { hash } from "bcrypt";
 import { UserDocument } from "src/models/users.schema";
 import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
 import { AuthService } from "src/services/auth.service";
-import { CreatePermissionGroupDto } from "src/dto/adminPanel/permissionGroups.dto";
 import { FilesInterceptor } from "@nestjs/platform-express";
-import { CreateNewAdminDto, UpdateNewAdminDto } from "src/dto/adminPanel/adminList.dto";
 import { randStr } from "src/helpers/str.helper";
 import * as sharp from "sharp";
+import { CreateNewMarketerDto, PayMarketerCommissionDto, UpdateMarketerDto } from "src/dto/adminPanel/marketers.dto";
+import { CommissionPaymentDocument } from "src/models/commissionPayments.schema";
 
 @Controller("admin/marketers")
 export class MarketerController {
@@ -21,7 +21,128 @@ export class MarketerController {
         private readonly authService: AuthService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
+        @InjectModel("CommissionPayment") private readonly CommissionPaymentModel: Model<CommissionPaymentDocument>,
     ) {}
+
+    @Post("/pay/:id")
+    async payCommission(@Body() input: PayMarketerCommissionDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.marketers.pay"])) throw new ForbiddenException();
+
+        if (parseInt(input.amount) <= 0) throw new UnprocessableEntityException([{ property: "amount", errors: ["مبلغ را وارد کنید!"] }]);
+
+        const marketer = await this.UserModel.findOne({ _id: req.params.id, role: "marketer" }).exec();
+        if (!marketer) throw new NotFoundException([{ property: "marketer", errors: ["بازاریاب پیدا نشد!"] }]);
+
+        // check if commission balance is equal or less than amount
+        if (marketer.commissionBalance < parseInt(input.amount)) {
+            throw new UnprocessableEntityException([{ property: "amount", errors: ["مبلغ وارد شده بیشتر از کمیسیون کاربر است!"] }]);
+        }
+
+        await this.CommissionPaymentModel.create({
+            user: marketer._id,
+            commissionAmountBeforePayment: marketer.commissionBalance,
+            payedAmount: parseInt(input.amount),
+            commissionAmountAfterPayment: marketer.commissionBalance + parseInt(input.amount),
+            cardNumber: input.cardNumber || null,
+            bank: input.bank || null,
+        });
+
+        // update marketer's commissionBalance
+        await this.UserModel.updateOne({ _id: req.params.id }, { commissionBalance: marketer.commissionBalance - parseInt(input.amount) }).exec();
+
+        return res.end();
+    }
+
+    @Get("/customers/:id")
+    async getMarketerCustomerList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {}
+
+    @Get("/commissions/:id")
+    async getMarketerCommissionList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {}
+
+    @Get("/commission-payments/:id")
+    async getMarketerCommissionPaymentList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+
+        const search = req.query.search ? req.query.search.toString() : "";
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 25;
+
+        // sort
+        let sort = {};
+        const sortType = req.query.sort_type ? req.query.sort_type : "asc";
+        switch (req.query.sort) {
+            case "مبلغ پرداختی کمیسیون":
+                sort = { payedAmount: sortType };
+                break;
+            case "مبلغ مانده کمیسیون":
+                sort = { commissionAmountAfterPayment: sortType };
+                break;
+            case "شماره حساب | شماره کارت":
+                sort = { cardNumber: sortType };
+                break;
+            case "بانک":
+                sort = { bank: sortType };
+                break;
+            default:
+                sort = { createdAt: sortType };
+                break;
+        }
+
+        // the base query object
+        let query = {
+            user: new Types.ObjectId(req.params.id),
+        };
+
+        // filters
+        // ...
+
+        // making the model with query
+        let data = this.CommissionPaymentModel.aggregate();
+        data.match(query);
+        if (!!search) {
+            data.match({
+                $or: [
+                    { commissionAmountBeforePayment: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { payedAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { commissionAmountAfterPayment: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { cardNumber: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { bank: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                ],
+            });
+        }
+        data.sort(sort);
+        data.project("commissionAmountBeforePayment payedAmount commissionAmountAfterPayment cardNumber bank createdAt");
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        let error = false;
+        const results = await data.exec().catch((e) => (error = true));
+        if (error) throw new InternalServerErrorException();
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        // get the user
+        const user = await this.UserModel.findOne({ _id: req.params.id }).exec();
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+            user: {
+                image: user.image,
+                name: user.name,
+                family: user.family,
+                email: user.email,
+            },
+        });
+    }
+
+    // =============================================================================
 
     @Get("/")
     async getMarketerList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
@@ -142,7 +263,7 @@ export class MarketerController {
     @UseInterceptors(FilesInterceptor("files"))
     async addMarketer(
         @UploadedFiles() files: Array<Express.Multer.File>,
-        @Body() input: CreateNewAdminDto,
+        @Body() input: CreateNewMarketerDto,
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
@@ -151,6 +272,11 @@ export class MarketerController {
         const isEmailExists = await this.UserModel.exists({ email: input.email });
         if (isEmailExists) {
             throw new UnprocessableEntityException([{ property: "name", errors: ["ایمیل قبلا استفاده شده"] }]);
+        }
+
+        const isMarketingCodeExists = await this.UserModel.exists({ marketingCode: input.marketingCode });
+        if (isMarketingCodeExists) {
+            throw new UnprocessableEntityException([{ property: "name", errors: ["کد بازاریابی قبلا استفاده شده"] }]);
         }
 
         if (input.password !== input.passwordConfirmation) {
@@ -181,9 +307,15 @@ export class MarketerController {
             name: input.name,
             family: input.family,
             email: input.email,
-            permissionGroup: input.permissionGroup,
             password: await hash(input.password, 5),
             status: input.status,
+            mobile: input.mobile,
+            tel: input.tel || null,
+            address: input.address || null,
+            postalCode: input.postalCode || null,
+            nationalCode: input.nationalCode || null,
+            period: input.period,
+            marketingCode: input.marketingCode,
             role: "marketer",
         });
 
@@ -194,7 +326,7 @@ export class MarketerController {
     @UseInterceptors(FilesInterceptor("files"))
     async editMarketer(
         @UploadedFiles() files: Array<Express.Multer.File>,
-        @Body() input: UpdateNewAdminDto,
+        @Body() input: UpdateMarketerDto,
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
@@ -205,17 +337,18 @@ export class MarketerController {
             throw new UnprocessableEntityException([{ property: "name", errors: ["ایمیل قبلا استفاده شده"] }]);
         }
 
+        const isMarketingCodeExists = await this.UserModel.exists({ marketingCode: input.marketingCode });
+        if (isMarketingCodeExists) {
+            throw new UnprocessableEntityException([{ property: "name", errors: ["کد بازاریابی قبلا استفاده شده"] }]);
+        }
+
         if (!!input.password && !!input.passwordConfirmation && input.password !== input.passwordConfirmation) {
             throw new UnprocessableEntityException([{ property: "password", errors: ["رمزعبورها باهم همخوانی ندارند"] }]);
         }
 
-        // find admin
-        const admin = await this.UserModel.findOne({ _id: req.params.id }).exec();
-        if (!admin) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
-
-        // find permission group
-        const permissionGroup = await this.PermissionGroupModel.findOne({ _id: input.permissionGroup }).exec();
-        if (!admin) throw new NotFoundException([{ property: "permissionGroup", errors: ["گروه دسترسی پیدا نشد"] }]);
+        // find marketer
+        const marketer = await this.UserModel.findOne({ _id: req.params.id }).exec();
+        if (!marketer) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
 
         let imageLink = "";
         if (!!files.length) {
@@ -228,7 +361,7 @@ export class MarketerController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(admin.image.replace("/file/", "storage/")).catch((e) => {});
+            await unlink(marketer.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));
@@ -238,10 +371,10 @@ export class MarketerController {
 
             imageLink = url.replace("storage/", "/file/");
         } else if (!!input.image && input.image != "") {
-            imageLink = admin.image;
+            imageLink = marketer.image;
         }
 
-        let password = admin.password;
+        let password = marketer.password;
         if (!!input.password && input.password != "") {
             password = await hash(input.password, 5);
         }
@@ -253,9 +386,15 @@ export class MarketerController {
                 name: input.name,
                 family: input.family,
                 email: input.email,
-                permissionGroup: permissionGroup._id,
                 password: password,
                 status: input.status,
+                mobile: input.mobile,
+                tel: input.tel || null,
+                address: input.address || null,
+                postalCode: parseInt(input.postalCode) || null,
+                nationalCode: parseInt(input.nationalCode) || null,
+                period: parseInt(input.period),
+                marketingCode: input.marketingCode,
             },
         );
 

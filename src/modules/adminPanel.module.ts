@@ -10,6 +10,7 @@ import { UserSchema } from "src/models/users.schema";
 import { ArticleSchema } from "src/models/articles.schema";
 import { AdminListController } from "src/controllers/admin/adminList.controller";
 import { MarketerController } from "src/controllers/admin/marketer.controller";
+import { CommissionPaymentSchema } from "src/models/commissionPayments.schema";
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { MarketerController } from "src/controllers/admin/marketer.controller";
             { name: "User", schema: UserSchema },
             { name: "Permission", schema: PermissionSchema },
             { name: "PermissionGroup", schema: PermissionGroupSchema },
+            { name: "CommissionPayment", schema: CommissionPaymentSchema },
             { name: "Course", schema: CourseSchema },
             { name: "Article", schema: ArticleSchema },
         ]),
