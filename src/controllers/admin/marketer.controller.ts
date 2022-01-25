@@ -12,8 +12,10 @@ import { AuthService } from "src/services/auth.service";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { randStr } from "src/helpers/str.helper";
 import * as sharp from "sharp";
+import * as Jmoment from "jalali-moment";
 import { CreateNewMarketerDto, PayMarketerCommissionDto, UpdateMarketerDto } from "src/dto/adminPanel/marketers.dto";
 import { CommissionPaymentDocument } from "src/models/commissionPayments.schema";
+import { UserCourseDocument } from "src/models/userCourses.schema";
 
 @Controller("admin/marketers")
 export class MarketerController {
@@ -22,6 +24,7 @@ export class MarketerController {
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("CommissionPayment") private readonly CommissionPaymentModel: Model<CommissionPaymentDocument>,
+        @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
     ) {}
 
     @Post("/pay/:id")
@@ -54,10 +57,191 @@ export class MarketerController {
     }
 
     @Get("/customers/:id")
-    async getMarketerCustomerList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {}
+    async getMarketerCustomerList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+
+        const search = req.query.search ? req.query.search.toString() : "";
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 25;
+
+        // sort
+        let sort = {};
+        const sortType = req.query.sort_type ? req.query.sort_type : "asc";
+        switch (req.query.sort) {
+            case "کاربر":
+                sort = { fullname: sortType };
+                break;
+            case "زمان ثبت نام":
+                sort = { createdAt: sortType };
+                break;
+            case "دوره":
+                sort = { period: sortType };
+                break;
+            case "زمان پایان دوره":
+                sort = { endsAt: sortType };
+                break;
+        }
+
+        // the base query object
+        let query = {
+            "registeredWith.marketer": new Types.ObjectId(req.params.id),
+        };
+
+        // filters
+        // ...
+
+        // making the model with query
+        let data = this.UserModel.aggregate();
+        data.match(query);
+        data.sort(sort);
+        data.project({
+            image: 1,
+            fullname: { $concat: ["$name", " ", "$family"] },
+            period: "$registeredWith.period",
+            endsAt: "$registeredWith.endsAt",
+            createdAt: 1,
+        });
+        if (!!search) {
+            data.match({
+                $or: [
+                    { fullname: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { period: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { endsAt: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { email: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { mobile: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                ],
+            });
+        }
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        let error = false;
+        const results = await data.exec().catch((e) => (error = true));
+        if (error) throw new InternalServerErrorException();
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        // transform data
+        results[0].data.map((row) => {
+            row.tillTheEnd = Jmoment(row.endsAt).locale("fa").fromNow();
+            return row;
+        });
+
+        // get the user
+        const user = await this.UserModel.findOne({ _id: req.params.id }).exec();
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+            user: {
+                image: user.image,
+                name: user.name,
+                family: user.family,
+                email: user.email,
+            },
+        });
+    }
 
     @Get("/commissions/:id")
-    async getMarketerCommissionList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {}
+    async getMarketerCommissionList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+
+        const search = req.query.search ? req.query.search.toString() : "";
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 25;
+
+        // sort
+        let sort = {};
+        const sortType = req.query.sort_type ? req.query.sort_type : "asc";
+        switch (req.query.sort) {
+            case "مشتری":
+                sort = { "user.name": sortType, "user.family": sortType };
+                break;
+            case "دوره":
+                sort = { "course.name": sortType };
+                break;
+            case "مبلغ پرداختی کاربر":
+                sort = { paidAmount: sortType };
+                break;
+            case "کمیسیون بازاریاب":
+                sort = { marketerCut: sortType };
+                break;
+            default:
+                sort = { createdAt: sortType };
+                break;
+        }
+
+        // the base query object
+        let query = {
+            marketer: new Types.ObjectId(req.params.id),
+        };
+
+        // filters
+        // ...
+
+        // making the model with query
+        let data = this.UserCourseModel.aggregate();
+        data.lookup({
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "user",
+        });
+        data.lookup({
+            from: "courses",
+            localField: "course",
+            foreignField: "_id",
+            as: "course",
+        });
+        data.match(query);
+        data.sort(sort);
+        data.project("user.image user.name user.family course.name marketerCut paidAmount createdAt");
+        if (!!search) {
+            data.match({
+                $or: [
+                    { "user.name": { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { "user.family": { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { "course.name": { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { paidAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { marketerCut: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                ],
+            });
+        }
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        let error = false;
+        const results = await data.exec().catch((e) => (error = true));
+        if (error) throw new InternalServerErrorException();
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        // get the user
+        const user = await this.UserModel.findOne({ _id: req.params.id }).exec();
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+            user: {
+                image: user.image,
+                name: user.name,
+                family: user.family,
+                email: user.email,
+            },
+        });
+    }
 
     @Get("/commission-payments/:id")
     async getMarketerCommissionPaymentList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
@@ -99,6 +283,8 @@ export class MarketerController {
         // making the model with query
         let data = this.CommissionPaymentModel.aggregate();
         data.match(query);
+        data.sort(sort);
+        data.project("commissionAmountBeforePayment payedAmount commissionAmountAfterPayment cardNumber bank createdAt");
         if (!!search) {
             data.match({
                 $or: [
@@ -110,8 +296,6 @@ export class MarketerController {
                 ],
             });
         }
-        data.sort(sort);
-        data.project("commissionAmountBeforePayment payedAmount commissionAmountAfterPayment cardNumber bank createdAt");
 
         // paginating
         data = data.facet({

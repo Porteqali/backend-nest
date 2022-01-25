@@ -57,6 +57,9 @@ export class MarketingService {
                 break;
         }
 
+        // add marketerCut to him/her commission balance
+        await this.UserModel.updateOne({ _id: marketer._id }, { commissionBalance: marketer.commissionBalance + marketerCut }).exec();
+
         return marketerCut;
     }
 }
