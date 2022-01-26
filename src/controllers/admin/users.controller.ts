@@ -4,7 +4,8 @@ import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { unlink, readFile } from "fs/promises";
+import { unlink, writeFile } from "fs/promises";
+import { lookup as mimeLookup } from "mime";
 import { hash } from "bcrypt";
 import { UserDocument } from "src/models/users.schema";
 import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
@@ -12,7 +13,10 @@ import { AuthService } from "src/services/auth.service";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { randStr } from "src/helpers/str.helper";
 import * as sharp from "sharp";
+import * as Jmoment from "jalali-moment";
+import * as json2xls from "json2xls";
 import { ExportUserDto, UpdateUserDto } from "src/dto/adminPanel/users.dto";
+import { UserCourseDocument } from "src/models/userCourses.schema";
 
 @Controller("admin/users")
 export class UserController {
@@ -20,11 +24,166 @@ export class UserController {
         private readonly authService: AuthService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
+        @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
     ) {}
 
     @Get("/export")
     async exportUser(@Query() input: ExportUserDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
+        const users = this.UserModel.aggregate();
+        // users.match({ role: "user" });
+        if (!!input.startDate && !!input.endDate) {
+            const startDate = Jmoment.from(input.startDate, "fa").toDate();
+            const endDate = Jmoment.from(input.endDate, "fa").toDate();
+            users.match({ createdAt: { $gte: startDate, $lte: endDate } });
+        }
+        if (typeof input.selectedCourses != "undefined" && input.selectedCourses !== null) {
+            const selectedCourses = input.selectedCourses != "" ? input.selectedCourses.split(",").map((id) => new Types.ObjectId(id)) : [];
+            users.lookup({
+                from: "usercourses",
+                let: { user_id: "$_id" },
+                pipeline: [
+                    { $match: { $expr: { $and: [{ $eq: ["$$user_id", "$user"] }, { $in: ["$course", selectedCourses] }, { $eq: ["$status", "ok"] }] } } },
+                    { $project: { count: { $sum: 1 } } },
+                ],
+                as: "userCourse",
+            });
+            users.match({ "userCourse.count": { $gt: 0 } });
+        }
+        const project: any = { _id: 0, نام: "$name", "نام خانوادگی": "$family" };
+        if (input.emailField == "true") project.ایمیل = "$email";
+        if (input.mobileField == "true") project.موبایل = "$mobile";
+        users.project(project);
+
+        let error = false;
+        const results = await users.exec().catch((e) => (error = true));
+        if (error) throw new InternalServerErrorException();
+
+        const xls = json2xls(results);
+        await writeFile("./storage/private/user_export.xlsx", xls, "binary").catch((e) => {});
+
+        return res.json({ link: `file/private/user_export.xlsx` });
+    }
+
+    @Get("/courses/:id")
+    async getUserCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.users.view"])) throw new ForbiddenException();
+
+        const search = req.query.search ? req.query.search.toString() : "";
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 25;
+
+        // sort
+        let sort = {};
+        const sortType = req.query.sort_type ? req.query.sort_type : "asc";
+        switch (req.query.sort) {
+            case "دوره":
+                sort = { "course.name": sortType };
+                break;
+            case "کد تراکنش":
+                sort = { transactionCode: sortType };
+                break;
+            case "مقدار پرداختی":
+                sort = { paidAmount: sortType };
+                break;
+            case "تاریخ خرید":
+                sort = { createdAt: sortType };
+                break;
+        }
+
+        // the base query object
+        let query = {
+            user: new Types.ObjectId(req.params.id),
+            status: "ok",
+        };
+
+        // filters
+        // ...
+
+        // making the model with query
+        let data = this.UserCourseModel.aggregate();
+        data.match(query);
+        data.lookup({
+            from: "courses",
+            localField: "course",
+            foreignField: "_id",
+            as: "course",
+        });
+        data.sort(sort);
+        data.project("course.image course.name paidAmount transactionCode createdAt");
+        if (!!search) {
+            data.match({
+                $or: [
+                    { "course.name": { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { paidAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { transactionCode: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { createdAt: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                ],
+            });
+        }
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        let error = false;
+        const results = await data.exec().catch((e) => (error = true));
+        if (error) throw new InternalServerErrorException();
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        // transform data
+        results[0].data.map((row) => {
+            row.tillTheEnd = Jmoment(row.endsAt).locale("fa").fromNow();
+            return row;
+        });
+
+        // get the user
+        const user = await this.UserModel.findOne({ _id: req.params.id }).exec();
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+            user: {
+                image: user.image,
+                name: user.name,
+                family: user.family,
+                email: user.email,
+            },
+        });
+    }
+
+    @Post("/courses/:id")
+    async addCoursesToUser(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        let selectedCourses = req.body.selectedCourses;
+        if (!selectedCourses) throw new UnprocessableEntityException([{ property: "selectedCourses", errors: ["دوره ای انتخاب نشده"] }]);
+
+        selectedCourses = selectedCourses.split(",").map((id) => new Types.ObjectId(id));
+        const userId: any = new Types.ObjectId(req.params.id);
+        const purchasedCourses = await this.UserCourseModel.find({ user: userId, course: { $in: selectedCourses }, status: "ok" }).exec();
+        for (let i = 0; i <= purchasedCourses.length; i++) {
+            if (selectedCourses.indexOf(purchasedCourses[i].course) > -1) selectedCourses.splice(selectedCourses.indexOf(purchasedCourses[i].course), 1);
+        }
+
+        for (let i = 0; i <= selectedCourses.length; i++) {
+            await this.UserCourseModel.create({
+                user: req.params.id,
+                course: selectedCourses[i],
+                coursePrice: 0,
+                coursePayablePrice: 0,
+                totalPrice: 0,
+                paidAmount: 0,
+                transactionCode: "---",
+                authority: "---",
+                paymentMethod: "admin-added",
+                status: "ok",
+            });
+        }
+
+        return res.end();
     }
 
     // =============================================================================

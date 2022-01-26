@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, Length, IsString, IsArray, IsIn, IsOptional, IsPhoneNumber, IsDate } from "class-validator";
+import { IsEmail, IsNotEmpty, Length, IsString, IsIn, IsOptional, IsPhoneNumber, IsDateString } from "class-validator";
 
 export class UpdateUserDto {
     @IsOptional()
@@ -21,11 +21,11 @@ export class UpdateUserDto {
 
     @IsIn(["true", "false"], { message: "فرمت تایید ایمیل معتبر نیست" })
     readonly emailVerified: string;
-    
+
     @IsPhoneNumber("IR", { message: "شماره موبایل را وارد کنید" })
     @IsNotEmpty({ message: "شماره موبایل را وارد کنید" })
     readonly mobile: string;
-    
+
     @IsIn(["true", "false"], { message: "فرمت تایید شماره موبایل معتبر نیست" })
     readonly mobileVerified: string;
 
@@ -44,4 +44,22 @@ export class UpdateUserDto {
     readonly passwordConfirmation?: string;
 }
 
-export class ExportUserDto {}
+export class ExportUserDto {
+    @IsOptional()
+    @IsDateString()
+    readonly startDate?: string;
+
+    @IsOptional()
+    @IsDateString()
+    readonly endDate?: string;
+
+    @IsOptional()
+    @IsString()
+    readonly selectedCourses?: string;
+
+    @IsIn(["true", "false"])
+    readonly mobileField: string;
+
+    @IsIn(["true", "false"])
+    readonly emailField: string;
+}
