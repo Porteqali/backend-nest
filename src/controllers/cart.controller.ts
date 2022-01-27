@@ -86,7 +86,7 @@ export class CartController {
         if (method == "wallet") {
             // check if user have enough money in wallet
             if (req.user.user.walletBalance < cartInfo.payablePrice) {
-                throw new UnprocessableEntityException([{ property: "cart", errors: ["اعتبار کیف پول شکا کافی نیست!"] }]);
+                throw new UnprocessableEntityException([{ property: "cart", errors: ["اعتبار کیف پول شما کافی نیست!"] }]);
             }
         }
 

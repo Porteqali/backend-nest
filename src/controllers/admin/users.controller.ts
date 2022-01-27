@@ -5,7 +5,6 @@ import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { unlink, writeFile } from "fs/promises";
-import { lookup as mimeLookup } from "mime";
 import { hash } from "bcrypt";
 import { UserDocument } from "src/models/users.schema";
 import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
@@ -161,14 +160,18 @@ export class UserController {
         let selectedCourses = req.body.selectedCourses;
         if (!selectedCourses) throw new UnprocessableEntityException([{ property: "selectedCourses", errors: ["دوره ای انتخاب نشده"] }]);
 
-        selectedCourses = selectedCourses.split(",").map((id) => new Types.ObjectId(id));
+        selectedCourses = selectedCourses.split(",");
         const userId: any = new Types.ObjectId(req.params.id);
         const purchasedCourses = await this.UserCourseModel.find({ user: userId, course: { $in: selectedCourses }, status: "ok" }).exec();
-        for (let i = 0; i <= purchasedCourses.length; i++) {
-            if (selectedCourses.indexOf(purchasedCourses[i].course) > -1) selectedCourses.splice(selectedCourses.indexOf(purchasedCourses[i].course), 1);
+
+        for (let i = 0; i < purchasedCourses.length; i++) {
+            const courseId = purchasedCourses[i].course.toString();
+            if (selectedCourses.indexOf(courseId) > -1) {
+                selectedCourses.splice(selectedCourses.indexOf(courseId), 1);
+            }
         }
 
-        for (let i = 0; i <= selectedCourses.length; i++) {
+        for (let i = 0; i < selectedCourses.length; i++) {
             await this.UserCourseModel.create({
                 user: req.params.id,
                 course: selectedCourses[i],

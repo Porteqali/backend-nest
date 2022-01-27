@@ -26,10 +26,11 @@ export const records = [
     { _id: "admin.users-comments.edit", label: "ویرایش نظرات کاربران", group: "users-comments", groupLabel: "نظرات کاربران" },
     { _id: "admin.users-comments.delete", label: "حذف نظرات کاربران", group: "users-comments", groupLabel: "نظرات کاربران" },
 
-    // { _id: "admin.teachers.view", label: "مشاهده لیست ادمین ها", group: "teachers", groupLabel: "اساتید" },
-    // { _id: "admin.teachers.add", label: "ایجاد ادمین جدید", group: "teachers", groupLabel: "اساتید" },
-    // { _id: "admin.teachers.edit", label: "ویرایش ادمین ها", group: "teachers", groupLabel: "اساتید" },
-    // { _id: "admin.teachers.delete", label: "حذف ادمین", group: "teachers", groupLabel: "اساتید" },
+    { _id: "admin.teachers.view", label: "مشاهده لیست اساتید", group: "teachers", groupLabel: "اساتید" },
+    { _id: "admin.teachers.add", label: "ایجاد استاد جدید", group: "teachers", groupLabel: "اساتید" },
+    { _id: "admin.teachers.edit", label: "ویرایش اساتید", group: "teachers", groupLabel: "اساتید" },
+    { _id: "admin.teachers.delete", label: "حذف استاد", group: "teachers", groupLabel: "اساتید" },
+    { _id: "admin.teachers.pay", label: "پرداخت کمیسیون استاد", group: "teachers", groupLabel: "اساتید" },
 
     // { _id: "admin.user-groups.view", label: "مشاهده لیست ادمین ها", group: "user-groups", groupLabel: "گروه کاربران" },
     // { _id: "admin.user-groups.add", label: "ایجاد ادمین جدید", group: "user-groups", groupLabel: "گروه کاربران" },
