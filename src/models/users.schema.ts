@@ -80,6 +80,12 @@ export const UserSchema = new Schema({
         name: { type: String },
         link: { type: String },
     }),
+    financial: {
+        cardNumber: { type: String },
+        cardOwnerName: { type: String },
+        cardBankName: { type: String },
+        shebaNumber: { type: String },
+    },
 });
 
 export interface User {
@@ -123,6 +129,13 @@ export interface User {
     commission?: Commission | Schema.Types.ObjectId;
     usanceType?: UsanceType | Schema.Types.ObjectId;
     socials?: Social[];
+
+    financial?: {
+        cardNumber?: string;
+        cardOwnerName?: string;
+        cardBankName?: string;
+        shebaNumber?: string;
+    };
 }
 
 export interface RegisteredWith {

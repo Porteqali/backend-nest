@@ -458,6 +458,13 @@ export class MarketerController {
             throw new UnprocessableEntityException([{ property: "name", errors: ["ایمیل قبلا استفاده شده"] }]);
         }
 
+        if (typeof input.mobile !== "undefined") {
+            const isMobileExists = await this.UserModel.exists({ mobile: input.mobile });
+            if (isMobileExists) {
+                throw new UnprocessableEntityException([{ property: "name", errors: ["شماره موبایل قبلا استفاده شده"] }]);
+            }
+        }
+
         const isMarketingCodeExists = await this.UserModel.exists({ marketingCode: input.marketingCode });
         if (isMarketingCodeExists) {
             throw new UnprocessableEntityException([{ property: "name", errors: ["کد بازاریابی قبلا استفاده شده"] }]);
@@ -519,6 +526,13 @@ export class MarketerController {
         const isEmailExists = await this.UserModel.exists({ _id: { $ne: req.params.id }, email: input.email });
         if (isEmailExists) {
             throw new UnprocessableEntityException([{ property: "name", errors: ["ایمیل قبلا استفاده شده"] }]);
+        }
+
+        if (typeof input.mobile !== "undefined") {
+            const isMobileExists = await this.UserModel.exists({ mobile: input.mobile });
+            if (isMobileExists) {
+                throw new UnprocessableEntityException([{ property: "name", errors: ["شماره موبایل قبلا استفاده شده"] }]);
+            }
         }
 
         const isMarketingCodeExists = await this.UserModel.exists({ marketingCode: input.marketingCode });

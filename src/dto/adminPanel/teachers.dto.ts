@@ -37,14 +37,6 @@ export class CreateNewTeacherDto {
     @IsOptional()
     readonly nationalCode?: string;
 
-    @IsNumberString({ message: "بازه زمانی برای کاربران جدید را وارد کنید" })
-    @IsNotEmpty({ message: "بازه زمانی برای کاربران جدید را وارد کنید" })
-    readonly period: string;
-
-    @IsString({ message: "کد بازاریاب را وارد کنید" })
-    @IsNotEmpty({ message: "کد بازاریاب را وارد کنید" })
-    readonly marketingCode: string;
-
     @Length(8, 100, { message: "رمزعبور حداقل باید 8 کاراکتر باشد" })
     @IsString({ message: "رمزعبور را وارد کنید" })
     @IsNotEmpty({ message: "رمزعبور را وارد کنید" })

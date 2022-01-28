@@ -16,6 +16,8 @@ import { UserController } from "src/controllers/admin/users.controller";
 import { CommentSchema } from "src/models/comments.schema";
 import { CommentsController } from "src/controllers/admin/comments.controller";
 import { TeacherController } from "src/controllers/admin/teacher.controller";
+import { CommissionController } from "src/controllers/admin/commissioncontroller";
+import { CommissionSchema } from "src/models/commissions.schema";
 
 @Module({
     imports: [
@@ -25,13 +27,14 @@ import { TeacherController } from "src/controllers/admin/teacher.controller";
             { name: "Permission", schema: PermissionSchema },
             { name: "PermissionGroup", schema: PermissionGroupSchema },
             { name: "CommissionPayment", schema: CommissionPaymentSchema },
+            { name: "Commission", schema: CommissionSchema },
             { name: "Course", schema: CourseSchema },
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "Article", schema: ArticleSchema },
             { name: "Comment", schema: CommentSchema },
         ]),
     ],
-    controllers: [PermissionGroupController, AdminListController, MarketerController, UserController, CommentsController, TeacherController],
+    controllers: [PermissionGroupController, AdminListController, MarketerController, UserController, CommentsController, TeacherController, CommissionController],
     providers: [AuthService],
     exports: [],
 })

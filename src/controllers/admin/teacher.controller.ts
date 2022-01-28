@@ -77,8 +77,8 @@ export class TeacherController {
             case "مبلغ پرداختی کاربر":
                 sort = { paidAmount: sortType };
                 break;
-            case "کمیسیون بازاریاب":
-                sort = { marketerCut: sortType };
+            case "کمیسیون استاد":
+                sort = { teacherCut: sortType };
                 break;
             default:
                 sort = { createdAt: sortType };
@@ -109,7 +109,7 @@ export class TeacherController {
         });
         data.match(query);
         data.sort(sort);
-        data.project("user.image user.name user.family course.name marketerCut paidAmount createdAt");
+        data.project("user.image user.name user.family course.name teacherCut paidAmount createdAt");
         if (!!search) {
             data.match({
                 $or: [
@@ -117,7 +117,7 @@ export class TeacherController {
                     { "user.family": { $regex: new RegExp(`.*${search}.*`, "i") } },
                     { "course.name": { $regex: new RegExp(`.*${search}.*`, "i") } },
                     { paidAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
-                    { marketerCut: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { teacherCut: { $regex: new RegExp(`.*${search}.*`, "i") } },
                 ],
             });
         }
@@ -350,9 +350,9 @@ export class TeacherController {
             throw new UnprocessableEntityException([{ property: "name", errors: ["ایمیل قبلا استفاده شده"] }]);
         }
 
-        const isMarketingCodeExists = await this.UserModel.exists({ marketingCode: input.marketingCode });
-        if (isMarketingCodeExists) {
-            throw new UnprocessableEntityException([{ property: "name", errors: ["کد بازاریابی قبلا استفاده شده"] }]);
+        const isMobileExists = await this.UserModel.exists({ mobile: input.mobile });
+        if (isMobileExists) {
+            throw new UnprocessableEntityException([{ property: "name", errors: ["شماره موبایل قبلا استفاده شده"] }]);
         }
 
         if (input.password !== input.passwordConfirmation) {
@@ -390,9 +390,7 @@ export class TeacherController {
             address: input.address || null,
             postalCode: input.postalCode || null,
             nationalCode: input.nationalCode || null,
-            period: input.period,
-            marketingCode: input.marketingCode,
-            role: "marketer",
+            role: "teacher",
         });
 
         return res.end();
