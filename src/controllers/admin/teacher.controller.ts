@@ -332,6 +332,7 @@ export class TeacherController {
         if (!this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
 
         const teacher = await this.UserModel.findOne({ _id: req.params.id, role: "teacher" }).exec();
+        if (!teacher) throw new NotFoundException();
         return res.json(teacher);
     }
 
@@ -390,6 +391,17 @@ export class TeacherController {
             address: input.address || null,
             postalCode: input.postalCode || null,
             nationalCode: input.nationalCode || null,
+            birthDate: input.birthDate || null,
+            fatherName: input.fatherName || "",
+            description: input.description || "",
+            groups: input.groups.split(","),
+            financial: {
+                cardNumber: input.cardNumber || "",
+                cardOwnerName: input.cardOwnerName || "",
+                cardBankName: input.cardBankName || "",
+                shebaNumber: input.shebaNumber || "",
+            },
+            commission: input.commission,
             role: "teacher",
         });
 
@@ -411,18 +423,18 @@ export class TeacherController {
             throw new UnprocessableEntityException([{ property: "name", errors: ["ایمیل قبلا استفاده شده"] }]);
         }
 
-        const isMarketingCodeExists = await this.UserModel.exists({ marketingCode: input.marketingCode });
-        if (isMarketingCodeExists) {
-            throw new UnprocessableEntityException([{ property: "name", errors: ["کد بازاریابی قبلا استفاده شده"] }]);
+        const isMobileExists = await this.UserModel.exists({ _id: { $ne: req.params.id }, mobile: input.mobile });
+        if (isMobileExists) {
+            throw new UnprocessableEntityException([{ property: "name", errors: ["شماره موبایل قبلا استفاده شده"] }]);
         }
 
         if (!!input.password && !!input.passwordConfirmation && input.password !== input.passwordConfirmation) {
             throw new UnprocessableEntityException([{ property: "password", errors: ["رمزعبورها باهم همخوانی ندارند"] }]);
         }
 
-        // find marketer
-        const marketer = await this.UserModel.findOne({ _id: req.params.id }).exec();
-        if (!marketer) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
+        // find teacher
+        const teacher = await this.UserModel.findOne({ _id: req.params.id }).exec();
+        if (!teacher) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
 
         let imageLink = "";
         if (!!files.length) {
@@ -435,7 +447,7 @@ export class TeacherController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(marketer.image.replace("/file/", "storage/")).catch((e) => {});
+            await unlink(teacher.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));
@@ -445,13 +457,16 @@ export class TeacherController {
 
             imageLink = url.replace("storage/", "/file/");
         } else if (!!input.image && input.image != "") {
-            imageLink = marketer.image;
+            imageLink = teacher.image;
         }
 
-        let password = marketer.password;
+        let password = teacher.password;
         if (!!input.password && input.password != "") {
             password = await hash(input.password, 5);
         }
+
+        const groups: any = input.groups.split(",");
+        const commission: any = input.commission;
 
         await this.UserModel.updateOne(
             { _id: req.params.id },
@@ -467,8 +482,18 @@ export class TeacherController {
                 address: input.address || null,
                 postalCode: parseInt(input.postalCode) || null,
                 nationalCode: parseInt(input.nationalCode) || null,
-                period: parseInt(input.period),
-                marketingCode: input.marketingCode,
+
+                birthDate: input.birthDate || "",
+                fatherName: input.fatherName || "",
+                description: input.description || "",
+                groups: groups,
+                financial: {
+                    cardNumber: input.cardNumber || "",
+                    cardOwnerName: input.cardOwnerName || "",
+                    cardBankName: input.cardBankName || "",
+                    shebaNumber: input.shebaNumber || "",
+                },
+                commission: commission,
             },
         );
 

@@ -105,6 +105,7 @@ export class AdminListController {
         if (!this.authService.authorize(req, "admin", ["admin.list.view"])) throw new ForbiddenException();
 
         const admin = await this.UserModel.findOne({ _id: req.params.id, role: "admin" }).exec();
+        if (!admin) throw new NotFoundException();
         return res.json(admin);
     }
 

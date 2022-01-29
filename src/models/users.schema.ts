@@ -34,8 +34,6 @@ export const UserSchema = new Schema({
     permissionGroup: {
         type: Schema.Types.ObjectId,
         ref: "PermissionGroup",
-        default: null,
-        required: true,
     },
 
     status: {
@@ -66,7 +64,7 @@ export const UserSchema = new Schema({
     description: { type: String },
     nationalCode: { type: Number }, // کد ملی
     nationalNumber: { type: Number }, // شماره شناسنامه
-    birthDate: { type: Date },
+    birthDate: { type: String },
     fatherName: { type: String },
     commission: {
         type: Schema.Types.ObjectId,
@@ -124,7 +122,7 @@ export interface User {
     description?: string;
     nationalCode?: number;
     nationalNumber?: number;
-    birthDate?: Date;
+    birthDate?: string;
     fatherName?: string;
     commission?: Commission | Schema.Types.ObjectId;
     usanceType?: UsanceType | Schema.Types.ObjectId;

@@ -440,6 +440,7 @@ export class MarketerController {
         if (!this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
 
         const marketer = await this.UserModel.findOne({ _id: req.params.id, role: "marketer" }).exec();
+        if (!marketer) throw new NotFoundException();
         return res.json(marketer);
     }
 

@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, Length, IsString, IsArray, IsIn, IsOptional, IsNumberString, IsPhoneNumber } from "class-validator";
+import { IsEmail, IsNotEmpty, Length, IsString, IsArray, IsIn, IsOptional, IsNumberString, IsPhoneNumber, IsDateString } from "class-validator";
 
 export class CreateNewTeacherDto {
     @Length(1, 100, { message: "نام حداکثر 100 کاراکتر" })
@@ -45,6 +45,37 @@ export class CreateNewTeacherDto {
     @IsString({ message: "تکرار رمزعبور را وارد کنید" })
     @IsNotEmpty({ message: "تکرار رمزعبور را وارد کنید" })
     readonly passwordConfirmation: string;
+
+    @IsOptional()
+    @IsString({ message: "فرمت تاریخ تولد اشتباه است" })
+    readonly birthDate?: string;
+
+    @IsOptional()
+    readonly fatherName?: string;
+
+    @IsString({ message: "توضیحی در مورد استاد وارد کنید" })
+    @IsNotEmpty({ message: "توضیحی در مورد استاد وارد کنید" })
+    readonly description: string;
+
+    @IsString({ message: "حداقل یک گروه برای استاد انتخاب کنید" })
+    @IsNotEmpty({ message: "حداقل یک گروه برای استاد انتخاب کنید" })
+    readonly groups: string;
+
+    @IsOptional()
+    readonly cardNumber?: string;
+
+    @IsOptional()
+    readonly cardOwnerName?: string;
+
+    @IsOptional()
+    readonly cardBankName?: string;
+
+    @IsOptional()
+    readonly shebaNumber?: string;
+
+    @IsString({ message: "کمیسیون استاد را مشخص کنید" })
+    @IsNotEmpty({ message: "کمیسیون استاد را مشخص کنید" })
+    readonly commission: string;
 }
 
 export class UpdateTeacherDto {
@@ -82,14 +113,6 @@ export class UpdateTeacherDto {
     @IsOptional()
     readonly nationalCode?: string;
 
-    @IsNumberString({ message: "بازه زمانی برای کاربران جدید را وارد کنید" })
-    @IsNotEmpty({ message: "بازه زمانی برای کاربران جدید را وارد کنید" })
-    readonly period: string;
-
-    @IsString({ message: "کد بازاریاب را وارد کنید" })
-    @IsNotEmpty({ message: "کد بازاریاب را وارد کنید" })
-    readonly marketingCode: string;
-
     @IsIn(["active", "deactive"], { message: "وضعیت نامعتبر" })
     @IsString({ message: "یک وضعیت انتخاب کنید" })
     @IsNotEmpty({ message: "یک وضعیت انتخاب کنید" })
@@ -103,6 +126,37 @@ export class UpdateTeacherDto {
     @IsOptional()
     @IsString({ message: "تکرار رمزعبور را وارد کنید" })
     readonly passwordConfirmation?: string;
+
+    @IsOptional()
+    @IsString({ message: "فرمت تاریخ تولد اشتباه است" })
+    readonly birthDate?: string;
+
+    @IsOptional()
+    readonly fatherName?: string;
+
+    @IsString({ message: "توضیحی در مورد استاد وارد کنید" })
+    @IsNotEmpty({ message: "توضیحی در مورد استاد وارد کنید" })
+    readonly description: string;
+
+    @IsString({ message: "حداقل یک گروه برای استاد انتخاب کنید" })
+    @IsNotEmpty({ message: "حداقل یک گروه برای استاد انتخاب کنید" })
+    readonly groups: string;
+
+    @IsOptional()
+    readonly cardNumber?: string;
+
+    @IsOptional()
+    readonly cardOwnerName?: string;
+
+    @IsOptional()
+    readonly cardBankName?: string;
+
+    @IsOptional()
+    readonly shebaNumber?: string;
+
+    @IsString({ message: "کمیسیون استاد را مشخص کنید" })
+    @IsNotEmpty({ message: "کمیسیون استاد را مشخص کنید" })
+    readonly commission: string;
 }
 
 export class PayTeacherCommissionDto {

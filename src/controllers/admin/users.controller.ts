@@ -282,6 +282,7 @@ export class UserController {
         if (!this.authService.authorize(req, "admin", ["admin.users.view"])) throw new ForbiddenException();
 
         const user = await this.UserModel.findOne({ _id: req.params.id }).exec();
+        if (!user) throw new NotFoundException();
         return res.json(user);
     }
 

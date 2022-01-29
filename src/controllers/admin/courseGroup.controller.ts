@@ -5,29 +5,25 @@ import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { unlink, readFile } from "fs/promises";
-import { hash } from "bcrypt";
 import { UserDocument } from "src/models/users.schema";
-import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
 import { AuthService } from "src/services/auth.service";
-import { CreatePermissionGroupDto } from "src/dto/adminPanel/permissionGroups.dto";
 import { FilesInterceptor } from "@nestjs/platform-express";
-import { CreateNewAdminDto, UpdateNewAdminDto } from "src/dto/adminPanel/adminList.dto";
 import { randStr } from "src/helpers/str.helper";
 import * as sharp from "sharp";
-import { CommissionDocument } from "src/models/commissions.schema";
+import { CourseGroupDocument } from "src/models/courseGroups.schema";
+import { CreateNewCourseGroupDto, UpdateCourseGroupDto } from "src/dto/adminPanel/courseGroups.dto";
 
-@Controller("admin/commissions")
-export class CommissionController {
+@Controller("admin/course-groups")
+export class CourseGroupsController {
     constructor(
         private readonly authService: AuthService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
-        @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
-        @InjectModel("Commission") private readonly CommissionModel: Model<CommissionDocument>,
+        @InjectModel("CourseGroup") private readonly CourseGroupModel: Model<CourseGroupDocument>,
     ) {}
 
     @Get("/")
-    async getCommissions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.view"])) throw new ForbiddenException();
+    async getCourseGroupList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.course-groups.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -37,14 +33,14 @@ export class CommissionController {
         let sort = {};
         const sortType = req.query.sort_type ? req.query.sort_type : "asc";
         switch (req.query.sort) {
-            case "نام":
+            case "نام گروه":
                 sort = { name: sortType };
                 break;
-            case "نوع":
-                sort = { type: sortType };
+            case "گروه اصلی":
+                sort = { topGroup: sortType };
                 break;
-            case "مقدار":
-                sort = { amount: sortType };
+            case "وضعیت":
+                sort = { status: sortType };
                 break;
             default:
                 sort = { createdAt: sortType };
@@ -58,17 +54,13 @@ export class CommissionController {
         // ...
 
         // making the model with query
-        let data = this.CommissionModel.aggregate();
+        let data = this.CourseGroupModel.aggregate();
         data.match(query);
         data.match({
-            $or: [
-                { name: { $regex: new RegExp(`.*${search}.*`, "i") } },
-                { type: { $regex: new RegExp(`.*${search}.*`, "i") } },
-                { amount: { $regex: new RegExp(`.*${search}.*`, "i") } },
-            ],
+            $or: [{ name: { $regex: new RegExp(`.*${search}.*`, "i") } }, { topGroup: { $regex: new RegExp(`.*${search}.*`, "i") } }],
         });
         data.sort(sort);
-        data.project("_id name type amount createdAt");
+        data.project("icon name topGroup status createdAt");
 
         // paginating
         data = data.facet({
@@ -91,31 +83,23 @@ export class CommissionController {
     }
 
     @Get("/:id")
-    async getCommission(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.view"])) throw new ForbiddenException();
+    async getCourseGroup(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.course-groups.view"])) throw new ForbiddenException();
 
-        const admin = await this.UserModel.findOne({ _id: req.params.id, role: "admin" }).exec();
-        return res.json(admin);
+        const courseGroup = await this.CourseGroupModel.findOne({ _id: req.params.id }).exec();
+        if (!courseGroup) throw new NotFoundException();
+        return res.json(courseGroup);
     }
 
     @Post("/")
     @UseInterceptors(FilesInterceptor("files"))
-    async addCommission(
+    async addCourseGroup(
         @UploadedFiles() files: Array<Express.Multer.File>,
-        @Body() input: CreateNewAdminDto,
+        @Body() input: CreateNewCourseGroupDto,
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.add"])) throw new ForbiddenException();
-
-        const isEmailExists = await this.UserModel.exists({ email: input.email });
-        if (isEmailExists) {
-            throw new UnprocessableEntityException([{ property: "name", errors: ["ایمیل قبلا استفاده شده"] }]);
-        }
-
-        if (input.password !== input.passwordConfirmation) {
-            throw new UnprocessableEntityException([{ property: "password", errors: ["رمزعبورها باهم همخوانی ندارند"] }]);
-        }
+        if (!this.authService.authorize(req, "admin", ["admin.course-groups.add"])) throw new ForbiddenException();
 
         let imageLink = "";
         if (!!files.length) {
@@ -130,21 +114,17 @@ export class CommissionController {
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));
             img.resize(256);
-            const url = `storage/public/user_avatars/${randName}.${extension}`;
+            const url = `storage/public/course_group_icons/${randName}.${extension}`;
             await img.toFile(url).catch((e) => console.log(e));
 
             imageLink = url.replace("storage/", "/file/");
         }
 
-        await this.UserModel.create({
-            image: imageLink,
+        await this.CourseGroupModel.create({
+            icon: imageLink,
             name: input.name,
-            family: input.family,
-            email: input.email,
-            permissionGroup: input.permissionGroup,
-            password: await hash(input.password, 5),
+            topGroup: input.topGroup,
             status: input.status,
-            role: "admin",
         });
 
         return res.end();
@@ -152,30 +132,17 @@ export class CommissionController {
 
     @Put("/:id")
     @UseInterceptors(FilesInterceptor("files"))
-    async editCommission(
+    async editCourseGroup(
         @UploadedFiles() files: Array<Express.Multer.File>,
-        @Body() input: UpdateNewAdminDto,
+        @Body() input: UpdateCourseGroupDto,
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.edit"])) throw new ForbiddenException();
+        if (!this.authService.authorize(req, "admin", ["admin.course-groups.edit"])) throw new ForbiddenException();
 
-        const isEmailExists = await this.UserModel.exists({ _id: { $ne: req.params.id }, email: input.email });
-        if (isEmailExists) {
-            throw new UnprocessableEntityException([{ property: "name", errors: ["ایمیل قبلا استفاده شده"] }]);
-        }
-
-        if (!!input.password && !!input.passwordConfirmation && input.password !== input.passwordConfirmation) {
-            throw new UnprocessableEntityException([{ property: "password", errors: ["رمزعبورها باهم همخوانی ندارند"] }]);
-        }
-
-        // find admin
-        const admin = await this.UserModel.findOne({ _id: req.params.id }).exec();
-        if (!admin) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
-
-        // find permission group
-        const permissionGroup = await this.PermissionGroupModel.findOne({ _id: input.permissionGroup }).exec();
-        if (!admin) throw new NotFoundException([{ property: "permissionGroup", errors: ["گروه دسترسی پیدا نشد"] }]);
+        // find courseGroup
+        const courseGroup = await this.CourseGroupModel.findOne({ _id: req.params.id }).exec();
+        if (!courseGroup) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
 
         let imageLink = "";
         if (!!files.length) {
@@ -187,34 +154,26 @@ export class CommissionController {
             let isMimeOk = extension == "png" || extension == "gif" || extension == "jpeg" || extension == "jpg";
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
-            // delete the old image from system
-            await unlink(admin.image.replace("/file/", "storage/")).catch((e) => {});
+            // delete the old icon from system
+            await unlink(courseGroup.icon.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));
             img.resize(256);
-            const url = `storage/public/user_avatars/${randName}.${extension}`;
+            const url = `storage/public/course_group_icons/${randName}.${extension}`;
             await img.toFile(url).catch((e) => console.log(e));
 
             imageLink = url.replace("storage/", "/file/");
         } else if (!!input.image && input.image != "") {
-            imageLink = admin.image;
+            imageLink = courseGroup.icon;
         }
 
-        let password = admin.password;
-        if (!!input.password && input.password != "") {
-            password = await hash(input.password, 5);
-        }
-
-        await this.UserModel.updateOne(
+        await this.CourseGroupModel.updateOne(
             { _id: req.params.id },
             {
-                image: imageLink,
+                icon: imageLink,
                 name: input.name,
-                family: input.family,
-                email: input.email,
-                permissionGroup: permissionGroup._id,
-                password: password,
+                topGroup: input.topGroup,
                 status: input.status,
             },
         );
@@ -223,14 +182,14 @@ export class CommissionController {
     }
 
     @Delete("/:id")
-    async deleteCommission(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.delete"])) throw new ForbiddenException();
+    async deleteCourseGroup(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.course-groups.delete"])) throw new ForbiddenException();
 
-        const data = await this.UserModel.findOne({ _id: req.params.id, role: "admin" }).exec();
+        const data = await this.CourseGroupModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);
 
-        // delete the admin
-        await this.UserModel.deleteOne({ _id: req.params.id, role: "admin" }).exec();
+        // delete the thing
+        await this.CourseGroupModel.deleteOne({ _id: req.params.id }).exec();
 
         return res.end();
     }

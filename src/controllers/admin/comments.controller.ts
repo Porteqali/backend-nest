@@ -117,6 +117,8 @@ export class CommentsController {
         if (!this.authService.authorize(req, "admin", ["admin.users-comments.view"])) throw new ForbiddenException();
 
         let comment: any = await this.CommentModel.findOne({ _id: req.params.id }).populate("user", "image name family").exec();
+        if (!comment) throw new NotFoundException();
+
         comment = comment.toJSON();
         switch (comment.commentedOn) {
             case "course":

@@ -88,6 +88,7 @@ export class PermissionGroupController {
         if (!this.authService.authorize(req, "admin", ["admin.permissions.view"])) throw new ForbiddenException();
 
         const permissionGroup = await this.PermissionGroupModel.findOne({ _id: req.params.id }).exec();
+        if (!permissionGroup) throw new NotFoundException();
         return res.json(permissionGroup);
     }
 
