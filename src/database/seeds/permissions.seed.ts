@@ -46,4 +46,15 @@ export const records = [
     { _id: "admin.commissions.add", label: "ایجاد کمیسیون جدید", group: "commissions", groupLabel: "کمیسیون ها" },
     { _id: "admin.commissions.edit", label: "ویرایش کمیسیون ها", group: "commissions", groupLabel: "کمیسیون ها" },
     { _id: "admin.commissions.delete", label: "حذف کمیسیون", group: "commissions", groupLabel: "کمیسیون ها" },
+
+    { _id: "admin.discounts.view", label: "مشاهده تخفیف ها", group: "discounts", groupLabel: "تخفیف ها" },
+    { _id: "admin.discounts.add", label: "ایجاد تخفیف جدید", group: "discounts", groupLabel: "تخفیف ها" },
+    { _id: "admin.discounts.edit", label: "ویرایش تخفیف ها", group: "discounts", groupLabel: "تخفیف ها" },
+    { _id: "admin.discounts.delete", label: "حذف تخفیف", group: "discounts", groupLabel: "تخفیف ها" },
+
+    { _id: "admin.wallet-transactions.view", label: "مشاهده تراکنش ها", group: "wallet-transactions", groupLabel: "تراکنش های شارژ کیف پول" },
+    { _id: "admin.wallet-transactions.complete", label: "تکمیل تراکنش", group: "wallet-transactions", groupLabel: "تراکنش های شارژ کیف پول" },
+
+    { _id: "admin.course-transactions.view", label: "مشاهده تراکنش ها", group: "course-transactions", groupLabel: "تراکنش های خرید دوره" },
+    { _id: "admin.course-transactions.complete", label: "تکمیل تراکنش", group: "course-transactions", groupLabel: "تراکنش های خرید دوره" },
 ];

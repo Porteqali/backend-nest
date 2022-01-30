@@ -20,6 +20,11 @@ import { CommissionController } from "src/controllers/admin/commission.controlle
 import { CommissionSchema } from "src/models/commissions.schema";
 import { CourseGroupsController } from "src/controllers/admin/courseGroup.controller";
 import { CourseGroupSchema } from "src/models/courseGroups.schema";
+import { DiscountController } from "src/controllers/admin/discount.controller";
+import { DiscountSchema } from "src/models/discount.schema";
+import { WalletTransactionController } from "src/controllers/admin/walletTransaction.controller";
+import { WalletTransactionSchema } from "src/models/walletTransactions.schema";
+import { CourseTransactionController } from "src/controllers/admin/courseTransaction.controller";
 
 @Module({
     imports: [
@@ -30,11 +35,13 @@ import { CourseGroupSchema } from "src/models/courseGroups.schema";
             { name: "PermissionGroup", schema: PermissionGroupSchema },
             { name: "CommissionPayment", schema: CommissionPaymentSchema },
             { name: "Commission", schema: CommissionSchema },
+            { name: "Discount", schema: DiscountSchema },
             { name: "Course", schema: CourseSchema },
             { name: "CourseGroup", schema: CourseGroupSchema },
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "Article", schema: ArticleSchema },
             { name: "Comment", schema: CommentSchema },
+            { name: "WalletTransaction", schema: WalletTransactionSchema },
         ]),
     ],
     controllers: [
@@ -46,6 +53,9 @@ import { CourseGroupSchema } from "src/models/courseGroups.schema";
         TeacherController,
         CommissionController,
         CourseGroupsController,
+        DiscountController,
+        WalletTransactionController,
+        CourseTransactionController
     ],
     providers: [AuthService],
     exports: [],

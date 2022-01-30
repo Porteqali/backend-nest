@@ -180,7 +180,7 @@ export class UserController {
                 totalPrice: 0,
                 paidAmount: 0,
                 transactionCode: "---",
-                authority: "---",
+                authority: randStr(20),
                 paymentMethod: "admin-added",
                 status: "ok",
             });
