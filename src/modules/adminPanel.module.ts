@@ -25,6 +25,11 @@ import { DiscountSchema } from "src/models/discount.schema";
 import { WalletTransactionController } from "src/controllers/admin/walletTransaction.controller";
 import { WalletTransactionSchema } from "src/models/walletTransactions.schema";
 import { CourseTransactionController } from "src/controllers/admin/courseTransaction.controller";
+import { HomeController } from "src/controllers/admin/home.controller";
+import { CollaborateRequestSchema } from "src/models/collaborateRequests.schema";
+import { ContactRequestSchema } from "src/models/contactRequests.schema";
+import { CollaborateRequestController } from "src/controllers/admin/collaborateRequest.controller";
+import { ContactRequestController } from "src/controllers/admin/contactRequest.controller";
 
 @Module({
     imports: [
@@ -42,6 +47,8 @@ import { CourseTransactionController } from "src/controllers/admin/courseTransac
             { name: "Article", schema: ArticleSchema },
             { name: "Comment", schema: CommentSchema },
             { name: "WalletTransaction", schema: WalletTransactionSchema },
+            { name: "CollaborateRequest", schema: CollaborateRequestSchema },
+            { name: "ContactRequest", schema: ContactRequestSchema },
         ]),
     ],
     controllers: [
@@ -55,7 +62,10 @@ import { CourseTransactionController } from "src/controllers/admin/courseTransac
         CourseGroupsController,
         DiscountController,
         WalletTransactionController,
-        CourseTransactionController
+        CourseTransactionController,
+        HomeController,
+        CollaborateRequestController,
+        ContactRequestController,
     ],
     providers: [AuthService],
     exports: [],

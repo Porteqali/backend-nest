@@ -117,7 +117,10 @@ export class CourseTransactionController {
     async getTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         if (!this.authService.authorize(req, "admin", ["admin.course-transactions.view"])) throw new ForbiddenException();
 
-        const transaction = await this.UserCourseModel.find({ authority: req.params.id }).exec();
+        const transaction = await this.UserCourseModel.find({ authority: req.params.id })
+            .populate("user", "image name family email mobile")
+            .populate("course", "image name")
+            .exec();
         if (!transaction) throw new NotFoundException();
 
         return res.json(transaction);

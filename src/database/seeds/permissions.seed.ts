@@ -57,4 +57,10 @@ export const records = [
 
     { _id: "admin.course-transactions.view", label: "مشاهده تراکنش ها", group: "course-transactions", groupLabel: "تراکنش های خرید دوره" },
     { _id: "admin.course-transactions.complete", label: "تکمیل تراکنش", group: "course-transactions", groupLabel: "تراکنش های خرید دوره" },
+
+    { _id: "admin.collaborate-requests.view", label: "مشاهده درخواست های همکاری", group: "collaborate-requests", groupLabel: "درخواست های همکاری" },
+    { _id: "admin.collaborate-requests.delete", label: "حدف درخواست همکاری", group: "collaborate-requests", groupLabel: "درخواست های همکاری" },
+
+    { _id: "admin.contact-requests.view", label: "مشاهده پیام های تماس با ما", group: "contact-requests", groupLabel: "پیام های تماس با ما" },
+    { _id: "admin.contact-requests.delete", label: "حدف پیام های تماس با ما", group: "contact-requests", groupLabel: "پیام های تماس با ما" },
 ];
