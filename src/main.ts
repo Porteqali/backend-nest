@@ -49,6 +49,9 @@ async function bootstrap() {
     // make CORS happen
     app.enableCors({ origin: `http://localhost:3000` });
 
+    // set the timezone
+    process.env.TZ = "Asia/Tehran";
+
     await app.listen(process.env.PORT);
 }
 bootstrap();

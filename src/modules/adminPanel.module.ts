@@ -30,6 +30,12 @@ import { CollaborateRequestSchema } from "src/models/collaborateRequests.schema"
 import { ContactRequestSchema } from "src/models/contactRequests.schema";
 import { CollaborateRequestController } from "src/controllers/admin/collaborateRequest.controller";
 import { ContactRequestController } from "src/controllers/admin/contactRequest.controller";
+import { FaqController } from "src/controllers/admin/faq.controller";
+import { FaqSchema } from "src/models/faqs.schema";
+import { TestimonialsController } from "src/controllers/admin/testimonials.controller";
+import { TestimonialSchema } from "src/models/testimonials.schema";
+import { BannerController } from "src/controllers/admin/banner.controller";
+import { ContactInfoController } from "src/controllers/admin/contactInfo.controller";
 
 @Module({
     imports: [
@@ -49,6 +55,8 @@ import { ContactRequestController } from "src/controllers/admin/contactRequest.c
             { name: "WalletTransaction", schema: WalletTransactionSchema },
             { name: "CollaborateRequest", schema: CollaborateRequestSchema },
             { name: "ContactRequest", schema: ContactRequestSchema },
+            { name: "Faq", schema: FaqSchema },
+            { name: "Testimonial", schema: TestimonialSchema },
         ]),
     ],
     controllers: [
@@ -66,6 +74,10 @@ import { ContactRequestController } from "src/controllers/admin/contactRequest.c
         HomeController,
         CollaborateRequestController,
         ContactRequestController,
+        FaqController,
+        TestimonialsController,
+        BannerController,
+        ContactInfoController,
     ],
     providers: [AuthService],
     exports: [],

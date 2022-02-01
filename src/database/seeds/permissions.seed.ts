@@ -63,4 +63,20 @@ export const records = [
 
     { _id: "admin.contact-requests.view", label: "مشاهده پیام های تماس با ما", group: "contact-requests", groupLabel: "پیام های تماس با ما" },
     { _id: "admin.contact-requests.delete", label: "حدف پیام های تماس با ما", group: "contact-requests", groupLabel: "پیام های تماس با ما" },
+
+    { _id: "admin.faqs.view", label: "مشاهده سوالات متداول", group: "faqs", groupLabel: "سوالات متداول" },
+    { _id: "admin.faqs.add", label: "ایجاد سوال جدید", group: "faqs", groupLabel: "سوالات متداول" },
+    { _id: "admin.faqs.edit", label: "ویرایش سوالات متداول", group: "faqs", groupLabel: "سوالات متداول" },
+    { _id: "admin.faqs.delete", label: "حذف سوال", group: "faqs", groupLabel: "سوالات متداول" },
+
+    { _id: "admin.testimonials.view", label: "مشاهده نظرات نمایشی", group: "testimonials", groupLabel: "نظرات نمایشی" },
+    { _id: "admin.testimonials.add", label: "ایجاد نظر جدید", group: "testimonials", groupLabel: "نظرات نمایشی" },
+    { _id: "admin.testimonials.edit", label: "ویرایش نظرات نمایشی", group: "testimonials", groupLabel: "نظرات نمایشی" },
+    { _id: "admin.testimonials.delete", label: "حذف نظر", group: "testimonials", groupLabel: "نظرات نمایشی" },
+
+    { _id: "admin.contact-info.view", label: "مشاهده اطلاعات تماس", group: "contact-info", groupLabel: "اطلاعات تماس" },
+    { _id: "admin.contact-info.edit", label: "ویرایش اطلاعات تماس", group: "contact-info", groupLabel: "اطلاعات تماس" },
+
+    { _id: "admin.banner.view", label: "مشاهده بنر وبسایت", group: "banner", groupLabel: "بنر وبسایت" },
+    { _id: "admin.banner.edit", label: "ویرایش بنر وبسایت", group: "banner", groupLabel: "بنر وبسایت" },
 ];
