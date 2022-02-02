@@ -11,6 +11,7 @@ export const ArticleSchema = new Schema({
     },
     image: { type: String },
     imageVertical: { type: String },
+    inTextImageList: [{ type: String }],
     title: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
     description: { type: String, required: true },
@@ -29,8 +30,6 @@ export const ArticleSchema = new Schema({
     }),
     url_code: {
         type: String,
-        unique: true,
-        required: true,
     },
     status: {
         type: String,
@@ -52,6 +51,7 @@ export interface Article {
     author: User | Schema.Types.ObjectId;
     image?: string;
     imageVertical?: string;
+    inTextImageList?: string[];
     title: string;
     slug: string;
     description: string;
@@ -59,7 +59,7 @@ export interface Article {
     category: ArticleCategory | Schema.Types.ObjectId;
     tags?: string[];
     metadata: MetaData;
-    url_code: string;
+    url_code?: string;
     status: string;
     likes: number;
     publishedAt: Date;
@@ -67,7 +67,7 @@ export interface Article {
 }
 
 export interface MetaData {
-    _id: Schema.Types.ObjectId;
+    _id?: Schema.Types.ObjectId;
     thumbnail: string;
     title: string;
     description: string;

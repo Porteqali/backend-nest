@@ -52,7 +52,6 @@ export class BannerController {
             if (banner.bgImage) await unlink(banner.bgImage.replace("/file/", "storage/")).catch((e) => {});
 
             const img = sharp(Buffer.from(files[0].buffer));
-            img.resize(256);
             const url = `storage/private/banner.${extension}`;
             await img.toFile(url).catch((e) => console.log(e));
 

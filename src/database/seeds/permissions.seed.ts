@@ -79,4 +79,9 @@ export const records = [
 
     { _id: "admin.banner.view", label: "مشاهده بنر وبسایت", group: "banner", groupLabel: "بنر وبسایت" },
     { _id: "admin.banner.edit", label: "ویرایش بنر وبسایت", group: "banner", groupLabel: "بنر وبسایت" },
+
+    { _id: "admin.articles.view", label: "مشاهده مقالات", group: "articles", groupLabel: "مقالات" },
+    { _id: "admin.articles.add", label: "ایجاد مقاله جدید", group: "articles", groupLabel: "مقالات" },
+    { _id: "admin.articles.edit", label: "ویرایش مقالات", group: "articles", groupLabel: "مقالات" },
+    { _id: "admin.articles.delete", label: "حذف مقاله", group: "articles", groupLabel: "مقالات" },
 ];
