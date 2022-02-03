@@ -37,6 +37,7 @@ import { TestimonialSchema } from "src/models/testimonials.schema";
 import { BannerController } from "src/controllers/admin/banner.controller";
 import { ContactInfoController } from "src/controllers/admin/contactInfo.controller";
 import { ArticleController } from "src/controllers/admin/article.controller";
+import { CourseController } from "src/controllers/admin/course.controller";
 
 @Module({
     imports: [
@@ -80,6 +81,7 @@ import { ArticleController } from "src/controllers/admin/article.controller";
         BannerController,
         ContactInfoController,
         ArticleController,
+        CourseController,
     ],
     providers: [AuthService],
     exports: [],

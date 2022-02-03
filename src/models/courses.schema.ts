@@ -16,7 +16,7 @@ export const CourseSchema = new Schema({
     },
     description: { type: String },
     price: { type: Number, min: 0, required: true },
-    exerciseFiles: [{ name: { type: String }, file: { type: String } }],
+    exerciseFiles: [{ name: { type: String }, file: { type: String }, size: { type: String } }],
     groups: [{ type: Schema.Types.ObjectId, ref: "CourseGroup" }],
     tags: [{ type: String }],
     status: {
@@ -63,7 +63,7 @@ export interface Course {
     groups: Array<CourseGroup | Schema.Types.ObjectId>;
     tags: string[];
     status: string;
-    commission: Commission | Schema.Types.ObjectId;
+    commission?: Commission | Schema.Types.ObjectId;
     buyCount: number;
     viewCount: number;
     score: number;

@@ -57,7 +57,10 @@ export class WalletTransactionController {
         let query = {};
 
         // filters
-        // ...
+        if (!!req.query.forUser) {
+            let forUser: any = req.query.forUser;
+            query["user._id"] = new Types.ObjectId(forUser);
+        }
 
         // making the model with query
         let data = this.WalletTransactionModel.aggregate();

@@ -115,10 +115,10 @@ export class CoursesController {
                 sort["buyCount"] = "desc";
                 break;
             case "oldest":
-                sort["publishedAt"] = "asc";
+                sort["createdAt"] = "asc";
                 break;
             default:
-                sort["publishedAt"] = "desc";
+                sort["createdAt"] = "desc";
         }
 
         // making the model with query

@@ -18,6 +18,12 @@ export class FilesController {
         // get file from "/storage"
         // if file is private and needs special permission, we can check it here
 
+        // TODO
+        // get the link
+        // check if its external or internal
+        // if its external get the external link form link document and stream the content
+        // if its internal get the file from storage
+
         const loadedUser = await loadUser(req);
         const filepathArray = filepath.split("/");
 
