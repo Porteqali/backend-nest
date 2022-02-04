@@ -10,6 +10,10 @@ import { AuthService } from "src/services/auth.service";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { CourseDocument } from "src/models/courses.schema";
 import * as Jmoment from "jalali-moment";
+import * as sharp from "sharp";
+import { CreateNewCourseDto, UpdateCourseDto } from "src/dto/adminPanel/courses.dto";
+import { FileFieldsInterceptor, FilesInterceptor } from "@nestjs/platform-express";
+import { randStr } from "src/helpers/str.helper";
 
 @Controller("admin/courses")
 export class CourseController {
@@ -131,22 +135,163 @@ export class CourseController {
     async getCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         if (!this.authService.authorize(req, "admin", ["admin.courses.view"])) throw new ForbiddenException();
 
-        const course = await this.CourseModel.findOne({ _id: req.params.id })
-            .populate("teacher", "image name family")
-            .populate("groups", "icon name")
-            .populate("commission", "name")
-            .exec();
+        const course = await this.CourseModel.findOne({ _id: req.params.id }).populate("teacher", "image name family").exec();
         if (!course) throw new NotFoundException();
         return res.json(course);
     }
 
-    @Post("/:id")
-    async addCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {}
+    @Post("/")
+    @UseInterceptors(FileFieldsInterceptor([{ name: "files" }, { name: "exerciseFiles" }]))
+    async addCourse(
+        @UploadedFiles() fileFields: Array<Express.Multer.File>,
+        @Body() input: CreateNewCourseDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.courses.add"])) throw new ForbiddenException();
+
+        const isTeacherExists = this.UserModel.exists({ _id: input.teacher, role: "teacher" });
+        if (!isTeacherExists) throw new UnprocessableEntityException([{ property: "teacher", errors: ["استاد انتخابی برای دوره پیدا نشد"] }]);
+
+        let imageLink = "";
+        if (!!fileFields["files"] && !!fileFields["files"].length) {
+            const ogName = fileFields["files"][0].originalname;
+            const extension = ogName.slice(((ogName.lastIndexOf(".") - 1) >>> 0) + 2);
+            // check file size
+            if (fileFields["files"][0].size > 2097152) throw new UnprocessableEntityException([{ property: "image", errors: ["حجم فایل باید کمتر از 2Mb باشد"] }]);
+            // check file format
+            let isMimeOk = extension == "png" || extension == "gif" || extension == "jpeg" || extension == "jpg";
+            if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
+
+            const randName = randStr(10);
+            const img = sharp(Buffer.from(fileFields["files"][0].buffer));
+            img.resize(768);
+            const url = `storage/public/course_images/${randName}.${extension}`;
+            await img.toFile(url).catch((e) => console.log(e));
+            imageLink = url.replace("storage/", "/file/");
+        }
+
+        const exerciseFilesDetails = req.body.exerciseFilesDetails ? JSON.parse(req.body.exerciseFilesDetails) : [];
+        let exerciseFiles = [];
+        if (!!fileFields["exerciseFiles"]) {
+            for (let i = 0; i < fileFields["exerciseFiles"].length; i++) {
+                const exerciseFile: any = fileFields["exerciseFiles"][i];
+                const ogName = exerciseFile.originalname;
+                const extension = ogName.slice(((ogName.lastIndexOf(".") - 1) >>> 0) + 2);
+
+                const randName = randStr(10);
+                const url = `storage/public/course_exercise_files/${randName}.${extension}`;
+                await writeFile(`./${url}`, Buffer.from(exerciseFile.buffer)).catch((e) => console.log(e));
+
+                exerciseFiles.push({ name: exerciseFilesDetails[i].name, file: url.replace("storage/", "/file/"), size: exerciseFile.size });
+            }
+        }
+
+        await this.CourseModel.create({
+            image: imageLink,
+            name: input.name,
+            description: input.description,
+            teacher: input.teacher,
+            price: input.price,
+            groups: input.groups.split(","),
+            exerciseFiles: exerciseFiles,
+            status: input.status,
+            showInNew: input.showInNew == "true" ? true : false,
+            commission: input.commission || null,
+            tags: input.tags ? JSON.parse(input.tags) : null,
+        });
+
+        return res.end();
+    }
 
     @Put("/:id")
-    async editCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        // also check for diffrence between new and old exerciseFiles list and delete the ones that removed and upload new ones
+    @UseInterceptors(FileFieldsInterceptor([{ name: "files" }, { name: "exerciseFiles" }]))
+    async editCourse(
+        @UploadedFiles() fileFields: Array<Express.Multer.File>,
+        @Body() input: UpdateCourseDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.courses.edit"])) throw new ForbiddenException();
+
+        // find course
+        const courseResult = await this.CourseModel.findOne({ _id: req.params.id }).exec();
+        if (!courseResult) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
+        const course = courseResult.toJSON();
+
+        const isTeacherExists = this.UserModel.exists({ _id: input.teacher, role: "teacher" });
+        if (!isTeacherExists) throw new UnprocessableEntityException([{ property: "teacher", errors: ["استاد انتخابی برای دوره پیدا نشد"] }]);
+
+        let imageLink = "";
+        if (!!fileFields["files"] && !!fileFields["files"].length) {
+            const ogName = fileFields["files"][0].originalname;
+            const extension = ogName.slice(((ogName.lastIndexOf(".") - 1) >>> 0) + 2);
+            // check file size
+            if (fileFields["files"][0].size > 2097152) throw new UnprocessableEntityException([{ property: "image", errors: ["حجم فایل باید کمتر از 2Mb باشد"] }]);
+            // check file format
+            let isMimeOk = extension == "png" || extension == "gif" || extension == "jpeg" || extension == "jpg";
+            if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
+
+            // delete the old image from system
+            await unlink(course.image.replace("/file/", "storage/")).catch((e) => {});
+
+            const randName = randStr(10);
+            const img = sharp(Buffer.from(fileFields["files"][0].buffer));
+            img.resize(768);
+            const url = `storage/public/course_images/${randName}.${extension}`;
+            await img.toFile(url).catch((e) => console.log(e));
+            imageLink = url.replace("storage/", "/file/");
+        } else if (!!input.image && input.image != "") {
+            imageLink = course.image;
+        }
+
+        const exerciseFilesDetails = req.body.exerciseFilesDetails ? JSON.parse(req.body.exerciseFilesDetails) : [];
+        const RemainedExerciseFilesIds = req.body.RemainedExerciseFilesIds ? JSON.parse(req.body.RemainedExerciseFilesIds) : [];
+        let exerciseFiles: any = course.exerciseFiles || [];
+        for (let i = 0; i < exerciseFiles.length; i++) {
+            if (!RemainedExerciseFilesIds.includes(exerciseFiles[i]["_id"].toString())) {
+                // delete excluded file
+                await unlink(exerciseFiles[i]["file"].replace("/file/", "storage/")).catch((e) => {});
+                exerciseFiles[i] = null;
+            }
+        }
+        exerciseFiles = exerciseFiles.filter((el) => el !== null && typeof el !== "undefined");
+        if (!!fileFields["exerciseFiles"]) {
+            for (let i = 0; i < fileFields["exerciseFiles"].length; i++) {
+                const exerciseFile: any = fileFields["exerciseFiles"][i];
+                const ogName = exerciseFile.originalname;
+                const extension = ogName.slice(((ogName.lastIndexOf(".") - 1) >>> 0) + 2);
+
+                const randName = randStr(10);
+                const url = `storage/public/course_exercise_files/${randName}.${extension}`;
+                await writeFile(`./${url}`, Buffer.from(exerciseFile.buffer)).catch((e) => console.log(e));
+
+                exerciseFiles.push({ name: exerciseFilesDetails[i].name, file: url.replace("storage/", "/file/"), size: exerciseFile.size });
+            }
+        }
+
+        const groups: any = input.groups.split(",");
+        const commission: any = new Types.ObjectId(input.commission) || null;
+        const teacher: any = new Types.ObjectId(input.teacher);
+
+        await this.CourseModel.updateOne(
+            { _id: req.params.id },
+            {
+                image: imageLink,
+                name: input.name,
+                description: input.description,
+                teacher: teacher,
+                price: parseInt(input.price),
+                groups: groups,
+                exerciseFiles: exerciseFiles,
+                status: input.status,
+                showInNew: input.showInNew == "true" ? true : false,
+                commission: commission,
+                tags: input.tags ? JSON.parse(input.tags) : null,
+            },
+        );
+
+        return res.end();
     }
 
     @Delete("/:id")

@@ -7,8 +7,8 @@ export class CreateNewAdminDto {
     readonly name: string;
 
     @Length(1, 100, { message: "نام خانوادگی حداکثر 100 کاراکتر" })
-    @IsString({ message: "نام ادمین را وارد کنید" })
-    @IsNotEmpty({ message: "نام ادمین را وارد کنید" })
+    @IsString({ message: "نام خانوادگی ادمین را وارد کنید" })
+    @IsNotEmpty({ message: "نام خانوادگی ادمین را وارد کنید" })
     readonly family: string;
 
     @IsEmail({ message: "ایمیل ادمین نامعتبر" })
@@ -45,8 +45,8 @@ export class UpdateNewAdminDto {
     readonly name: string;
 
     @Length(1, 100, { message: "نام خانوادگی حداکثر 100 کاراکتر" })
-    @IsString({ message: "نام ادمین را وارد کنید" })
-    @IsNotEmpty({ message: "نام ادمین را وارد کنید" })
+    @IsString({ message: "نام خانوادگی ادمین را وارد کنید" })
+    @IsNotEmpty({ message: "نام خانوادگی ادمین را وارد کنید" })
     readonly family: string;
 
     @IsEmail({ message: "ایمیل ادمین نامعتبر" })
