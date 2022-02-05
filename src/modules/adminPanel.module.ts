@@ -38,6 +38,8 @@ import { BannerController } from "src/controllers/admin/banner.controller";
 import { ContactInfoController } from "src/controllers/admin/contactInfo.controller";
 import { ArticleController } from "src/controllers/admin/article.controller";
 import { CourseController } from "src/controllers/admin/course.controller";
+import { LinkSchema } from "src/models/links.schema";
+import { CourseService } from "src/services/course.service";
 
 @Module({
     imports: [
@@ -59,6 +61,7 @@ import { CourseController } from "src/controllers/admin/course.controller";
             { name: "ContactRequest", schema: ContactRequestSchema },
             { name: "Faq", schema: FaqSchema },
             { name: "Testimonial", schema: TestimonialSchema },
+            { name: "Link", schema: LinkSchema },
         ]),
     ],
     controllers: [
@@ -83,7 +86,7 @@ import { CourseController } from "src/controllers/admin/course.controller";
         ArticleController,
         CourseController,
     ],
-    providers: [AuthService],
+    providers: [AuthService, CourseService],
     exports: [],
 })
 export class AdminPanelModule {}

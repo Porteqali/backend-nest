@@ -4,7 +4,7 @@ import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { unlink, writeFile } from "fs/promises";
+import { unlink, writeFile, mkdir } from "fs/promises";
 import { UserDocument } from "src/models/users.schema";
 import { AuthService } from "src/services/auth.service";
 import { UserCourseDocument } from "src/models/userCourses.schema";
@@ -14,21 +14,140 @@ import * as sharp from "sharp";
 import { CreateNewCourseDto, UpdateCourseDto } from "src/dto/adminPanel/courses.dto";
 import { FileFieldsInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { randStr } from "src/helpers/str.helper";
+import { LinkDocument } from "src/models/links.schema";
+import { CourseService } from "src/services/course.service";
 
 @Controller("admin/courses")
 export class CourseController {
     constructor(
         private readonly authService: AuthService,
+        private readonly courseService: CourseService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+        @InjectModel("Link") private readonly LinkModel: Model<LinkDocument>,
     ) {}
 
     @Get("/topics/:id")
-    async getCourseTopics(@Req() req: Request, @Res() res: Response): Promise<void | Response> {}
+    async getCourseTopics(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.courses.view"])) throw new ForbiddenException();
+
+        const courseResult = await this.CourseModel.findOne({ _id: req.params.id }).select("image name topics").populate("groups").exec();
+        if (!courseResult) throw new NotFoundException();
+        const course: any = courseResult.toJSON();
+
+        // foreach topic get the orginal link from links documet
+        for (let i = 0; i < course.topics.length; i++) {
+            if (course.topics[i].type == "link") {
+                const link = await this.LinkModel.findOne({ internal: course.topics[i].file }).exec();
+                course.topics[i].link = link ? link.external : "";
+            } else course.topics[i].link = "";
+        }
+
+        return res.json({ topics: course.topics, course: { image: course.image, name: course.name, groups: course.groups } });
+    }
 
     @Put("/topics/:id")
-    async editCourseTopics(@Req() req: Request, @Res() res: Response): Promise<void | Response> {}
+    @UseInterceptors(FileFieldsInterceptor([{ name: "files" }]))
+    async editCourseTopics(@UploadedFiles() uploads: Array<Express.Multer.File>, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.courses.edit"])) throw new ForbiddenException();
+
+        // find course
+        const courseResult = await this.CourseModel.findOne({ _id: req.params.id }).exec();
+        if (!courseResult) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
+        const course: any = courseResult.toJSON();
+
+        await mkdir(`./storage/private/course_videos/${course._id.toString()}`, { recursive: true }).catch((e) => {
+            console.log(e);
+        });
+
+        const topicsDetails = req.body.topicsDetails ? JSON.parse(req.body.topicsDetails) : [];
+        const topicsWithFileAndNoFileRaw = req.body.topicsWithFileAndNoFileRaw ? JSON.parse(req.body.topicsWithFileAndNoFileRaw) : [];
+        const topicsWithLink = req.body.topicsWithLink ? JSON.parse(req.body.topicsWithLink) : [];
+        const remainedTopicsIds = req.body.remainedTopicsIds ? JSON.parse(req.body.remainedTopicsIds) : [];
+        let topics = [];
+        let oldTopics = {};
+
+        // remove unwanted topics
+        for (let i = 0; i < course.topics.length; i++) {
+            if (!remainedTopicsIds.includes(course.topics[i]._id.toString())) {
+                if (course.topics[i]["type"] == "file") await unlink(course.topics[i]["file"].replace("/file/", "storage/")).catch((e) => {});
+            }
+            oldTopics[course.topics[i]._id.toString()] = { ...course.topics[i] };
+        }
+
+        // handle topicsWithLink
+        for (let i = 0; i < topicsWithLink.length; i++) {
+            const timeArray = topicsWithLink[i].timeRaw.split(":");
+            topics.push({
+                order: topicsWithLink[i].order,
+                name: topicsWithLink[i].name,
+                time: { hours: timeArray[0], minutes: timeArray[1], seconds: timeArray[2] },
+                file: await this.courseService.generateLinkForTopic(req, topicsWithLink[i].link, "courseVideo", { course_id: req.params.id }),
+                isFree: topicsWithLink[i].isFree,
+                isFreeForUsers: topicsWithLink[i].isFreeForUsers,
+                status: "active",
+                type: "link",
+            });
+
+            // check for any old topic with type of file that changed into link type
+            if (!!topicsWithLink[i]._id && !!oldTopics[topicsWithLink[i]._id] && oldTopics[topicsWithLink[i]._id]["type"] == "file") {
+                await unlink(oldTopics[topicsWithLink[i]._id]["file"].replace("/file/", "storage/")).catch((e) => {});
+            }
+        }
+
+        // handle topicsWithFileAndNoFileRaw
+        for (let i = 0; i < topicsWithFileAndNoFileRaw.length; i++) {
+            const timeArray = topicsWithFileAndNoFileRaw[i].timeRaw.split(":");
+            if (!!oldTopics[topicsWithFileAndNoFileRaw[i]._id]) {
+                topics.push({
+                    order: topicsWithFileAndNoFileRaw[i].order,
+                    name: topicsWithFileAndNoFileRaw[i].name,
+                    time: { hours: timeArray[0], minutes: timeArray[1], seconds: timeArray[2] },
+                    file: oldTopics[topicsWithFileAndNoFileRaw[i]._id].file,
+                    size: oldTopics[topicsWithFileAndNoFileRaw[i]._id].size,
+                    isFree: topicsWithFileAndNoFileRaw[i].isFree,
+                    isFreeForUsers: topicsWithFileAndNoFileRaw[i].isFreeForUsers,
+                    status: "active",
+                    type: "file",
+                });
+            }
+        }
+
+        // handle topics with type of file and fileRaw
+        if (!!uploads["files"]) {
+            for (let i = 0; i < uploads["files"].length; i++) {
+                const file: any = uploads["files"][i];
+                const ogName = file.originalname;
+                const extension = ogName.slice(((ogName.lastIndexOf(".") - 1) >>> 0) + 2);
+
+                const randName = randStr(15);
+                const url = `storage/private/course_videos/${course._id.toString()}/${randName}.${extension}`;
+                await writeFile(`./${url}`, Buffer.from(file.buffer)).catch((e) => console.log(e));
+
+                const timeArray = topicsDetails[i].timeRaw.split(":");
+                topics.push({
+                    order: topicsDetails[i].order,
+                    name: topicsDetails[i].name,
+                    file: url.replace("storage/", "/file/"),
+                    size: file.size,
+                    time: { hours: timeArray[0], minutes: timeArray[1], seconds: timeArray[2] },
+                    isFree: topicsDetails[i].isFree,
+                    isFreeForUsers: topicsDetails[i].isFreeForUsers,
+                    status: "active",
+                    type: "file",
+                });
+
+                // if topicsDetails had _id or file delete the old file too
+                if (topicsDetails[i].file != "" && !!topicsDetails[i]._id) {
+                    await unlink(topicsDetails[i].file.replace("/file/", "storage/")).catch((e) => {});
+                }
+            }
+        }
+
+        await this.CourseModel.updateOne({ _id: req.params.id }, { topics: topics }).exec();
+        return res.end();
+    }
 
     // =============================================================================
 
@@ -302,7 +421,7 @@ export class CourseController {
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);
 
         // TODO
-        // also delete local video files and images
+        // also delete local video files and images and exersice files
 
         // delete the course
         await this.CourseModel.deleteOne({ _id: req.params.id }).exec();

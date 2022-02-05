@@ -42,7 +42,9 @@ export const CourseSchema = new Schema({
             isFree: { type: Boolean, default: false },
             isFreeForUsers: { type: Boolean, default: false },
             canPlay: { type: Boolean, default: false },
-            status: { type: String, enum: ["active", "deactive"] },
+            size: { type: String },
+            status: { type: String, enum: ["active", "deactive"], default: "active" },
+            type: { type: String, enum: ["link", "file"], default: "file" },
         }),
     ],
     createdAt: {
@@ -82,7 +84,9 @@ export interface CourseTopic {
     isFree: boolean;
     isFreeForUsers: boolean;
     canPlay?: boolean;
+    size?: string;
     status: string;
+    type: string;
 }
 
 export interface Time {

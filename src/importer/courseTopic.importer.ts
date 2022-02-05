@@ -36,6 +36,7 @@ export class CourseTopicImporter {
                     isFree: topic.is_free == "0" ? false : true,
                     isFreeForUsers: topic.is_free_for_users == "0" ? false : true,
                     status: "active",
+                    type: "file",
                 },
             ];
 

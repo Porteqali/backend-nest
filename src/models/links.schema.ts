@@ -1,9 +1,9 @@
 import { Document, Schema } from "mongoose";
 import { User } from "./users.schema";
 
-export type FaqDocument = Faq & Document;
+export type LinkDocument = Link & Document;
 
-export const FaqSchema = new Schema({
+export const LinkSchema = new Schema({
     author: {
         type: Schema.Types.ObjectId,
         ref: "User",
@@ -21,7 +21,7 @@ export const FaqSchema = new Schema({
     },
 });
 
-export interface Faq {
+export interface Link {
     _id: Schema.Types.ObjectId;
     author: User | Schema.Types.ObjectId;
     external: string;
