@@ -3,18 +3,20 @@ import { Controller, Get, InternalServerErrorException, Post, Req, Res } from "@
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 
-@Controller("contact-info")
-export class ContactInfoController {
+@Controller("banner")
+export class BannerController {
     constructor() {}
 
     @Get("/")
-    async getContactInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const rawdata = await readFile("./static/contact_info.json")
+    async getBanner(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const rawdata = await readFile("./static/banner.json")
             .then((data) => data)
             .catch((e) => {
                 throw InternalServerErrorException;
             });
-        const contact_info = JSON.parse(rawdata.toString());
-        return res.json(contact_info);
+        const banner = JSON.parse(rawdata.toString());
+
+        // if (new Date(banner.endDate) < new Date(Date.now())) banner.status = "deactive";
+        return res.json(banner);
     }
 }

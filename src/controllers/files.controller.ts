@@ -4,37 +4,31 @@ import { get as httpsGet } from "https";
 import { Request, Response } from "express";
 import { FileService } from "src/services/file.service";
 import { loadUser } from "src/helpers/auth.helper";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { LinkDocument } from "src/models/links.schema";
 
 @Controller("file")
 export class FilesController {
-    constructor(private readonly fileService: FileService) {}
+    constructor(private readonly fileService: FileService, @InjectModel("Link") private readonly LinkModel: Model<LinkDocument>) {}
 
     @Get("/*")
     async getFile(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         let filepath = `storage${req.url.replace("/file", "")}`;
         filepath = filepath.split("../").join("");
 
-        // TODO
-        // get file from "/storage"
-        // if file is private and needs special permission, we can check it here
-
-        // TODO
-        // get the link
-        // check if its external or internal
-        // if its external get the external link form link document and stream the content
-        // if its internal get the file from storage
-
         const loadedUser = await loadUser(req);
         const filepathArray = filepath.split("/");
 
         // if link is a course video check if user have access to it
-        if (filepathArray[2] === "course_videos") await this.fileService.courseCheck(req, filepathArray, loadedUser);
+        if (filepathArray[2] === "course_videos") await this.fileService.courseCheck(req, req.url, filepathArray, loadedUser);
 
-        if (req.query.stream) {
-            // TODO
-            // generate link base on file type and location and cdn base url
-            const streamLink = `https://porteqali.com/course_topic_videos/62/3f58a81c-c3b2-43a5-b24f-7f64203c477d.mp4`;
-            httpsGet(streamLink, (response) => {
+        if (filepathArray[1] === "stream") {
+            // get external link then send request and serve it
+            const link = await this.LinkModel.findOne({ internal: req.url }).exec();
+            if (!link || !link.external) return res.status(404).end();
+
+            httpsGet(link.external, (response) => {
                 if (response.statusCode >= 200 && response.statusCode < 400) {
                     try {
                         res.writeHead(response.statusCode, { ...response.headers });
@@ -51,6 +45,6 @@ export class FilesController {
             return res.sendFile(`${process.cwd()}/${filepath}`);
         }
 
-        return res.status(404).end();
+        if (filepathArray[1] !== "stream") return res.status(404).end();
     }
 }

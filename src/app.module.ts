@@ -35,6 +35,7 @@ import { WalletTransactionSchema } from "./models/walletTransactions.schema";
 import { CommentSchema } from "./models/comments.schema";
 import { SeederModule } from "./modules/seeder.module";
 import { AdminPanelModule } from "./modules/adminPanel.module";
+import { BannerController } from "./controllers/web/banner.controller";
 
 @Module({
     imports: [
@@ -68,6 +69,7 @@ import { AdminPanelModule } from "./modules/adminPanel.module";
         AppController,
         AboutUsController,
         ContactInfoController,
+        BannerController,
         LatestNewsController,
         TeachersController,
         SearchController,

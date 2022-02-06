@@ -40,6 +40,7 @@ import { ArticleController } from "src/controllers/admin/article.controller";
 import { CourseController } from "src/controllers/admin/course.controller";
 import { LinkSchema } from "src/models/links.schema";
 import { CourseService } from "src/services/course.service";
+import { MarketerCoursesSchema } from "src/models/marketerCourses.schema";
 
 @Module({
     imports: [
@@ -62,6 +63,7 @@ import { CourseService } from "src/services/course.service";
             { name: "Faq", schema: FaqSchema },
             { name: "Testimonial", schema: TestimonialSchema },
             { name: "Link", schema: LinkSchema },
+            { name: "MarketerCourse", schema: MarketerCoursesSchema },
         ]),
     ],
     controllers: [

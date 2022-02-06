@@ -7,7 +7,6 @@ import { Model, Types } from "mongoose";
 import { unlink, readFile } from "fs/promises";
 import { hash } from "bcrypt";
 import { UserDocument } from "src/models/users.schema";
-import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
 import { AuthService } from "src/services/auth.service";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { randStr } from "src/helpers/str.helper";
@@ -16,15 +15,20 @@ import * as Jmoment from "jalali-moment";
 import { CreateNewMarketerDto, PayMarketerCommissionDto, UpdateMarketerDto } from "src/dto/adminPanel/marketers.dto";
 import { CommissionPaymentDocument } from "src/models/commissionPayments.schema";
 import { UserCourseDocument } from "src/models/userCourses.schema";
+import { MarketerCoursesDocument } from "src/models/marketerCourses.schema";
+import { CourseDocument } from "src/models/courses.schema";
+import { CourseGroupDocument } from "src/models/courseGroups.schema";
 
 @Controller("admin/marketers")
 export class MarketerController {
     constructor(
         private readonly authService: AuthService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
-        @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("CommissionPayment") private readonly CommissionPaymentModel: Model<CommissionPaymentDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+        @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
+        @InjectModel("CourseGroup") private readonly CourseGroupModel: Model<CourseGroupDocument>,
+        @InjectModel("MarketerCourse") private readonly MarketerCourseModel: Model<MarketerCoursesDocument>,
     ) {}
 
     @Post("/pay/:id")
@@ -324,6 +328,164 @@ export class MarketerController {
                 email: user.email,
             },
         });
+    }
+
+    @Get("/courses/:id")
+    async getMarketerCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+
+        const search = req.query.search ? req.query.search.toString() : "";
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 25;
+
+        // the base query object
+        let query = {
+            marketer: new Types.ObjectId(req.params.id),
+        };
+
+        // making the model with query
+        let data = this.MarketerCourseModel.aggregate();
+        data.lookup({
+            from: "courses",
+            localField: "course",
+            foreignField: "_id",
+            as: "course",
+        });
+        data.match(query);
+        data.sort({ createdAt: "desc" });
+        data.project("course.image course.name commissionAmount commissionType code status createdAt");
+        if (!!search) {
+            data.match({
+                $or: [
+                    { commissionAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { commissionType: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { code: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { status: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                    { "course.name": { $regex: new RegExp(`.*${search}.*`, "i") } },
+                ],
+            });
+        }
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        let error = false;
+        const results = await data.exec().catch((e) => (error = true));
+        if (error) throw new InternalServerErrorException();
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        // get the user
+        const user = await this.UserModel.findOne({ _id: req.params.id }).exec();
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+            user: { image: user.image, name: user.name, family: user.family, email: user.email },
+        });
+    }
+
+    @Post("/courses-bulk/:id")
+    async bulkAddCoursesToMarketer(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.marketers.edit"])) throw new ForbiddenException();
+
+        const bulkAmountType = req.body.bulkAmountType;
+        const bulkAmount = req.body.bulkAmount ? parseInt(req.body.bulkAmount) : 0;
+        const emmitTo = req.body.emmitTo;
+        const emmitToId = req.body.emmitToId;
+
+        if (emmitTo !== "allCourses" && !emmitToId) {
+            throw new UnprocessableEntityException([{ property: "emmitToId", errors: ["دوره یا گروه دوره مورد نظر را مشخص کنید"] }]);
+        }
+
+        let arrayToInsert = [];
+        switch (emmitTo) {
+            case "allCourses":
+                const courses = await this.CourseModel.find().select("_id").exec();
+                for (let i = 0; i < courses.length; i++) {
+                    arrayToInsert.push({ marketer: req.params.id, course: courses[i]._id, commissionAmount: bulkAmount, commissionType: bulkAmountType });
+                }
+                break;
+            case "course":
+                const course = await this.CourseModel.findOne({ _id: emmitToId }).select("_id").exec();
+                arrayToInsert.push({ marketer: req.params.id, course: course._id, commissionAmount: bulkAmount, commissionType: bulkAmountType });
+                break;
+            case "courseGroup":
+                const groupCourses = await this.CourseModel.find({ groups: { $elemMatch: { $eq: emmitToId } } })
+                    .select("_id")
+                    .exec();
+                for (let i = 0; i < groupCourses.length; i++) {
+                    arrayToInsert.push({ marketer: req.params.id, course: groupCourses[i]._id, commissionAmount: bulkAmount, commissionType: bulkAmountType });
+                }
+                break;
+        }
+
+        for (let i = 0; i < arrayToInsert.length; i++) {
+            await this.MarketerCourseModel.updateOne({ course: arrayToInsert[i].course }, { ...arrayToInsert[i] }, { upsert: true }).exec();
+        }
+        return res.end();
+    }
+
+    @Delete("/courses-bulk/:id")
+    async bulkDeleteCoursesFromMarketer(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.marketers.edit"])) throw new ForbiddenException();
+
+        const emmitTo = req.query.emmitTo;
+        const emmitToId = req.query.emmitToId;
+
+        if (emmitTo !== "allCourses" && !emmitToId) {
+            throw new UnprocessableEntityException([{ property: "emmitToId", errors: ["دوره یا گروه دوره مورد نظر را مشخص کنید"] }]);
+        }
+
+        let arrayToDelete = [];
+        switch (emmitTo) {
+            case "allCourses":
+                const courses = await this.CourseModel.find().select("_id").exec();
+                for (let i = 0; i < courses.length; i++) arrayToDelete.push(courses[i]._id);
+                break;
+            case "course":
+                const course = await this.CourseModel.findOne({ _id: emmitToId }).select("_id").exec();
+                arrayToDelete.push(course._id);
+                break;
+            case "courseGroup":
+                const groupCourses = await this.CourseModel.find({ groups: { $elemMatch: { $eq: emmitToId } } })
+                    .select("_id")
+                    .exec();
+                for (let i = 0; i < groupCourses.length; i++) arrayToDelete.push(groupCourses[i]._id);
+                break;
+        }
+
+        await this.MarketerCourseModel.deleteMany({ course: { $in: arrayToDelete } }).exec();
+        return res.end();
+    }
+
+    @Put("/courses/:id")
+    async editMarketerCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (!this.authService.authorize(req, "admin", ["admin.marketers.edit"])) throw new ForbiddenException();
+
+        const coursesToDelete = req.body.coursesToDelete || [];
+        for (let i = 0; i < coursesToDelete.length; i++) {
+            await this.MarketerCourseModel.deleteOne({ _id: coursesToDelete[i] });
+        }
+
+        const courses = req.body.courses || [];
+        for (let i = 0; i < courses.length; i++) {
+            await this.MarketerCourseModel.updateOne(
+                { _id: courses[i]._id },
+                {
+                    commissionAmount: courses[i].commissionAmount || 0,
+                    commissionType: courses[i].commissionType,
+                    status: courses[i].status,
+                },
+            );
+        }
+
+        return res.end();
     }
 
     // =============================================================================

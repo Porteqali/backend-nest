@@ -22,12 +22,9 @@ export const MarketerCoursesSchema = new Schema({
         enum: ["percent", "number"],
         required: true,
     },
-    code: {
-        type: String,
-        required: true,
-    },
+    code: { type: String },
     status: {
-        type: Number,
+        type: String,
         enum: ["active", "deactive"],
         default: "active",
     },
@@ -43,7 +40,7 @@ export interface MarketerCourses {
     course: Course | Schema.Types.ObjectId;
     commissionAmount: number;
     commissionType: string;
-    code: string;
+    code?: string;
     status: string;
     createdAt: Date;
 }

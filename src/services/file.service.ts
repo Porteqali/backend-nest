@@ -16,11 +16,11 @@ export class FileService {
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
     ) {}
 
-    async courseCheck(req: Request, filepathArray: Array<string>, loadedUser: any): Promise<void> {
+    async courseCheck(req: Request, filepath: string, filepathArray: Array<string>, loadedUser: any): Promise<void> {
         // ["storage", "private", "course_videos", "61bef385f1dc2180e2f0e855", "91b5c15d-2b25-45e4-8c0c-c14b95333a0a.mp4"];
         const course_id = filepathArray[3];
         const topicFile = filepathArray[4];
-        const topicFileLink = `/file/private/course_videos/${course_id}/${topicFile}`;
+        const topicFileLink = filepath;
 
         const course = await this.CourseModel.findOne({ _id: course_id }).exec();
         if (!course) throw new ForbiddenException();

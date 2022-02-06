@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { FilesController } from "src/controllers/files.controller";
 import { CourseSchema } from "src/models/courses.schema";
+import { LinkSchema } from "src/models/links.schema";
 import { PermissionGroupSchema } from "src/models/permissionGroups.schema";
 import { SessionSchema } from "src/models/sessions.schema";
 import { UserCourseSchema } from "src/models/userCourses.schema";
@@ -16,6 +17,7 @@ import { FileService } from "src/services/file.service";
             { name: "PermissionGroup", schema: PermissionGroupSchema },
             { name: "Course", schema: CourseSchema },
             { name: "UserCourse", schema: UserCourseSchema },
+            { name: "Link", schema: LinkSchema },
         ]),
     ],
     controllers: [FilesController],

@@ -57,9 +57,7 @@ export class CourseController {
         if (!courseResult) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
         const course: any = courseResult.toJSON();
 
-        await mkdir(`./storage/private/course_videos/${course._id.toString()}`, { recursive: true }).catch((e) => {
-            console.log(e);
-        });
+        await mkdir(`./storage/private/course_videos/${course._id.toString()}`, { recursive: true }).catch((e) => {});
 
         const topicsDetails = req.body.topicsDetails ? JSON.parse(req.body.topicsDetails) : [];
         const topicsWithFileAndNoFileRaw = req.body.topicsWithFileAndNoFileRaw ? JSON.parse(req.body.topicsWithFileAndNoFileRaw) : [];
@@ -417,11 +415,18 @@ export class CourseController {
     async deleteCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         if (!this.authService.authorize(req, "admin", ["admin.courses.delete"])) throw new ForbiddenException();
 
-        const data = await this.CourseModel.findOne({ _id: req.params.id }).exec();
-        if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);
+        const course = await this.CourseModel.findOne({ _id: req.params.id }).exec();
+        if (!course) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);
 
-        // TODO
         // also delete local video files and images and exersice files
+        for (let i = 0; i < course.exerciseFiles.length; i++) {
+            await unlink(course.exerciseFiles[i]["file"].replace("/file/", "storage/")).catch((e) => {});
+        }
+        for (let i = 0; i < course.topics.length; i++) {
+            if (course.topics[i]["type"] != "file") continue;
+            await unlink(course.topics[i]["file"].replace("/file/", "storage/")).catch((e) => {});
+        }
+        await unlink(course.image.replace("/file/", "storage/")).catch((e) => {});
 
         // delete the course
         await this.CourseModel.deleteOne({ _id: req.params.id }).exec();
