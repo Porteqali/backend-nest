@@ -16,7 +16,7 @@ export class BannerController {
             });
         const banner = JSON.parse(rawdata.toString());
 
-        // if (new Date(banner.endDate) < new Date(Date.now())) banner.status = "deactive";
+        if (new Date(banner.endDate) < new Date(Date.now())) banner.status = "deactive";
         return res.json(banner);
     }
 }

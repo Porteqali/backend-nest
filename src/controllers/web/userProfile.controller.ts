@@ -188,7 +188,7 @@ export class UserProfileController {
         };
 
         // sort
-        let sort = { createdAt: "desc" };
+        let sort = { "info.createdAt": "desc" };
 
         // making the model with query
         // let data = this.UserCourseModel.aggregate([{ $group: { _id: "$authority" } }]);
@@ -200,9 +200,9 @@ export class UserProfileController {
             foreignField: "_id",
             as: "course",
         });
-        data.sort(sort);
         data.project("course.image course.name totalPrice paidAmount authority transactionCode paymentMethod status createdAt");
         data.group({ _id: "$authority", info: { $push: "$$ROOT" } });
+        data.sort(sort);
 
         // paginating
         data = data.facet({

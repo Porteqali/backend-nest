@@ -6,10 +6,16 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { SendCommentDto } from "src/dto/sendComment.dto";
 import { CommentDocument } from "src/models/comments.schema";
+import { ArticleDocument } from "src/models/articles.schema";
+import { CourseDocument } from "src/models/courses.schema";
 
 @Controller("comments")
 export class CommentsController {
-    constructor(@InjectModel("Comment") private readonly CommentModel: Model<CommentDocument>) {}
+    constructor(
+        @InjectModel("Comment") private readonly CommentModel: Model<CommentDocument>,
+        @InjectModel("Article") private readonly ArticleModel: Model<ArticleDocument>,
+        @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
+    ) {}
 
     @Get("/")
     async getComments(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
@@ -122,8 +128,16 @@ export class CommentsController {
 
     @Post("/send")
     async sendComment(@Body() input: SendCommentDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        // check if article or comment exists
+        switch (input.type) {
+            case "course":
+                const doesCourseExists = await this.CourseModel.exists({ _id: input.commentedOn });
+                if (!doesCourseExists) throw new UnprocessableEntityException([{ property: "", errors: ["دوره پیدا نشد"] }]);
+                break;
+            case "article":
+                const doesArticleExists = await this.ArticleModel.exists({ _id: input.commentedOn });
+                if (!doesArticleExists) throw new UnprocessableEntityException([{ property: "", errors: ["مقاله پیدا نشد"] }]);
+                break;
+        }
 
         // check if topComment exists
         if (!!input.topComment) {

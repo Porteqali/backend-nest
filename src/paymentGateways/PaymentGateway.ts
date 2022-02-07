@@ -8,16 +8,16 @@ export class PaymentGateway {
     private apiKey: string;
     private gateway: GatewayInterface;
 
-    constructor(method: string) {
+    constructor(method: string, productGroup: "wallet-charge" | "course") {
         this.method = method;
         switch (this.method) {
             case "zarinpal":
                 this.apiKey = process.env.ZARINPAL_KEY;
-                this.gateway = new Zarinpal();
+                this.gateway = new Zarinpal(productGroup);
                 break;
             case "wallet":
                 this.apiKey = "";
-                this.gateway = new Wallet();
+                this.gateway = new Wallet(productGroup);
                 break;
             default:
                 this.gateway = null;

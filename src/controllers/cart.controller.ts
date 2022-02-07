@@ -59,6 +59,12 @@ export class CartController {
         const couponCode = req.body.couponCode || "";
         let cart = {};
 
+        if (process.env.PAYMENT_IN_TEST && req.user.user.role != "admin") {
+            throw new UnprocessableEntityException([
+                { property: "cart", errors: ["درحال حاضر امکان خرید و پرداخت وجود ندارد، لطفا در ساعاتی بعد دوباره امتحان کنید"] },
+            ]);
+        }
+
         try {
             cart = JSON.parse(list);
         } catch (e) {
@@ -91,7 +97,7 @@ export class CartController {
         }
 
         // send a request to gateway and get the identifier
-        const paymentGateway = new PaymentGateway(method);
+        const paymentGateway = new PaymentGateway(method, "course");
         let identifier = "";
         try {
             identifier = await paymentGateway.getIdentifier(
@@ -122,7 +128,7 @@ export class CartController {
         if (!method) return res.json({ redirectUrl: "/purchase-result?status=422&message=NoMethod" });
 
         let transactionResponse = null;
-        const paymentGateway = new PaymentGateway(method);
+        const paymentGateway = new PaymentGateway(method, "course");
         try {
             transactionResponse = paymentGateway.getTransactionResponse(req);
         } catch (e) {
@@ -184,6 +190,18 @@ export class CartController {
                 { _id: userCourse._id },
                 { status: "ok", transactionCode: transactionCode, paidAmount: userCourse.totalPrice, teacherCut: teacherCut, marketerCut: marketerCut },
             ).exec();
+        }
+
+        if (method == "wallet") {
+            const recentlyPurchasedCourses = await this.UserCourseModel.find({ authority: transactionResponse.identifier }, { status: "ok" })
+                .select("paidAmount course")
+                .exec();
+            if (recentlyPurchasedCourses.length == 1 && recentlyPurchasedCourses[0].paidAmount == 0) {
+                return res.json({ redirectUrl: `/course/${recentlyPurchasedCourses[0].course}` });
+            }
+            console.log(recentlyPurchasedCourses[0]);
+            console.log(recentlyPurchasedCourses[0].paidAmount);
+            console.log(recentlyPurchasedCourses[0].paidAmount == 0);
         }
 
         return res.json({ redirectUrl: "/purchase-result?status=200&message=Success" });

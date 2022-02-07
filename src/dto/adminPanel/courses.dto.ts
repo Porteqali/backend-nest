@@ -6,7 +6,7 @@ export class CreateNewCourseDto {
     @IsNotEmpty({ message: "عنوان دوره را وارد کنید" })
     readonly name: string;
 
-    @Length(1, 1000, { message: "توضیحات حداکثر 1000 کاراکتر" })
+    @Length(1, 5000, { message: "توضیحات حداکثر 5000 کاراکتر" })
     @IsString({ message: "توضیحات را وارد کنید" })
     @IsNotEmpty({ message: "توضیحات را وارد کنید" })
     readonly description: string;
@@ -47,7 +47,7 @@ export class UpdateCourseDto {
     @IsNotEmpty({ message: "عنوان دوره را وارد کنید" })
     readonly name: string;
 
-    @Length(1, 1000, { message: "توضیحات حداکثر 1000 کاراکتر" })
+    @Length(1, 5000, { message: "توضیحات حداکثر 5000 کاراکتر" })
     @IsString({ message: "توضیحات را وارد کنید" })
     @IsNotEmpty({ message: "توضیحات را وارد کنید" })
     readonly description: string;

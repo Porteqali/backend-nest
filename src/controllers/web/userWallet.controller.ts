@@ -22,10 +22,16 @@ export class UserWalletController {
         const method = req.body.method || "zarinpal";
         const amount = parseInt(req.body.amount);
 
+        if (process.env.PAYMENT_IN_TEST && req.user.user.role != "admin") {
+            throw new UnprocessableEntityException([
+                { property: "cart", errors: ["درحال حاضر امکان خرید و پرداخت وجود ندارد، لطفا در ساعاتی بعد دوباره امتحان کنید"] },
+            ]);
+        }
+
         if (amount < 10000) throw new UnprocessableEntityException([{ property: "cart", errors: ["حداقل میزان شارژ 10،000 تومان میباشد"] }]);
 
         // send a request to gateway and get the identifier
-        const paymentGateway = new PaymentGateway(method);
+        const paymentGateway = new PaymentGateway(method, "wallet-charge");
         let identifier = "";
         try {
             identifier = await paymentGateway.getIdentifier(
@@ -60,7 +66,7 @@ export class UserWalletController {
         if (!method) return res.json({ redirectUrl: "/purchase-result?status=422&message=NoMethod" });
 
         let transactionResponse = null;
-        const paymentGateway = new PaymentGateway(method);
+        const paymentGateway = new PaymentGateway(method, "wallet-charge");
         try {
             transactionResponse = paymentGateway.getTransactionResponse(req);
         } catch (e) {

@@ -16,6 +16,9 @@ export class UpdateBannerDto {
     @IsOptional()
     readonly code?: string;
 
+    @IsOptional()
+    readonly link?: string;
+
     @IsDateString({}, { message: "فرمت تاریخ نامعتبر" })
     @IsNotEmpty({ message: "تاریخ پایان را مشخص کنید" })
     readonly endDate: string;

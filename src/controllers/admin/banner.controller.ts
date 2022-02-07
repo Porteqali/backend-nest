@@ -51,9 +51,13 @@ export class BannerController {
             // delete the old image from system
             if (banner.bgImage) await unlink(banner.bgImage.replace("/file/", "storage/")).catch((e) => {});
 
-            const img = sharp(Buffer.from(files[0].buffer));
             const url = `storage/private/banner.${extension}`;
-            await img.toFile(url).catch((e) => console.log(e));
+            if (extension == "gif") {
+                await writeFile(`./${url}`, Buffer.from(files[0].buffer)).catch((e) => console.log(e));
+            } else {
+                const img = sharp(Buffer.from(files[0].buffer));
+                await img.toFile(url).catch((e) => console.log(e));
+            }
 
             imageLink = url.replace("storage/", "/file/");
         } else if (!!input.image && input.image != "") {
@@ -67,6 +71,7 @@ export class BannerController {
         banner.bgColor = input.bgColor;
         banner.text = input.text || "";
         banner.code = input.code || "";
+        banner.link = input.link || "#";
         banner.endDate = endDate.toDate();
         banner.status = input.status;
         await writeFile("./static/banner.json", JSON.stringify(banner));

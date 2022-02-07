@@ -3,10 +3,17 @@ import { Request } from "express";
 import { GatewayInterface, TransactionResponse, VerficationResponseInterface } from "src/interfaces/Gateway";
 
 export class Gateway implements GatewayInterface {
+    private productGroup: string;
+
+    constructor(productGroup) {
+        this.productGroup = productGroup;
+    }
+    
     public async getIdentifier(apiKey: string, amount: number, redirect: string, description: string, mobile?): Promise<string> {
         let identifier = "";
-        const url = `https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
-        // const url = `https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
+        let url = `https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
+        if (process.env.PAYMENT_IN_TEST) url = `https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
+
         await axios
             .post(url, {
                 MerchantID: apiKey,
@@ -25,9 +32,12 @@ export class Gateway implements GatewayInterface {
     }
 
     public getGatewayUrl(identifier: string): string {
-        return `https://sandbox.zarinpal.com/pg/StartPay/${identifier}`;
         // return `https://www.zarinpal.com/pg/StartPay/${identifier}`;
-        // return `https://www.zarinpal.com/pg/StartPay/${identifier}/ZarinGate`;
+
+        let url = `https://www.zarinpal.com/pg/StartPay/${identifier}/ZarinGate`;
+        if (process.env.PAYMENT_IN_TEST) url = `https://sandbox.zarinpal.com/pg/StartPay/${identifier}`;
+
+        return url;
     }
 
     public getTransactionResponse(req: Request): TransactionResponse {
