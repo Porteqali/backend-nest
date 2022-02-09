@@ -35,25 +35,25 @@ export class CourseTransactionController {
         const sortType = req.query.sort_type ? req.query.sort_type : "asc";
         switch (req.query.sort) {
             case "کاربر":
-                sort = { "user.name": sortType, "user.family": sortType };
+                sort = { "info.user.name": sortType, "info.user.family": sortType };
                 break;
             case "دوره":
-                sort = { "course.name": sortType };
+                sort = { "info.course.name": sortType };
                 break;
             case "کد تراکنش":
-                sort = { transactionCode: sortType };
+                sort = { "info.transactionCode": sortType };
                 break;
             case "مبلغ کل":
-                sort = { totalPrice: sortType };
+                sort = { "info.totalPrice": sortType };
                 break;
             case "مبلغ پرداختی":
-                sort = { paidAmount: sortType };
+                sort = { "info.paidAmount": sortType };
                 break;
             case "وضعیت":
-                sort = { status: sortType };
+                sort = { "info.status": sortType };
                 break;
             default:
-                sort = { createdAt: sortType };
+                sort = { "info.createdAt": sortType };
                 break;
         }
 
@@ -71,7 +71,6 @@ export class CourseTransactionController {
         data.lookup({ from: "users", localField: "user", foreignField: "_id", as: "user" });
         data.lookup({ from: "courses", localField: "course", foreignField: "_id", as: "course" });
         data.match(query);
-        data.sort(sort);
         data.project({
             "user.image": 1,
             fullname: { $concat: [{ $arrayElemAt: ["$user.name", 0] }, " ", { $arrayElemAt: ["$user.family", 0] }] },
@@ -95,6 +94,7 @@ export class CourseTransactionController {
             ],
         });
         data.group({ _id: "$authority", info: { $push: "$$ROOT" } });
+        data.sort(sort);
 
         // paginating
         data = data.facet({

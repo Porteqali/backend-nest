@@ -43,8 +43,6 @@ export class TeachersController {
             .select("image title name family groups description socials")
             .exec();
 
-        // TODO : count the total users that bouth this teacher courses
-
         const courseCount = await this.CourseModel.countDocuments({ teacher: id, status: "active" }).exec();
 
         return res.json({ teacher, courseCount });
