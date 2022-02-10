@@ -29,7 +29,7 @@ export class TeacherController {
 
     @Post("/pay/:id")
     async payCommission(@Body() input: PayTeacherCommissionDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.teachers.pay"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.teachers.pay"])) throw new ForbiddenException();
 
         if (parseInt(input.amount) <= 0) throw new UnprocessableEntityException([{ property: "amount", errors: ["مبلغ را وارد کنید!"] }]);
 
@@ -58,7 +58,7 @@ export class TeacherController {
 
     @Get("/commissions/:id")
     async getTeacherCommissionList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -153,7 +153,7 @@ export class TeacherController {
 
     @Get("/commission-payments/:id")
     async getTeacherCommissionPaymentList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -238,7 +238,7 @@ export class TeacherController {
 
     @Get("/")
     async getTeacherList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -329,7 +329,7 @@ export class TeacherController {
 
     @Get("/:id")
     async getTeacher(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.teachers.view"])) throw new ForbiddenException();
 
         const teacher = await this.UserModel.findOne({ _id: req.params.id, role: "teacher" }).exec();
         if (!teacher) throw new NotFoundException();
@@ -344,7 +344,7 @@ export class TeacherController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.teachers.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.teachers.add"])) throw new ForbiddenException();
 
         const isEmailExists = await this.UserModel.exists({ email: input.email });
         if (isEmailExists) {
@@ -416,7 +416,7 @@ export class TeacherController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.teachers.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.teachers.edit"])) throw new ForbiddenException();
 
         const isEmailExists = await this.UserModel.exists({ _id: { $ne: req.params.id }, email: input.email });
         if (isEmailExists) {
@@ -502,7 +502,7 @@ export class TeacherController {
 
     @Delete("/:id")
     async deleteTeacher(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.teachers.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.teachers.delete"])) throw new ForbiddenException();
 
         const data = await this.UserModel.findOne({ _id: req.params.id, role: "teacher" }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

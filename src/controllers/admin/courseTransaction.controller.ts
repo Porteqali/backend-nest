@@ -24,7 +24,7 @@ export class CourseTransactionController {
 
     @Get("/")
     async getTransactions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.course-transactions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.course-transactions.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -118,7 +118,7 @@ export class CourseTransactionController {
 
     @Get("/:id")
     async getTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.course-transactions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.course-transactions.view"])) throw new ForbiddenException();
 
         const transaction = await this.UserCourseModel.find({ authority: req.params.id })
             .populate("user", "image name family email mobile")
@@ -131,7 +131,7 @@ export class CourseTransactionController {
 
     @Post("/:id")
     async completeTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.course-transactions.complete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.course-transactions.complete"])) throw new ForbiddenException();
 
         const data = await this.UserCourseModel.find({ authority: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

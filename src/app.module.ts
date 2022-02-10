@@ -36,6 +36,8 @@ import { CommentSchema } from "./models/comments.schema";
 import { SeederModule } from "./modules/seeder.module";
 import { AdminPanelModule } from "./modules/adminPanel.module";
 import { BannerController } from "./controllers/web/banner.controller";
+import { MarketerPanelModule } from "./modules/marketerPanel.module";
+import { TeacherPanelModule } from "./modules/teacherPanel.module";
 
 @Module({
     imports: [
@@ -51,6 +53,8 @@ import { BannerController } from "./controllers/web/banner.controller";
         CoursesModule,
         CartModule,
         AdminPanelModule,
+        MarketerPanelModule,
+        TeacherPanelModule,
         SeederModule,
         ConfigModule.forRoot(),
         MongooseModule.forRoot(process.env.MONGO_URL),
@@ -85,7 +89,7 @@ export class AppModule implements NestModule {
 
         consumer.apply(AuthCheckMiddleware).forRoutes(
             { path: "auth/refresh", method: RequestMethod.POST },
-            { path: "auth/check-if-admin", method: RequestMethod.POST },
+            { path: "auth/check-if-role/*", method: RequestMethod.POST },
 
             { path: "comments/send", method: RequestMethod.POST },
             { path: "like-article/*", method: RequestMethod.POST },
@@ -110,6 +114,8 @@ export class AppModule implements NestModule {
             { path: "user-profile/transactions/course", method: RequestMethod.GET },
 
             { path: "admin/*", method: RequestMethod.ALL },
+            { path: "marketer-panel/*", method: RequestMethod.ALL },
+            { path: "teacher-panel/*", method: RequestMethod.ALL },
         );
 
         consumer.apply(GuestMiddleware).forRoutes(

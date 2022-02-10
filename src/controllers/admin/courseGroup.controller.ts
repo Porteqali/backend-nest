@@ -23,7 +23,7 @@ export class CourseGroupsController {
 
     @Get("/")
     async getCourseGroupList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.course-groups.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.course-groups.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -84,7 +84,7 @@ export class CourseGroupsController {
 
     @Get("/:id")
     async getCourseGroup(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.course-groups.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.course-groups.view"])) throw new ForbiddenException();
 
         const courseGroup = await this.CourseGroupModel.findOne({ _id: req.params.id }).exec();
         if (!courseGroup) throw new NotFoundException();
@@ -99,7 +99,7 @@ export class CourseGroupsController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.course-groups.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.course-groups.add"])) throw new ForbiddenException();
 
         let imageLink = "";
         if (!!files.length) {
@@ -138,7 +138,7 @@ export class CourseGroupsController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.course-groups.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.course-groups.edit"])) throw new ForbiddenException();
 
         // find courseGroup
         const courseGroup = await this.CourseGroupModel.findOne({ _id: req.params.id }).exec();
@@ -183,7 +183,7 @@ export class CourseGroupsController {
 
     @Delete("/:id")
     async deleteCourseGroup(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.course-groups.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.course-groups.delete"])) throw new ForbiddenException();
 
         const data = await this.CourseGroupModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

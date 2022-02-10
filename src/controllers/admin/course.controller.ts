@@ -30,7 +30,7 @@ export class CourseController {
 
     @Get("/topics/:id")
     async getCourseTopics(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.courses.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.courses.view"])) throw new ForbiddenException();
 
         const courseResult = await this.CourseModel.findOne({ _id: req.params.id }).select("image name topics").populate("groups").exec();
         if (!courseResult) throw new NotFoundException();
@@ -50,7 +50,7 @@ export class CourseController {
     @Put("/topics/:id")
     @UseInterceptors(FileFieldsInterceptor([{ name: "files" }]))
     async editCourseTopics(@UploadedFiles() uploads: Array<Express.Multer.File>, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.courses.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.courses.edit"])) throw new ForbiddenException();
 
         // find course
         const courseResult = await this.CourseModel.findOne({ _id: req.params.id }).exec();
@@ -151,7 +151,7 @@ export class CourseController {
 
     @Get("/")
     async getCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.courses.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.courses.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -250,7 +250,7 @@ export class CourseController {
 
     @Get("/:id")
     async getCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.courses.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.courses.view"])) throw new ForbiddenException();
 
         const course = await this.CourseModel.findOne({ _id: req.params.id }).populate("teacher", "image name family").exec();
         if (!course) throw new NotFoundException();
@@ -265,7 +265,7 @@ export class CourseController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.courses.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.courses.add"])) throw new ForbiddenException();
 
         const isTeacherExists = this.UserModel.exists({ _id: input.teacher, role: "teacher" });
         if (!isTeacherExists) throw new UnprocessableEntityException([{ property: "teacher", errors: ["استاد انتخابی برای دوره پیدا نشد"] }]);
@@ -329,7 +329,7 @@ export class CourseController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.courses.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.courses.edit"])) throw new ForbiddenException();
 
         // find course
         const courseResult = await this.CourseModel.findOne({ _id: req.params.id }).exec();
@@ -413,7 +413,7 @@ export class CourseController {
 
     @Delete("/:id")
     async deleteCourse(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.courses.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.courses.delete"])) throw new ForbiddenException();
 
         const course = await this.CourseModel.findOne({ _id: req.params.id }).exec();
         if (!course) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

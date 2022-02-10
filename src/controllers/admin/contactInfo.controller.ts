@@ -13,7 +13,7 @@ export class ContactInfoController {
 
     @Get("/")
     async getContactInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.contact-info.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.contact-info.view"])) throw new ForbiddenException();
 
         const rawdata = await readFile("./static/contact_info.json").then((data) => data);
         const contactInfo = JSON.parse(rawdata.toString());
@@ -29,7 +29,7 @@ export class ContactInfoController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.contact-info.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.contact-info.edit"])) throw new ForbiddenException();
 
         const rawdata = await readFile("./static/contact_info.json").then((data) => data);
         const contactInfo = JSON.parse(rawdata.toString());

@@ -1,0 +1,26 @@
+import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+import { AuthService } from "src/services/auth.service";
+import { UserSchema } from "src/models/users.schema";
+import { UserCourseSchema } from "src/models/userCourses.schema";
+import { MarketerCoursesSchema } from "src/models/marketerCourses.schema";
+import { CommissionPaymentSchema } from "src/models/commissionPayments.schema";
+import { SessionSchema } from "src/models/sessions.schema";
+import { CommissionPaymentsController } from "src/controllers/teacherPanel/commissionPayments.controller";
+import { CommissionsController } from "src/controllers/teacherPanel/commissions.controller";
+
+@Module({
+    imports: [
+        MongooseModule.forFeature([
+            { name: "User", schema: UserSchema },
+            { name: "Session", schema: SessionSchema },
+            { name: "CommissionPayment", schema: CommissionPaymentSchema },
+            { name: "UserCourse", schema: UserCourseSchema },
+            { name: "MarketerCourse", schema: MarketerCoursesSchema },
+        ]),
+    ],
+    controllers: [CommissionPaymentsController, CommissionsController],
+    providers: [AuthService],
+    exports: [],
+})
+export class TeacherPanelModule {}

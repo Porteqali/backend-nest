@@ -221,9 +221,11 @@ export class AuthController {
         return res.json({ token, user: req.user });
     }
 
-    @Post("check-if-admin")
-    async logout(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (req.user.user.role !== "admin") throw new ForbiddenException();
+    @Post("check-if-role/:role")
+    async checkIfRole(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        if (req.params.role !== "admin" && req.params.role !== "teacher" && req.params.role !== "marketer") throw new ForbiddenException();
+
+        if (req.user.user.role !== req.params.role) throw new ForbiddenException();
         return res.end();
     }
 }

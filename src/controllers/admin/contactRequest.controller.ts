@@ -18,7 +18,7 @@ export class ContactRequestController {
 
     @Get("/")
     async getRequests(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.contact-requests.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.contact-requests.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -95,7 +95,7 @@ export class ContactRequestController {
 
     @Get("/:id")
     async getRequestDetails(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.contact-requests.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.contact-requests.view"])) throw new ForbiddenException();
 
         const request = await this.ContactRequestModel.findOne({ _id: req.params.id }).exec();
         if (!request) throw new NotFoundException();
@@ -107,7 +107,7 @@ export class ContactRequestController {
 
     @Delete("/:id")
     async deleteRequest(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.contact-requests.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.contact-requests.delete"])) throw new ForbiddenException();
 
         const data = await this.ContactRequestModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

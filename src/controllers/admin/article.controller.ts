@@ -25,7 +25,7 @@ export class ArticleController {
     @Post("/image-upload")
     @UseInterceptors(FilesInterceptor("files"))
     async uploadInTextImages(@UploadedFiles() files: Array<Express.Multer.File>, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.articles.add", "admin.articles.edit"], "OR")) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.articles.add", "admin.articles.edit"], "OR")) throw new ForbiddenException();
 
         let imageLink = "";
         if (!!files.length) {
@@ -53,7 +53,7 @@ export class ArticleController {
 
     @Get("/")
     async getArticles(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.articles.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.articles.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -119,7 +119,7 @@ export class ArticleController {
 
     @Get("/:id")
     async getArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.articles.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.articles.view"])) throw new ForbiddenException();
 
         const article = await this.ArticleModel.findOne({ _id: req.params.id }).exec();
         if (!article) throw new NotFoundException();
@@ -134,7 +134,7 @@ export class ArticleController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.articles.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.articles.add"])) throw new ForbiddenException();
 
         const isSlugExists = await this.ArticleModel.exists({ slug: input.slug });
         if (isSlugExists) {
@@ -218,7 +218,7 @@ export class ArticleController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.articles.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.articles.edit"])) throw new ForbiddenException();
 
         const isSlugExists = await this.ArticleModel.exists({ _id: { $ne: req.params.id }, slug: input.slug });
         if (isSlugExists) {
@@ -315,7 +315,7 @@ export class ArticleController {
 
     @Delete("/:id")
     async deleteArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.articles.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.articles.delete"])) throw new ForbiddenException();
 
         const data = await this.ArticleModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

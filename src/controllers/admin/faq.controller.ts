@@ -19,7 +19,7 @@ export class FaqController {
 
     @Get("/")
     async getFaqs(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.faqs.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.faqs.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -85,7 +85,7 @@ export class FaqController {
 
     @Get("/:id")
     async getFaq(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.faqs.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.faqs.view"])) throw new ForbiddenException();
 
         const faq = await this.FaqModel.findOne({ _id: req.params.id }).exec();
         if (!faq) throw new NotFoundException();
@@ -94,7 +94,7 @@ export class FaqController {
 
     @Post("/")
     async addFaq(@Body() input: CreateNewFaqDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.faqs.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.faqs.add"])) throw new ForbiddenException();
 
         await this.FaqModel.create({
             question: input.question,
@@ -108,7 +108,7 @@ export class FaqController {
 
     @Put("/:id")
     async editFaq(@Body() input: UpdateFaqDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.faqs.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.faqs.edit"])) throw new ForbiddenException();
 
         await this.FaqModel.updateOne(
             { _id: req.params.id },
@@ -125,7 +125,7 @@ export class FaqController {
 
     @Delete("/:id")
     async deleteFaq(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.faqs.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.faqs.delete"])) throw new ForbiddenException();
 
         const data = await this.FaqModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

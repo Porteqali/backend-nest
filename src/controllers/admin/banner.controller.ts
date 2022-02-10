@@ -15,7 +15,7 @@ export class BannerController {
 
     @Get("/")
     async getBanner(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.banner.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.banner.view"])) throw new ForbiddenException();
 
         const rawdata = await readFile("./static/banner.json").then((data) => data);
         const banner = JSON.parse(rawdata.toString());
@@ -33,7 +33,7 @@ export class BannerController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.banner.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.banner.edit"])) throw new ForbiddenException();
 
         const rawdata = await readFile("./static/banner.json").then((data) => data);
         const banner = JSON.parse(rawdata.toString());

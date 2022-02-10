@@ -20,7 +20,7 @@ export class HomeController {
 
     @Get("/newRequestCounts")
     async getNewRequestCounts(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.collaborate-requests.view", "admin.contact-requests.view"], "OR")) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.collaborate-requests.view", "admin.contact-requests.view"], "OR")) throw new ForbiddenException();
 
         const collabRequestCount = await this.CollaborateRequestModel.countDocuments({ status: "new" }).exec();
         const contactRequestCount = await this.ContactRequestModel.countDocuments({ status: "new" }).exec();
@@ -30,7 +30,7 @@ export class HomeController {
 
     @Get("/notifications")
     async getNotifications(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.collaborate-requests.view", "admin.contact-requests.view"], "OR")) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.collaborate-requests.view", "admin.contact-requests.view"], "OR")) throw new ForbiddenException();
 
         let notifications = [];
 

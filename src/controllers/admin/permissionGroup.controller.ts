@@ -22,7 +22,7 @@ export class PermissionGroupController {
 
     @Get("/permissions")
     async getPermissionList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.permissions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.permissions.view"])) throw new ForbiddenException();
 
         const permissions = await this.PermissionModel.find().exec();
         return res.json({ records: permissions });
@@ -30,7 +30,7 @@ export class PermissionGroupController {
 
     @Get("/")
     async getPermissionGroups(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.permissions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.permissions.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -85,7 +85,7 @@ export class PermissionGroupController {
 
     @Get("/:id")
     async getPermissionGroup(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.permissions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.permissions.view"])) throw new ForbiddenException();
 
         const permissionGroup = await this.PermissionGroupModel.findOne({ _id: req.params.id }).exec();
         if (!permissionGroup) throw new NotFoundException();
@@ -94,7 +94,7 @@ export class PermissionGroupController {
 
     @Post("/")
     async addPermissionGroup(@Body() input: CreatePermissionGroupDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.permissions.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.permissions.add"])) throw new ForbiddenException();
 
         const isNameExists = await this.PermissionGroupModel.exists({ name: input.name });
         if (isNameExists) {
@@ -111,7 +111,7 @@ export class PermissionGroupController {
 
     @Put("/:id")
     async editPermissionGroup(@Body() input: CreatePermissionGroupDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.permissions.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.permissions.edit"])) throw new ForbiddenException();
 
         const isNameExists = await this.PermissionGroupModel.exists({ _id: { $ne: req.params.id }, name: input.name });
         if (isNameExists) {
@@ -131,7 +131,7 @@ export class PermissionGroupController {
 
     @Delete("/:id")
     async deletePermissionGroup(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.permissions.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.permissions.delete"])) throw new ForbiddenException();
 
         const data = await this.PermissionGroupModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

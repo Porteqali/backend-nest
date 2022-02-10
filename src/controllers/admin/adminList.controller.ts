@@ -25,7 +25,7 @@ export class AdminListController {
 
     @Get("/")
     async getAdminsList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.list.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -102,7 +102,7 @@ export class AdminListController {
 
     @Get("/:id")
     async getAdmin(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.list.view"])) throw new ForbiddenException();
 
         const admin = await this.UserModel.findOne({ _id: req.params.id, role: "admin" }).exec();
         if (!admin) throw new NotFoundException();
@@ -117,7 +117,7 @@ export class AdminListController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.list.add"])) throw new ForbiddenException();
 
         const isEmailExists = await this.UserModel.exists({ email: input.email });
         if (isEmailExists) {
@@ -169,7 +169,7 @@ export class AdminListController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.list.edit"])) throw new ForbiddenException();
 
         const isEmailExists = await this.UserModel.exists({ _id: { $ne: req.params.id }, email: input.email });
         if (isEmailExists) {
@@ -235,7 +235,7 @@ export class AdminListController {
 
     @Delete("/:id")
     async deleteAdmin(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.list.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.list.delete"])) throw new ForbiddenException();
 
         const data = await this.UserModel.findOne({ _id: req.params.id, role: "admin" }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

@@ -28,7 +28,7 @@ export class CommentsController {
 
     @Get("/")
     async getCommentsList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.users-comments.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.users-comments.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -111,7 +111,7 @@ export class CommentsController {
 
     @Get("/:id")
     async getComment(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.users-comments.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.users-comments.view"])) throw new ForbiddenException();
 
         let comment: any = await this.CommentModel.findOne({ _id: req.params.id }).populate("user", "image name family").exec();
         if (!comment) throw new NotFoundException();
@@ -131,7 +131,7 @@ export class CommentsController {
 
     @Post("/:id/reply")
     async makeReply(@Body() input: ReplyToCommentDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.users-comments.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.users-comments.edit"])) throw new ForbiddenException();
 
         // find comment
         const comment = await this.CommentModel.findOne({ _id: req.params.id }).exec();
@@ -151,7 +151,7 @@ export class CommentsController {
 
     @Put("/:id")
     async editComment(@Body() input: UpdateCommentDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.users-comments.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.users-comments.edit"])) throw new ForbiddenException();
 
         // find comment
         const comment = await this.CommentModel.findOne({ _id: req.params.id }).exec();
@@ -170,7 +170,7 @@ export class CommentsController {
 
     @Delete("/:id")
     async deleteComment(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.users-comments.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.users-comments.delete"])) throw new ForbiddenException();
 
         const data = await this.CommentModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

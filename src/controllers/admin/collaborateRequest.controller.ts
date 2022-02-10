@@ -18,7 +18,7 @@ export class CollaborateRequestController {
 
     @Get("/")
     async getRequests(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.collaborate-requests.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.collaborate-requests.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -95,7 +95,7 @@ export class CollaborateRequestController {
 
     @Get("/:id")
     async getRequestDetails(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.collaborate-requests.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.collaborate-requests.view"])) throw new ForbiddenException();
 
         const request = await this.CollaborateRequestModel.findOne({ _id: req.params.id }).exec();
         if (!request) throw new NotFoundException();
@@ -107,7 +107,7 @@ export class CollaborateRequestController {
 
     @Delete("/:id")
     async deleteRequest(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.collaborate-requests.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.collaborate-requests.delete"])) throw new ForbiddenException();
 
         const data = await this.CollaborateRequestModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

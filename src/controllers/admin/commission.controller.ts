@@ -21,7 +21,7 @@ export class CommissionController {
 
     @Get("/")
     async getCommissions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.commissions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.commissions.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -86,7 +86,7 @@ export class CommissionController {
 
     @Get("/:id")
     async getCommission(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.commissions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.commissions.view"])) throw new ForbiddenException();
 
         const commission = await this.CommissionModel.findOne({ _id: req.params.id }).exec();
         if (!commission) throw new NotFoundException();
@@ -95,7 +95,7 @@ export class CommissionController {
 
     @Post("/")
     async addCommission(@Body() input: CreateNewCommissionDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.commissions.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.commissions.add"])) throw new ForbiddenException();
 
         await this.CommissionModel.create({
             name: input.name,
@@ -108,7 +108,7 @@ export class CommissionController {
 
     @Put("/:id")
     async editCommission(@Body() input: UpdateCommissionDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.commissions.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.commissions.edit"])) throw new ForbiddenException();
 
         await this.CommissionModel.updateOne(
             { _id: req.params.id },
@@ -124,7 +124,7 @@ export class CommissionController {
 
     @Delete("/:id")
     async deleteCommission(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.commissions.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.commissions.delete"])) throw new ForbiddenException();
 
         const data = await this.CommissionModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

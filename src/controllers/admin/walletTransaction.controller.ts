@@ -23,7 +23,7 @@ export class WalletTransactionController {
 
     @Get("/")
     async getTransactions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.wallet-transactions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.wallet-transactions.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -108,7 +108,7 @@ export class WalletTransactionController {
 
     @Get("/:id")
     async getTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.wallet-transactions.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.wallet-transactions.view"])) throw new ForbiddenException();
 
         const transaction = await this.WalletTransactionModel.findOne({ _id: req.params.id }).exec();
         if (!transaction) throw new NotFoundException();
@@ -118,7 +118,7 @@ export class WalletTransactionController {
 
     @Post("/:id")
     async completeTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.wallet-transactions.complete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.wallet-transactions.complete"])) throw new ForbiddenException();
 
         const data = await this.WalletTransactionModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

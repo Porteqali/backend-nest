@@ -24,7 +24,7 @@ export class TestimonialsController {
 
     @Get("/")
     async getTestimonials(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.testimonials.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.testimonials.view"])) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -90,7 +90,7 @@ export class TestimonialsController {
 
     @Get("/:id")
     async getTestimonial(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.testimonials.view"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.testimonials.view"])) throw new ForbiddenException();
 
         const testimonial = await this.TestimonialModel.findOne({ _id: req.params.id }).exec();
         if (!testimonial) throw new NotFoundException();
@@ -105,7 +105,7 @@ export class TestimonialsController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.testimonials.add"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.testimonials.add"])) throw new ForbiddenException();
 
         let imageLink = "";
         if (!!files.length) {
@@ -145,7 +145,7 @@ export class TestimonialsController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.testimonials.edit"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.testimonials.edit"])) throw new ForbiddenException();
 
         // find admin
         const testimonial = await this.TestimonialModel.findOne({ _id: req.params.id }).exec();
@@ -191,7 +191,7 @@ export class TestimonialsController {
 
     @Delete("/:id")
     async deleteTestimonial(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (!this.authService.authorize(req, "admin", ["admin.testimonials.delete"])) throw new ForbiddenException();
+        if (! await this.authService.authorize(req, "admin", ["admin.testimonials.delete"])) throw new ForbiddenException();
 
         const data = await this.TestimonialModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);
