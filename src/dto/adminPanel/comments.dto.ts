@@ -6,7 +6,7 @@ export class UpdateCommentDto {
     @IsNotEmpty({ message: "نظر کاربر را وارد کنید" })
     readonly comment: string;
 
-    @IsIn(["active", "deactive"], { message: "وضعیت نامعتبر" })
+    @IsIn(["active", "deactive", "waiting_for_review"], { message: "وضعیت نامعتبر" })
     @IsString({ message: "یک وضعیت انتخاب کنید" })
     @IsNotEmpty({ message: "یک وضعیت انتخاب کنید" })
     readonly status: string;
