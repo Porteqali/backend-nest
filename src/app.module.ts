@@ -38,6 +38,9 @@ import { AdminPanelModule } from "./modules/adminPanel.module";
 import { BannerController } from "./controllers/web/banner.controller";
 import { MarketerPanelModule } from "./modules/marketerPanel.module";
 import { TeacherPanelModule } from "./modules/teacherPanel.module";
+import { MetadataController } from "./controllers/metadata.controller";
+import { MarketersController } from "./controllers/web/marketers.controller";
+import { StaticPagesController } from "./controllers/web/staticPages.controller";
 
 @Module({
     imports: [
@@ -74,11 +77,14 @@ import { TeacherPanelModule } from "./modules/teacherPanel.module";
         AboutUsController,
         ContactInfoController,
         BannerController,
+        StaticPagesController,
         LatestNewsController,
         TeachersController,
+        MarketersController,
         SearchController,
         UserProfileController,
         UserWalletController,
+        MetadataController,
     ],
     providers: [AppService, SearchService, DiscountService],
     exports: [],

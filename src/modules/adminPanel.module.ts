@@ -41,6 +41,8 @@ import { CourseController } from "src/controllers/admin/course.controller";
 import { LinkSchema } from "src/models/links.schema";
 import { CourseService } from "src/services/course.service";
 import { MarketerCoursesSchema } from "src/models/marketerCourses.schema";
+import { DashboardController } from "src/controllers/admin/dashboard.controller";
+import { StaticPagesController } from "src/controllers/admin/staticPages.controller";
 
 @Module({
     imports: [
@@ -87,6 +89,8 @@ import { MarketerCoursesSchema } from "src/models/marketerCourses.schema";
         ContactInfoController,
         ArticleController,
         CourseController,
+        DashboardController,
+        StaticPagesController,
     ],
     providers: [AuthService, CourseService],
     exports: [],

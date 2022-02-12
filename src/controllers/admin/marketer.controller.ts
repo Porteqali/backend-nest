@@ -33,7 +33,7 @@ export class MarketerController {
 
     @Post("/pay/:id")
     async payCommission(@Body() input: PayMarketerCommissionDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.pay"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.pay"]))) throw new ForbiddenException();
 
         if (parseInt(input.amount) <= 0) throw new UnprocessableEntityException([{ property: "amount", errors: ["مبلغ را وارد کنید!"] }]);
 
@@ -62,7 +62,7 @@ export class MarketerController {
 
     @Get("/customers/:id")
     async getMarketerCustomerList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -154,7 +154,7 @@ export class MarketerController {
 
     @Get("/commissions/:id")
     async getMarketerCommissionList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -249,7 +249,7 @@ export class MarketerController {
 
     @Get("/commission-payments/:id")
     async getMarketerCommissionPaymentList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -332,7 +332,7 @@ export class MarketerController {
 
     @Get("/courses/:id")
     async getMarketerCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -392,7 +392,7 @@ export class MarketerController {
 
     @Post("/courses-bulk/:id")
     async bulkAddCoursesToMarketer(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.edit"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.edit"]))) throw new ForbiddenException();
 
         const bulkAmountType = req.body.bulkAmountType;
         const bulkAmount = req.body.bulkAmount ? parseInt(req.body.bulkAmount) : 0;
@@ -403,24 +403,44 @@ export class MarketerController {
             throw new UnprocessableEntityException([{ property: "emmitToId", errors: ["دوره یا گروه دوره مورد نظر را مشخص کنید"] }]);
         }
 
+        const marketer = await this.UserModel.findOne({ _id: req.params.id, role: "marketer" });
+
         let arrayToInsert = [];
         switch (emmitTo) {
             case "allCourses":
                 const courses = await this.CourseModel.find().select("_id").exec();
                 for (let i = 0; i < courses.length; i++) {
-                    arrayToInsert.push({ marketer: req.params.id, course: courses[i]._id, commissionAmount: bulkAmount, commissionType: bulkAmountType });
+                    arrayToInsert.push({
+                        marketer: req.params.id,
+                        course: courses[i]._id,
+                        commissionAmount: bulkAmount,
+                        commissionType: bulkAmountType,
+                        code: marketer.marketingCode,
+                    });
                 }
                 break;
             case "course":
                 const course = await this.CourseModel.findOne({ _id: emmitToId }).select("_id").exec();
-                arrayToInsert.push({ marketer: req.params.id, course: course._id, commissionAmount: bulkAmount, commissionType: bulkAmountType });
+                arrayToInsert.push({
+                    marketer: req.params.id,
+                    course: course._id,
+                    commissionAmount: bulkAmount,
+                    commissionType: bulkAmountType,
+                    code: marketer.marketingCode,
+                });
                 break;
             case "courseGroup":
                 const groupCourses = await this.CourseModel.find({ groups: { $elemMatch: { $eq: emmitToId } } })
                     .select("_id")
                     .exec();
                 for (let i = 0; i < groupCourses.length; i++) {
-                    arrayToInsert.push({ marketer: req.params.id, course: groupCourses[i]._id, commissionAmount: bulkAmount, commissionType: bulkAmountType });
+                    arrayToInsert.push({
+                        marketer: req.params.id,
+                        course: groupCourses[i]._id,
+                        commissionAmount: bulkAmount,
+                        commissionType: bulkAmountType,
+                        code: marketer.marketingCode,
+                    });
                 }
                 break;
         }
@@ -433,7 +453,7 @@ export class MarketerController {
 
     @Delete("/courses-bulk/:id")
     async bulkDeleteCoursesFromMarketer(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.edit"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.edit"]))) throw new ForbiddenException();
 
         const emmitTo = req.query.emmitTo;
         const emmitToId = req.query.emmitToId;
@@ -466,7 +486,7 @@ export class MarketerController {
 
     @Put("/courses/:id")
     async editMarketerCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.edit"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.edit"]))) throw new ForbiddenException();
 
         const coursesToDelete = req.body.coursesToDelete || [];
         for (let i = 0; i < coursesToDelete.length; i++) {
@@ -492,7 +512,7 @@ export class MarketerController {
 
     @Get("/")
     async getMarketerList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -599,7 +619,7 @@ export class MarketerController {
 
     @Get("/:id")
     async getMarketer(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.view"]))) throw new ForbiddenException();
 
         const marketer = await this.UserModel.findOne({ _id: req.params.id, role: "marketer" }).exec();
         if (!marketer) throw new NotFoundException();
@@ -614,7 +634,7 @@ export class MarketerController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.add"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.add"]))) throw new ForbiddenException();
 
         const isEmailExists = await this.UserModel.exists({ email: input.email });
         if (isEmailExists) {
@@ -684,7 +704,7 @@ export class MarketerController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.edit"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.edit"]))) throw new ForbiddenException();
 
         const isEmailExists = await this.UserModel.exists({ _id: { $ne: req.params.id }, email: input.email });
         if (isEmailExists) {
@@ -764,7 +784,7 @@ export class MarketerController {
 
     @Delete("/:id")
     async deleteMarketer(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.marketers.delete"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.marketers.delete"]))) throw new ForbiddenException();
 
         const data = await this.UserModel.findOne({ _id: req.params.id, role: "marketer" }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

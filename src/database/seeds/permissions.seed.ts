@@ -84,4 +84,10 @@ export const records = [
     { _id: "admin.articles.add", label: "ایجاد مقاله جدید", group: "articles", groupLabel: "مقالات" },
     { _id: "admin.articles.edit", label: "ویرایش مقالات", group: "articles", groupLabel: "مقالات" },
     { _id: "admin.articles.delete", label: "حذف مقاله", group: "articles", groupLabel: "مقالات" },
+
+    { _id: "admin.latest-news.view", label: "مشاهده اخبار سایت", group: "latest-news", groupLabel: "اخبار سایت" },
+    { _id: "admin.latest-news.delete", label: "ویرایش اخبار سایت", group: "latest-news", groupLabel: "اخبار سایت" },
+
+    { _id: "admin.page.terms-and-conditions.edit", label: "ویرایش صفحه قوانین و مقررات", group: "pages", groupLabel: "مدیریت صفحات" },
+    { _id: "admin.page.privacy-policy.edit", label: "ویرایش صفحه حریم خصوصی", group: "pages", groupLabel: "مدیریت صفحات" },
 ];
