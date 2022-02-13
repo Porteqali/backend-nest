@@ -43,6 +43,9 @@ import { CourseService } from "src/services/course.service";
 import { MarketerCoursesSchema } from "src/models/marketerCourses.schema";
 import { DashboardController } from "src/controllers/admin/dashboard.controller";
 import { StaticPagesController } from "src/controllers/admin/staticPages.controller";
+import { LatestNewsController } from "src/controllers/admin/latestNews.controller";
+import { MetadataController } from "src/controllers/admin/metadata.controller";
+import { MetadataSchema } from "src/models/metadatas.schema";
 
 @Module({
     imports: [
@@ -66,6 +69,7 @@ import { StaticPagesController } from "src/controllers/admin/staticPages.control
             { name: "Testimonial", schema: TestimonialSchema },
             { name: "Link", schema: LinkSchema },
             { name: "MarketerCourse", schema: MarketerCoursesSchema },
+            { name: "Metadata", schema: MetadataSchema },
         ]),
     ],
     controllers: [
@@ -91,6 +95,8 @@ import { StaticPagesController } from "src/controllers/admin/staticPages.control
         CourseController,
         DashboardController,
         StaticPagesController,
+        LatestNewsController,
+        MetadataController,
     ],
     providers: [AuthService, CourseService],
     exports: [],

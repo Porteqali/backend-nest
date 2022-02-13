@@ -86,8 +86,13 @@ export const records = [
     { _id: "admin.articles.delete", label: "حذف مقاله", group: "articles", groupLabel: "مقالات" },
 
     { _id: "admin.latest-news.view", label: "مشاهده اخبار سایت", group: "latest-news", groupLabel: "اخبار سایت" },
-    { _id: "admin.latest-news.delete", label: "ویرایش اخبار سایت", group: "latest-news", groupLabel: "اخبار سایت" },
+    { _id: "admin.latest-news.edit", label: "ویرایش اخبار سایت", group: "latest-news", groupLabel: "اخبار سایت" },
 
     { _id: "admin.page.terms-and-conditions.edit", label: "ویرایش صفحه قوانین و مقررات", group: "pages", groupLabel: "مدیریت صفحات" },
     { _id: "admin.page.privacy-policy.edit", label: "ویرایش صفحه حریم خصوصی", group: "pages", groupLabel: "مدیریت صفحات" },
+
+    { _id: "admin.metadata.view", label: "مشاهده متادیتا", group: "metadata", groupLabel: "متادیتا" },
+    { _id: "admin.metadata.add", label: "ایجاد متادیتا جدید", group: "metadata", groupLabel: "متادیتا" },
+    { _id: "admin.metadata.edit", label: "ویرایش متادیتا", group: "metadata", groupLabel: "متادیتا" },
+    { _id: "admin.metadata.delete", label: "حذف متادیتا", group: "metadata", groupLabel: "متادیتا" },
 ];

@@ -13,15 +13,19 @@ export class MetadataController {
         // TOOD
         // find the page inside the db and get its metadata
 
-        // privacy-policy
-        // terms-and-conditions
+        // home
         // blog
         // contact-us
+        // about-us
+        // privacy-policy
+        // terms-and-conditions
         // department
         // teachers
         // work-with-us
+        // faqs
 
         return res.json({
+            title: "حریم خصوصی - گروه آموزشی پرتقال",
             meta: [
                 { hid: "description", name: "description", content: "" },
                 { hid: "language", name: "language", content: "fa" },

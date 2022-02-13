@@ -5,6 +5,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { PermissionDocument } from "src/models/permissions.schema";
 import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
+import { MetadataDocument } from "src/models/metadatas.schema";
 import { records as permissionRecords } from "src/database/seeds/permissions.seed";
 
 @Controller("seeder")
@@ -12,6 +13,7 @@ export class Seeder {
     constructor(
         @InjectModel("Permission") private readonly PermissionModel: Model<PermissionDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
+        @InjectModel("Metadata") private readonly MetadataModel: Model<MetadataDocument>,
     ) {}
 
     @Get("/seed/all")
@@ -20,6 +22,7 @@ export class Seeder {
         // ->
         await this.seedPermissions(req, res);
         await this.seedPermissionGroups(req, res);
+        await this.seedDefaultMetadata(req, res);
 
         return res.json({ seedAll: 1 });
     }
@@ -33,7 +36,7 @@ export class Seeder {
         await this.PermissionModel.insertMany(permissionRecords).catch((e) => {
             throw new InternalServerErrorException(e);
         });
-        
+
         return res.json({ seedPermissions: 1 });
     }
 
@@ -52,5 +55,27 @@ export class Seeder {
         });
 
         return res.json({ seedPermissionGroups: 1 });
+    }
+
+    @Get("/seed/metadata")
+    async seedDefaultMetadata(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        this.MetadataModel.collection.drop().catch((e) => {
+            throw new InternalServerErrorException(e);
+        });
+
+        await this.MetadataModel.create({
+            page: "home",
+            title: "گروه آموزشی پرتقال",
+            description: "",
+            keywords: "",
+            canonical: "",
+            themeColor: "#ff7952",
+            site: "",
+            language: "fa",
+        }).catch((e) => {
+            throw new InternalServerErrorException(e);
+        });
+
+        return res.json({ seedDefaultMetadata: 1 });
     }
 }
