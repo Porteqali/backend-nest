@@ -208,6 +208,7 @@ export class CoursesController {
             .exec();
         if (!courseItem) return res.status(404).end();
         const course: any = courseItem.toJSON();
+        course.canonical = `${process.env.FRONT_URL}/course/${course._id}/${course.name}`;
 
         // count the views
         await this.CourseModel.updateOne({ _id: req.params.id, status: "active" }, { viewCount: course.viewCount + 1 }).exec();

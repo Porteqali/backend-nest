@@ -39,9 +39,11 @@ export class TeachersController {
         if (!req.params.id) throw new UnprocessableEntityException();
         const id: any = req.params.id.toString() || "";
 
-        const teacher = await this.UserModel.findOne({ _id: id, role: "teacher", status: "active" })
+        let teacher: any = await this.UserModel.findOne({ _id: id, role: "teacher", status: "active" })
             .select("image title name family groups description socials")
             .exec();
+        teacher = teacher.toJSON();
+        teacher.canonical = `${process.env.FRONT_URL}/teacher/${teacher._id}`;
 
         const courseCount = await this.CourseModel.countDocuments({ teacher: id, status: "active" }).exec();
 

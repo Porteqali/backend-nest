@@ -59,7 +59,7 @@ async function bootstrap() {
     // app.use(csurf({ cookie: true}));
 
     // make CORS happen
-    app.enableCors({ origin: `http://localhost:3000` });
+    app.enableCors({ origin: process.env.FRONT_URL });
 
     // set the timezone
     process.env.TZ = "Asia/Tehran";

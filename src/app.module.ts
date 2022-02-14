@@ -41,6 +41,9 @@ import { TeacherPanelModule } from "./modules/teacherPanel.module";
 import { MetadataController } from "./controllers/metadata.controller";
 import { MarketersController } from "./controllers/web/marketers.controller";
 import { StaticPagesController } from "./controllers/web/staticPages.controller";
+import { ScheduleModule } from "@nestjs/schedule";
+import { SchedulerModule } from "./modules/scheduler.module";
+import { MetadataSchema } from "./models/metadatas.schema";
 
 @Module({
     imports: [
@@ -59,8 +62,10 @@ import { StaticPagesController } from "./controllers/web/staticPages.controller"
         MarketerPanelModule,
         TeacherPanelModule,
         SeederModule,
+        SchedulerModule,
+        ScheduleModule.forRoot(),
         ConfigModule.forRoot(),
-        MongooseModule.forRoot(process.env.MONGO_URL),
+        MongooseModule.forRoot(process.env.MONGO_URL, { dbName: "porteqali" }),
         MongooseModule.forFeature([
             { name: "Session", schema: SessionSchema },
             { name: "User", schema: UserSchema },
@@ -70,6 +75,7 @@ import { StaticPagesController } from "./controllers/web/staticPages.controller"
             { name: "Article", schema: ArticleSchema },
             { name: "Discount", schema: DiscountSchema },
             { name: "WalletTransaction", schema: WalletTransactionSchema },
+            { name: "Metadata", schema: MetadataSchema },
         ]),
     ],
     controllers: [

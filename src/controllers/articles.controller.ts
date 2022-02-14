@@ -127,11 +127,13 @@ export class ArticlesController {
 
     @Get("/article/:slug")
     async getSingleArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const article = await this.ArticleModel.findOne({ slug: req.params.slug, status: "published" })
+        const articleResult = await this.ArticleModel.findOne({ slug: req.params.slug, status: "published" })
             .populate("author", "-_id image name family title description socials")
             .populate("category", "-_id name")
             .exec();
-        if (!article) return res.status(404).end();
+        if (!articleResult) return res.status(404).end();
+        const article: any = articleResult.toJSON();
+        article.metadata.url = `${process.env.FRONT_URL}/article/${article.slug}`;
 
         // check if user liked the article
         const loadedUser = await loadUser(req);
