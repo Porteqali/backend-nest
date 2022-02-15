@@ -1,5 +1,5 @@
 import { readFile } from "fs/promises";
-import { Controller, Get, InternalServerErrorException, Post, Req, Res, UnprocessableEntityException } from "@nestjs/common";
+import { Controller, Get, InternalServerErrorException, NotFoundException, Post, Req, Res, UnprocessableEntityException } from "@nestjs/common";
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
@@ -42,6 +42,7 @@ export class TeachersController {
         let teacher: any = await this.UserModel.findOne({ _id: id, role: "teacher", status: "active" })
             .select("image title name family groups description socials")
             .exec();
+        if (!teacher) throw new NotFoundException();
         teacher = teacher.toJSON();
         teacher.canonical = `${process.env.FRONT_URL}/teacher/${teacher._id}`;
 
