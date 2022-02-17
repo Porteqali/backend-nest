@@ -27,14 +27,14 @@ export class CustomersController {
             case "کاربر":
                 sort = { fullname: sortType };
                 break;
-            case "زمان ثبت نام":
-                sort = { createdAt: sortType };
-                break;
             case "دوره":
                 sort = { period: sortType };
                 break;
             case "زمان پایان دوره":
                 sort = { endsAt: sortType };
+                break;
+            default:
+                sort = { createdAt: sortType };
                 break;
         }
 

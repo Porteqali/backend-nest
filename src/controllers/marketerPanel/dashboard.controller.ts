@@ -9,7 +9,7 @@ import { AuthService } from "src/services/auth.service";
 import { CourseDocument } from "src/models/courses.schema";
 import * as Jmoment from "jalali-moment";
 
-@Controller("admin/dashboard")
+@Controller("marketer-panel/dashboard")
 export class DashboardController {
     constructor(
         private readonly authService: AuthService,
@@ -17,30 +17,27 @@ export class DashboardController {
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
     ) {}
 
+    @Get("/marketing-code")
+    async getMarketingCode(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        return res.json({
+            code: req.user.user.marketingCode || "",
+        });
+    }
+
     @Get("/general-details-info")
     async getGeneralDetails(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         // TODO
         return res.json({
-            totalUsers: 0,
-            lastMonthRegisters: 0,
-            lastMonthRegistersPercentage: 12,
-            usersThatMadePurchase: 3123,
-            usersThatMadePurchasePercentage: 23,
-            totalStudents: 0,
-            totalMarketers: 0,
-            totalTeachers: 0,
-            totalAdmins: 0,
-
-            totalPurchases: 0,
-            lastMonthPurchases: 0,
-            lastMonthPurchasesPercentage: 12,
+            totalSells: 0,
+            lastMonthSells: 0,
+            lastMonthSellsPercentage: 12,
 
             totalIncome: 0,
             lastMonthIncome: 0,
             lastMonthIncomePercentage: 12,
 
-            activeCourseCount: 0,
-            onlineUserCount: 0,
+            totalPayedCommission: 0,
+            commissionBalance: 0,
         });
     }
 
@@ -66,32 +63,16 @@ export class DashboardController {
         return res.json({ data, label, startDate: inputStartDate, endDate: inputEndDate });
     }
 
-    @Get("/device-chart")
-    async getDeviceChartInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        const type = req.query.type ? req.query.type.toString() : "device";
-
-        // device : Mobile | PC | unknown
-        // browser : chrome | firefox | edge | opera | unknown
-        // os : windows | linux | mac | android | ios | unknown
-
-        return res.json({
-            data: [2432, 523, 432, 432, 2432, 523],
-            label: ["windows", "linux", "mac", "android", "ios", "unknown"],
-        });
-    }
-
-    @Get("/most-viewed-courses")
-    async getMostViewedCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        const courses = await this.CourseModel.find().select("-topics").populate("teacher", "image name family").limit(6).exec();
-        return res.json(courses);
-    }
-
     @Get("/most-sold-courses")
     async getMostSoldCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         // TODO
-        const courses = await this.CourseModel.find().select("-topics").populate("teacher", "image name family").limit(6).exec();
+        let courses: any = await this.CourseModel.find().select("-topics").populate("teacher", "image name family").limit(6).sort({ buyCount: "desc" }).exec();
+        courses = courses.map((course) => {
+            course = course.toJSON();
+            course.sellCount = course.buyCount;
+            return course;
+        });
+
         return res.json(courses);
     }
 }

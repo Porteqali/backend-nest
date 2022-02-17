@@ -12,6 +12,7 @@ import { CourseSchema } from "src/models/courses.schema";
 import { CoursesController } from "src/controllers/teacherPanel/courses.controller";
 import { CommentsController } from "src/controllers/teacherPanel/comments.controller";
 import { CommentSchema } from "src/models/comments.schema";
+import { DashboardController } from "src/controllers/teacherPanel/dashboard.controller";
 
 @Module({
     imports: [
@@ -25,7 +26,7 @@ import { CommentSchema } from "src/models/comments.schema";
             { name: "MarketerCourse", schema: MarketerCoursesSchema },
         ]),
     ],
-    controllers: [CommissionPaymentsController, CommissionsController, CoursesController, CommentsController],
+    controllers: [CommissionPaymentsController, CommissionsController, CoursesController, CommentsController,DashboardController],
     providers: [AuthService],
     exports: [],
 })

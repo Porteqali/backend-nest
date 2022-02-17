@@ -41,3 +41,5 @@ lerna-debug.log*
 
 # data
 /src/importer/json
+/storage
+/static

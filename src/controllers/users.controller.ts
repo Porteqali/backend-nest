@@ -46,6 +46,7 @@ export class UsersController {
             family: user.family,
             email: user.email,
             mobile: user.mobile,
+            role: user.role,
             wallet: user.walletBalance,
             permissions: [...permissions],
         });

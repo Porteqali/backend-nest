@@ -10,6 +10,8 @@ import { SessionSchema } from "src/models/sessions.schema";
 import { CommissionsController } from "src/controllers/marketerPanel/commissions.controller";
 import { CommissionPaymentsController } from "src/controllers/marketerPanel/commissionPayments.controller";
 import { CoursesController } from "src/controllers/marketerPanel/courses.controller";
+import { DashboardController } from "src/controllers/marketerPanel/dashboard.controller";
+import { CourseSchema } from "src/models/courses.schema";
 
 @Module({
     imports: [
@@ -19,9 +21,10 @@ import { CoursesController } from "src/controllers/marketerPanel/courses.control
             { name: "CommissionPayment", schema: CommissionPaymentSchema },
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "MarketerCourse", schema: MarketerCoursesSchema },
+            { name: "Course", schema: CourseSchema },
         ]),
     ],
-    controllers: [CustomersController, CommissionsController, CommissionPaymentsController, CoursesController],
+    controllers: [CustomersController, CommissionsController, CommissionPaymentsController, CoursesController, DashboardController],
     providers: [AuthService],
     exports: [],
 })
