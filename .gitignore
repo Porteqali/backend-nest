@@ -38,6 +38,7 @@ lerna-debug.log*
 .env
 
 .fandogh
+workspace.tar.gz
 
 # data
 /src/importer/json

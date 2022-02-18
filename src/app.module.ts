@@ -65,7 +65,8 @@ import { MetadataSchema } from "./models/metadatas.schema";
         SchedulerModule,
         ScheduleModule.forRoot(),
         ConfigModule.forRoot(),
-        MongooseModule.forRoot(process.env.MONGO_URL, { dbName: "porteqali" }),
+        // TODO : connect to porteqali
+        MongooseModule.forRoot(process.env.MONGO_URL, { dbName: "porteqali2" }),
         MongooseModule.forFeature([
             { name: "Session", schema: SessionSchema },
             { name: "User", schema: UserSchema },

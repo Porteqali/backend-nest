@@ -7,10 +7,13 @@ import { PermissionDocument } from "src/models/permissions.schema";
 import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
 import { MetadataDocument } from "src/models/metadatas.schema";
 import { records as permissionRecords } from "src/database/seeds/permissions.seed";
+import { UserDocument } from "src/models/users.schema";
+import { hash } from "bcrypt";
 
 @Controller("seeder")
 export class Seeder {
     constructor(
+        @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Permission") private readonly PermissionModel: Model<PermissionDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("Metadata") private readonly MetadataModel: Model<MetadataDocument>,
@@ -22,6 +25,7 @@ export class Seeder {
         // ->
         await this.seedPermissions(req, res);
         await this.seedPermissionGroups(req, res);
+        await this.seedDefaultSuperAdmin(req, res);
         await this.seedDefaultMetadata(req, res);
 
         return res.json({ seedAll: 1 });
@@ -55,6 +59,32 @@ export class Seeder {
         });
 
         return res.json({ seedPermissionGroups: 1 });
+    }
+
+    @Get("/seed/super-admin")
+    async seedDefaultSuperAdmin(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        this.UserModel.collection.drop().catch((e) => {
+            throw new InternalServerErrorException(e);
+        });
+
+        const permissionGroup = await this.PermissionGroupModel.findOne({ name: "SuperAdmin" }).exec();
+
+        await this.UserModel.create({
+            name: "kasra",
+            family: "keshvardoost",
+            email: "kasrakeshvardoost@gmail.com",
+            emailVerifiedAt: new Date(Date.now()),
+            mobile: "09358269691",
+            mobileVerifiedAt: new Date(Date.now()),
+            password: await hash("12345678", 5),
+            role: "admin",
+            status: "active",
+            permissionGroup: permissionGroup._id,
+        }).catch((e) => {
+            throw new InternalServerErrorException(e);
+        });
+
+        return res.json({ seedDefaultSuperAdmin: 1 });
     }
 
     @Get("/seed/metadata")
