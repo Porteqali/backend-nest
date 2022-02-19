@@ -12,7 +12,7 @@ export class Gateway implements GatewayInterface {
     public async getIdentifier(apiKey: string, amount: number, redirect: string, description: string, mobile?): Promise<string> {
         let identifier = "";
         let url = `https://www.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
-        if (process.env.PAYMENT_IN_TEST) url = `https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
+        if (process.env.PAYMENT_IN_TEST == "true") url = `https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json`;
 
         await axios
             .post(url, {
@@ -35,7 +35,7 @@ export class Gateway implements GatewayInterface {
         // return `https://www.zarinpal.com/pg/StartPay/${identifier}`;
 
         let url = `https://www.zarinpal.com/pg/StartPay/${identifier}/ZarinGate`;
-        if (process.env.PAYMENT_IN_TEST) url = `https://sandbox.zarinpal.com/pg/StartPay/${identifier}`;
+        if (process.env.PAYMENT_IN_TEST == "true") url = `https://sandbox.zarinpal.com/pg/StartPay/${identifier}`;
 
         return url;
     }

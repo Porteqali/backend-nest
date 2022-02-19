@@ -95,4 +95,6 @@ export const records = [
     { _id: "admin.metadata.add", label: "ایجاد متادیتا جدید", group: "metadata", groupLabel: "متادیتا" },
     { _id: "admin.metadata.edit", label: "ویرایش متادیتا", group: "metadata", groupLabel: "متادیتا" },
     { _id: "admin.metadata.delete", label: "حذف متادیتا", group: "metadata", groupLabel: "متادیتا" },
+
+    { _id: "admin.importer.import", label: "وارد کردن اطلاعات", group: "importer", groupLabel: "ورود اطلاعات دیتابیس" },
 ];

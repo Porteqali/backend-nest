@@ -742,7 +742,7 @@ export class MarketerController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(marketer.image.replace("/file/", "storage/")).catch((e) => {});
+            if(!!marketer.image) await unlink(marketer.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));

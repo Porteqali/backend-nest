@@ -23,16 +23,16 @@ export class Seeder {
     async seedAll(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         // add any other seeds here in order
         // ->
-        await this.seedPermissions(req, res);
-        await this.seedPermissionGroups(req, res);
-        await this.seedDefaultSuperAdmin(req, res);
-        await this.seedDefaultMetadata(req, res);
+        await this.seedPermissions(req, res, false);
+        await this.seedPermissionGroups(req, res, false);
+        await this.seedDefaultSuperAdmin(req, res, false);
+        await this.seedDefaultMetadata(req, res, false);
 
         return res.json({ seedAll: 1 });
     }
 
     @Get("/seed/permissions")
-    async seedPermissions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+    async seedPermissions(@Req() req: Request, @Res() res: Response, end = true): Promise<void | Response> {
         this.PermissionModel.collection.drop().catch((e) => {
             throw new InternalServerErrorException(e);
         });
@@ -41,11 +41,11 @@ export class Seeder {
             throw new InternalServerErrorException(e);
         });
 
-        return res.json({ seedPermissions: 1 });
+        if (end) return res.json({ seedPermissions: 1 });
     }
 
     @Get("/seed/permission-groups")
-    async seedPermissionGroups(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+    async seedPermissionGroups(@Req() req: Request, @Res() res: Response, end = true): Promise<void | Response> {
         this.PermissionGroupModel.collection.drop().catch((e) => {
             throw new InternalServerErrorException(e);
         });
@@ -58,11 +58,11 @@ export class Seeder {
             throw new InternalServerErrorException(e);
         });
 
-        return res.json({ seedPermissionGroups: 1 });
+        if (end) return res.json({ seedPermissionGroups: 1 });
     }
 
     @Get("/seed/super-admin")
-    async seedDefaultSuperAdmin(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+    async seedDefaultSuperAdmin(@Req() req: Request, @Res() res: Response, end = true): Promise<void | Response> {
         this.UserModel.collection.drop().catch((e) => {
             throw new InternalServerErrorException(e);
         });
@@ -84,11 +84,11 @@ export class Seeder {
             throw new InternalServerErrorException(e);
         });
 
-        return res.json({ seedDefaultSuperAdmin: 1 });
+        if (end) return res.json({ seedDefaultSuperAdmin: 1 });
     }
 
     @Get("/seed/metadata")
-    async seedDefaultMetadata(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+    async seedDefaultMetadata(@Req() req: Request, @Res() res: Response, end = true): Promise<void | Response> {
         this.MetadataModel.collection.drop().catch((e) => {
             throw new InternalServerErrorException(e);
         });
@@ -96,16 +96,16 @@ export class Seeder {
         await this.MetadataModel.create({
             page: "home",
             title: "گروه آموزشی پرتقال",
-            description: "",
-            keywords: "",
-            canonical: "",
+            description: "گروه آموزشی پرتقال",
+            keywords: "پرتقال",
+            canonical: "https://porteqali.com",
             themeColor: "#ff7952",
-            site: "",
+            site: "https://porteqali.com",
             language: "fa",
         }).catch((e) => {
             throw new InternalServerErrorException(e);
         });
 
-        return res.json({ seedDefaultMetadata: 1 });
+        if (end) return res.json({ seedDefaultMetadata: 1 });
     }
 }

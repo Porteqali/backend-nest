@@ -241,7 +241,7 @@ export class ArticleController {
             if (!isMimeOk0) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(article.image.replace("/file/", "storage/")).catch((e) => {});
+            if(!!article.image) await unlink(article.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName0 = randStr(10);
             const img0 = sharp(Buffer.from(files[0].buffer));
@@ -271,7 +271,7 @@ export class ArticleController {
             if (!isMimeOk1) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(article.imageVertical.replace("/file/", "storage/")).catch((e) => {});
+            if(!!article.imageVertical) await unlink(article.imageVertical.replace("/file/", "storage/")).catch((e) => {});
 
             const randName1 = randStr(15);
             const img1 = sharp(Buffer.from(files[1].buffer));

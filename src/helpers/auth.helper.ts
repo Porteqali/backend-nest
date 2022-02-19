@@ -20,7 +20,7 @@ const UserModel = model<UserDocument>("users", UserSchema);
 const SessionModel = model<SessionDocument>("sessions", SessionSchema);
 
 export const loadUser = async (req: Request): Promise<null | user> => {
-    await connect(process.env.MONGO_URL, { dbName: "porteqali2" });
+    await connect(process.env.MONGO_URL, { dbName: "porteqali" });
 
     let token = "";
     if (req.headers["authtoken"]) token = req.headers["authtoken"].toString();

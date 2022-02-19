@@ -162,7 +162,7 @@ export class TestimonialsController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(testimonial.image.replace("/file/", "storage/")).catch((e) => {});
+            if(!!testimonial.image) await unlink(testimonial.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));

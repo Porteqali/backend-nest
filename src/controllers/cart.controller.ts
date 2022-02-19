@@ -59,7 +59,7 @@ export class CartController {
         const couponCode = req.body.couponCode || "";
         let cart = {};
 
-        if (process.env.PAYMENT_IN_TEST && req.user.user.role != "admin") {
+        if (process.env.PAYMENT_IN_TEST == "true" && req.user.user.role != "admin") {
             throw new UnprocessableEntityException([
                 { property: "cart", errors: ["درحال حاضر امکان خرید و پرداخت وجود ندارد، لطفا در ساعاتی بعد دوباره امتحان کنید"] },
             ]);

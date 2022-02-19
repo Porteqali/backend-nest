@@ -46,6 +46,7 @@ import { StaticPagesController } from "src/controllers/admin/staticPages.control
 import { LatestNewsController } from "src/controllers/admin/latestNews.controller";
 import { MetadataController } from "src/controllers/admin/metadata.controller";
 import { MetadataSchema } from "src/models/metadatas.schema";
+import { ImporterController } from "src/controllers/admin/importer.controller";
 
 @Module({
     imports: [
@@ -97,6 +98,7 @@ import { MetadataSchema } from "src/models/metadatas.schema";
         StaticPagesController,
         LatestNewsController,
         MetadataController,
+        ImporterController,
     ],
     providers: [AuthService, CourseService],
     exports: [],

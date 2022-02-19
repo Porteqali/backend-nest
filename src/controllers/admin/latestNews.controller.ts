@@ -51,7 +51,7 @@ export class LatestNewsController {
 
         // if video file is changes or turned into link... remove the old video file if any
         if ((!!uploads["videoFile"] || news.videoType != input.videoType) && news.videoType == "file") {
-            await unlink(news.video.replace("/file/", "storage/")).catch((e) => {});
+            if(!!news.video) await unlink(news.video.replace("/file/", "storage/")).catch((e) => {});
         }
 
         if (!!uploads["videoFile"] && input.videoType == "file") {

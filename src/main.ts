@@ -2,29 +2,11 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { mkdir, writeFile } from "fs/promises";
 import { UnprocessableEntityException, ValidationPipe } from "@nestjs/common";
+import createDefaultFilesAndFolders from "./createDefaultFilesAndFolders";
 import * as cookieParser from "cookie-parser";
 import * as helmet from "helmet";
 import * as csurf from "csurf";
 import * as bcrypt from "bcrypt";
-
-async function createDefaultFilesAndFolders() {
-    const staticFileList = ["about_us.json", "banner.json", "contact_info.json", "latest_news.json", "privacy_policy.json", "terms_and_conditions.json"];
-    const staticFolderList = [
-        "static",
-        "storage",
-        "storage/private",
-        "storage/private/course_videos",
-        "storage/public",
-        "storage/public/article_images",
-        "storage/public/course_exercise_files",
-        "storage/public/course_group_icons",
-        "storage/public/course_images",
-        "storage/public/user_avatars",
-    ];
-
-    for (let i = 0; i < staticFolderList.length; i++) await mkdir(`./${staticFolderList[i]}`, { recursive: true }).catch((e) => console.log(e));
-    for (let i = 0; i < staticFileList.length; i++) await writeFile(`./static/${staticFileList[i]}`, "{}").catch((e) => console.log(e));
-}
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);

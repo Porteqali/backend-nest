@@ -350,7 +350,7 @@ export class CourseController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(course.image.replace("/file/", "storage/")).catch((e) => {});
+            if(!!course.image) await unlink(course.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(fileFields["files"][0].buffer));
@@ -426,7 +426,7 @@ export class CourseController {
             if (course.topics[i]["type"] != "file") continue;
             await unlink(course.topics[i]["file"].replace("/file/", "storage/")).catch((e) => {});
         }
-        await unlink(course.image.replace("/file/", "storage/")).catch((e) => {});
+        if(!!course.image) await unlink(course.image.replace("/file/", "storage/")).catch((e) => {});
 
         // delete the course
         await this.CourseModel.deleteOne({ _id: req.params.id }).exec();

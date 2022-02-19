@@ -80,7 +80,7 @@ export class UsersController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(user.image.replace("/file/", "storage/")).catch((e) => {});
+            if (!!user.image) await unlink(user.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));
@@ -103,7 +103,7 @@ export class UsersController {
         if (!user) throw new NotFoundException([{ property: "user", errors: ["کاربر پیدا نشد"] }]);
 
         // delete the old image from system
-        await unlink(user.image.replace("/file/", "storage/")).catch((e) => {});
+        if (!!user.image) await unlink(user.image.replace("/file/", "storage/")).catch((e) => {});
         // delete image form db
         await this.UserModel.updateOne({ _id: req.user["payload"].user_id }, { image: "" });
 

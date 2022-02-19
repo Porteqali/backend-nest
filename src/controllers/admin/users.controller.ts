@@ -325,7 +325,7 @@ export class UserController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            await unlink(user.image.replace("/file/", "storage/")).catch((e) => {});
+            if(!!user.image) await unlink(user.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));
