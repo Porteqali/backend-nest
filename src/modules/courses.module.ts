@@ -1,8 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { CoursesController } from "src/controllers/courses.controller";
-import { CourseImporter } from "src/importer/course.importer";
-import { CourseTopicImporter } from "src/importer/courseTopic.importer";
 import { CourseGroupSchema } from "src/models/courseGroups.schema";
 import { CourseRatingSchema } from "src/models/courseRatings.schema";
 import { CourseSchema } from "src/models/courses.schema";
@@ -22,7 +20,7 @@ import { DiscountService } from "src/services/discount.service";
             { name: "Discount", schema: DiscountSchema },
         ]),
     ],
-    controllers: [CoursesController, CourseImporter, CourseTopicImporter],
+    controllers: [CoursesController],
     providers: [DiscountService],
     exports: [],
 })

@@ -135,7 +135,6 @@ export class AuthController {
         const sessionId = await this.authService.getSession(req);
         const token = this.authService.generateToken(req, sessionId);
 
-        // res.cookie("AuthToken", token, { sameSite: "strict", path: "/", httpOnly: true, secure: true, maxAge: this.tokenExpireTime * 1000 });
         return res.json({ token, user: req.user });
     }
 
@@ -155,7 +154,6 @@ export class AuthController {
         const sessionId = await this.authService.getSession(req);
         // generate token
         const token = this.authService.generateToken(req, sessionId);
-        // res.cookie("AuthToken", token, { sameSite: "strict", path: "/", httpOnly: true, secure: true, maxAge: this.tokenExpireTime * 1000 });
         return res.json({ token, user: req.user });
     }
 
@@ -163,24 +161,6 @@ export class AuthController {
     async continueWithGoogle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         if (!req.body.profile) throw new ForbiddenException();
         const profile = req.body.profile;
-        // let profile = {
-        //     id: "",
-        //     displayName: "Kasra Keshvardoost",
-        //     name: { familyName: "Keshvardoost", givenName: "Kasra" },
-        //     emails: [{ value: "kasrakeshvardoost@gmail.com", verified: true }],
-        //     photos: [{ value: "full-link" }],
-        //     provider: "google",
-        //     _json: {
-        //         sub: "",
-        //         name: "Kasra Keshvardoost",
-        //         given_name: "Kasra",
-        //         family_name: "Keshvardoost",
-        //         picture: "full-link",
-        //         email: "kasrakeshvardoost@gmail.com",
-        //         email_verified: true,
-        //         locale: "en",
-        //     },
-        // };
 
         let user = await this.UserModel.findOne({ email: profile._json.email }).exec();
         if (user) {
@@ -217,7 +197,6 @@ export class AuthController {
         const sessionId = await this.authService.getSession(req);
         // generate new token
         const token = this.authService.generateToken(req, sessionId);
-        // res.cookie("AuthToken", token, { sameSite: "strict", path: "/", httpOnly: true, secure: true, maxAge: this.tokenExpireTime * 1000 });
         return res.json({ token, user: req.user });
     }
 
