@@ -14,6 +14,9 @@ import { CollaborateRequestDocument } from "src/models/collaborateRequests.schem
 import { CourseGroupDocument } from "src/models/courseGroups.schema";
 import { CommissionDocument } from "src/models/commissions.schema";
 import { FaqDocument } from "src/models/faqs.schema";
+import { ArticleDocument } from "src/models/articles.schema";
+import { CourseService } from "src/services/course.service";
+import { CourseDocument } from "src/models/courses.schema";
 
 @Controller("admin/importer")
 export class ImporterController {
@@ -38,12 +41,15 @@ export class ImporterController {
 
     constructor(
         private readonly authService: AuthService,
+        private readonly courseService: CourseService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("ContactRequest") private readonly ContactRequestModel: Model<ContactRequestDocument>,
         @InjectModel("CollaborateRequest") private readonly CollaborateRequestModel: Model<CollaborateRequestDocument>,
         @InjectModel("CourseGroup") private readonly CourseGroupModel: Model<CourseGroupDocument>,
         @InjectModel("Commission") private readonly CommissionModel: Model<CommissionDocument>,
         @InjectModel("Faq") private readonly FaqModel: Model<FaqDocument>,
+        @InjectModel("Article") private readonly ArticleModel: Model<ArticleDocument>,
+        @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
     ) {}
 
     @Post("/")
@@ -109,7 +115,7 @@ export class ImporterController {
                 await this.import_Articles(json);
                 break;
             case "Courses":
-                await this.import_Courses(json);
+                await this.import_Courses(json, req);
                 break;
 
             case "Comments":
@@ -332,12 +338,29 @@ export class ImporterController {
             const imports = [];
             for (let i = 0; i < json.length; i++) {
                 const row = json[i];
+                let registeredWith = null;
+                const marketer = await this.UserModel.findOne({ mobile: row.registered_with.marketer_phone, role: "marketer" }).exec();
+                if (marketer) {
+                    registeredWith = { marketer: marketer._id, period: parseInt(row.registered_with.period), endsAt: new Date(row.registered_with.ends_at) };
+                }
+
                 imports.push({
-                    // name: row.name,
+                    image: `https://porteqali.com/img/customers/${row.image}`,
+                    name: row.name,
+                    family: row.family,
+                    email: row.email,
+                    emailVerifiedAt: row.email_verified_at ? new Date(row.email_verified_at) : null,
+                    mobile: row.phone || "",
+                    mobileVerifiedAt: row.mobile_verified_at ? new Date(row.mobile_verified_at) : null,
+                    password: row.password,
+                    role: "user",
+                    googleId: row.google_id ? row.google_id : "",
+                    status: row.ban == "1" ? "deactive" : "active",
+                    registeredWith: registeredWith,
                     createdAt: new Date(row.created_at),
                 });
             }
-            // await this..insertMany(imports);
+            await this.UserModel.insertMany(imports);
         } catch (e) {
             console.log(e);
             throw new UnprocessableEntityException([{ property: "importer", errors: ["اطلاعات به درستی ایمپورت نشدند"] }]);
@@ -349,29 +372,97 @@ export class ImporterController {
             const imports = [];
             for (let i = 0; i < json.length; i++) {
                 const row = json[i];
+
+                let author = null;
+                const admin = await this.UserModel.findOne({ email: row.author_email, role: "admin" }).exec();
+                if (admin) author = admin._id;
+
                 imports.push({
-                    // name: row.name,
+                    author: author,
+                    image: `https://porteqali.com/img/blogs/${row.blog_image}`,
+                    imageVertical: `https://porteqali.com/img/blogs/${row.blog_image_vertical}`,
+                    title: row.title,
+                    slug: row.slug,
+                    description: row.desc,
+                    body: row.text,
+                    tags: [],
+                    metadata: { thumbnail: "", title: "", description: "", author: "", keywords: "" },
+                    status: row.disabled == "1" ? "pending" : "published",
+                    likes: 0,
+                    publishedAt: new Date(row.created_at),
                     createdAt: new Date(row.created_at),
                 });
             }
-            // await this..insertMany(imports);
+            await this.ArticleModel.insertMany(imports);
         } catch (e) {
             console.log(e);
             throw new UnprocessableEntityException([{ property: "importer", errors: ["اطلاعات به درستی ایمپورت نشدند"] }]);
         }
     }
 
-    private async import_Courses(json) {
+    private async import_Courses(json, req) {
         try {
             const imports = [];
             for (let i = 0; i < json.length; i++) {
                 const row = json[i];
+
+                let teacher = null;
+                const teacherResult = await this.UserModel.findOne({ email: row.teacher_email, role: "teacher" }).exec();
+                if (teacherResult) teacher = teacherResult._id;
+
+                let courseGroup = null;
+                const courseGroupResult = await this.CourseGroupModel.findOne({ name: row.course_group_name }).exec();
+                if (courseGroupResult) courseGroup = courseGroupResult._id;
+
                 imports.push({
-                    // name: row.name,
+                    oid: row.id,
+                    image: `https://porteqali.com/img/courses/${row.course_image}`,
+                    name: row.name,
+                    teacher: teacher,
+                    description: row.description,
+                    price: row.tuition,
+                    exerciseFiles: [{ name: "فایل تمرین", file: `https://porteqali.com/course_compress_files/${row.course_compress_file}`, size: "0" }],
+                    groups: [courseGroup],
+                    tags: [],
+                    status: row.disabled == "1" ? "deactive" : "active",
+                    commission: "",
+                    buyCount: parseInt(row.buy_count),
+                    viewCount: parseInt(row.view_count),
+                    score: parseFloat(row.score),
+                    showInNew: row.show_in_new == "1" ? true : false,
                     createdAt: new Date(row.created_at),
                 });
             }
-            // await this..insertMany(imports);
+            await this.CourseModel.insertMany(imports);
+
+            // generating and updating topic
+            for (let i = 0; i < json.length; i++) {
+                const row = json[i];
+
+                const course = await this.CourseModel.findOne({ oid: row.id }).exec();
+                if (!course) continue;
+
+                const topics = [];
+                for (let j = 0; j < row.topics; i++) {
+                    topics.push({
+                        order: row.topics[i].order,
+                        name: row.topics[i].name,
+                        time: {
+                            hours: row.topics[i].time.hours,
+                            minutes: row.topics[i].time.minutes,
+                            seconds: row.topics[i].time.seconds,
+                        },
+                        description: row.topics[i].description,
+                        file: await this.courseService.generateLinkForTopic(req, row.topics[i].full_link, "courseVideo", { course_id: course._id }),
+                        isFree: row.topics[i].is_free == "1" ? true : false,
+                        isFreeForUsers: row.topics[i].is_free_for_users == "1" ? true : false,
+                        status: "active",
+                        type: "link",
+                    });
+                }
+
+                await this.CourseModel.updateOne({ oid: row.id }, { topics: topics }).exec();
+            }
         } catch (e) {
             console.log(e);
             throw new UnprocessableEntityException([{ property: "importer", errors: ["اطلاعات به درستی ایمپورت نشدند"] }]);

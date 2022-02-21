@@ -43,6 +43,7 @@ export class CoursesController {
     @Get("/top-teachers")
     async getTopTeachers(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const teachersQuery = this.UserModel.aggregate();
+        teachersQuery.match({ role: "teacher" });
         teachersQuery.lookup({
             from: "courses",
             let: { teacher_id: "$_id" },
