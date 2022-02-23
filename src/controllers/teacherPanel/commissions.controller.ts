@@ -50,6 +50,7 @@ export class CommissionsController {
 
         // making the model with query
         let data = this.UserCourseModel.aggregate();
+        data.match(query);
         data.lookup({
             from: "users",
             localField: "user",
@@ -62,7 +63,6 @@ export class CommissionsController {
             foreignField: "_id",
             as: "course",
         });
-        data.match(query);
         data.sort(sort);
         data.project("user.image user.name user.family course.name teacherCut paidAmount createdAt");
         if (!!search) {

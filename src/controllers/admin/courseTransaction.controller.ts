@@ -68,9 +68,9 @@ export class CourseTransactionController {
 
         // making the model with query
         let data = this.UserCourseModel.aggregate();
+        data.match(query);
         data.lookup({ from: "users", localField: "user", foreignField: "_id", as: "user" });
         data.lookup({ from: "courses", localField: "course", foreignField: "_id", as: "course" });
-        data.match(query);
         data.project({
             "user.image": 1,
             fullname: { $concat: [{ $arrayElemAt: ["$user.name", 0] }, " ", { $arrayElemAt: ["$user.family", 0] }] },

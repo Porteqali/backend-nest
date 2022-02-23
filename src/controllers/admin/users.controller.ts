@@ -65,7 +65,7 @@ export class UserController {
 
     @Get("/courses/:id")
     async getUserCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.users.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.users.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -193,7 +193,7 @@ export class UserController {
 
     @Get("/")
     async getUsersList(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.users.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.users.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -230,13 +230,13 @@ export class UserController {
 
         // making the model with query
         let data = this.UserModel.aggregate();
+        data.match(query);
         data.lookup({
             from: "permissiongroups",
             localField: "permissionGroup",
             foreignField: "_id",
-            as: "permissionGroup",
+            as: "permission_group",
         });
-        data.match(query);
         data.sort(sort);
         data.project({
             image: 1,
@@ -279,7 +279,7 @@ export class UserController {
 
     @Get("/:id")
     async getUser(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.users.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.users.view"]))) throw new ForbiddenException();
 
         const user = await this.UserModel.findOne({ _id: req.params.id }).exec();
         if (!user) throw new NotFoundException();
@@ -294,7 +294,7 @@ export class UserController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.users.edit"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.users.edit"]))) throw new ForbiddenException();
 
         const isEmailExists = await this.UserModel.exists({ _id: { $ne: req.params.id }, email: input.email });
         if (isEmailExists) {
@@ -325,7 +325,7 @@ export class UserController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            if(!!user.image) await unlink(user.image.replace("/file/", "storage/")).catch((e) => {});
+            if (!!user.image) await unlink(user.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));
@@ -363,7 +363,7 @@ export class UserController {
 
     @Delete("/:id")
     async deleteUser(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.users.delete"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.users.delete"]))) throw new ForbiddenException();
 
         const data = await this.UserModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

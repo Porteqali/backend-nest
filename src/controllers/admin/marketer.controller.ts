@@ -191,6 +191,7 @@ export class MarketerController {
 
         // making the model with query
         let data = this.UserCourseModel.aggregate();
+        data.match(query);
         data.lookup({
             from: "users",
             localField: "user",
@@ -203,7 +204,6 @@ export class MarketerController {
             foreignField: "_id",
             as: "course",
         });
-        data.match(query);
         data.sort(sort);
         data.project("user.image user.name user.family course.name marketerCut paidAmount createdAt");
         if (!!search) {
@@ -345,13 +345,13 @@ export class MarketerController {
 
         // making the model with query
         let data = this.MarketerCourseModel.aggregate();
+        data.match(query);
         data.lookup({
             from: "courses",
             localField: "course",
             foreignField: "_id",
             as: "course",
         });
-        data.match(query);
         data.sort({ createdAt: "desc" });
         data.project("course.image course.name commissionAmount commissionType code status createdAt");
         if (!!search) {
@@ -552,6 +552,7 @@ export class MarketerController {
 
         // making the model with query
         let data = this.UserModel.aggregate();
+        data.match(query);
         data.lookup({
             from: "usercourses",
             let: { user_id: "$_id" },
@@ -574,7 +575,6 @@ export class MarketerController {
             ],
             as: "commissionPayments",
         });
-        data.match(query);
         data.match({
             $or: [
                 { name: { $regex: new RegExp(`.*${search}.*`, "i") } },

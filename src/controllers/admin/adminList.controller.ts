@@ -62,13 +62,13 @@ export class AdminListController {
 
         // making the model with query
         let data = this.UserModel.aggregate();
+        data.match(query);
         data.lookup({
             from: "permissiongroups",
             localField: "permissionGroup",
             foreignField: "_id",
             as: "permissionGroup",
         });
-        data.match(query);
         data.match({
             $or: [
                 { name: { $regex: new RegExp(`.*${search}.*`, "i") } },

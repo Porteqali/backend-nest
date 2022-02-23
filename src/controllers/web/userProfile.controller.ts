@@ -32,6 +32,7 @@ export class UserProfileController {
 
         // making the model with query
         let data = this.UserCourseModel.aggregate();
+        data.match(query);
         data.lookup({
             from: "courses",
             localField: "course",
@@ -44,7 +45,6 @@ export class UserProfileController {
             foreignField: "_id",
             as: "teacher",
         });
-        data.match(query);
         data.sort(sort);
         data.project("teacher.image teacher.name teacher.family course.teacher course._id course.topics course.name course.image course.status");
 

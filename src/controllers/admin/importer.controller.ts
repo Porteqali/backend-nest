@@ -77,7 +77,8 @@ export class ImporterController {
         const ogName = files[0].originalname;
         const extension = ogName.slice(((ogName.lastIndexOf(".") - 1) >>> 0) + 2);
         // check file size
-        if (files[0].size > 524288) throw new UnprocessableEntityException([{ property: "file", errors: ["حجم فایل باید کمتر از 500Kb باشد"] }]);
+        // if (files[0].size > 524288) throw new UnprocessableEntityException([{ property: "file", errors: ["حجم فایل باید کمتر از 500Kb باشد"] }]);
+        if (files[0].size > 1524288) throw new UnprocessableEntityException([{ property: "file", errors: ["حجم فایل باید کمتر از 1500Kb باشد"] }]);
         // check file format
         let isMimeOk = extension == "json";
         if (!isMimeOk) throw new UnprocessableEntityException([{ property: "file", errors: ["فرمت فایل معتبر نیست"] }]);
@@ -431,11 +432,13 @@ export class ImporterController {
                     teacher: teacher,
                     description: row.description,
                     price: row.tuition,
-                    exerciseFiles: [{ name: "فایل تمرین", file: `https://porteqali.com/course_compress_files/${row.course_compress_file}`, size: "0" }],
+                    exerciseFiles: row.course_compress_file
+                        ? [{ name: "فایل تمرین", file: `https://porteqali.com/course_compress_files/${row.course_compress_file}`, size: "0" }]
+                        : [],
                     groups: [courseGroup],
                     tags: [],
                     status: row.disabled == "1" ? "deactive" : "active",
-                    commission: "",
+                    commission: null,
                     buyCount: parseInt(row.buy_count),
                     viewCount: parseInt(row.view_count),
                     score: parseFloat(row.score),
