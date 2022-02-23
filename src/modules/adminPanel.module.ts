@@ -47,6 +47,7 @@ import { LatestNewsController } from "src/controllers/admin/latestNews.controlle
 import { MetadataController } from "src/controllers/admin/metadata.controller";
 import { MetadataSchema } from "src/models/metadatas.schema";
 import { ImporterController } from "src/controllers/admin/importer.controller";
+import { CourseRatingSchema } from "src/models/courseRatings.schema";
 
 @Module({
     imports: [
@@ -71,6 +72,7 @@ import { ImporterController } from "src/controllers/admin/importer.controller";
             { name: "Link", schema: LinkSchema },
             { name: "MarketerCourse", schema: MarketerCoursesSchema },
             { name: "Metadata", schema: MetadataSchema },
+            { name: "CourseRating", schema: CourseRatingSchema },
         ]),
     ],
     controllers: [

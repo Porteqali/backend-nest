@@ -28,7 +28,7 @@ export class UsersController {
         @InjectModel("Permission") private readonly PermissionModel: Model<PermissionDocument>,
     ) {}
 
-    @Get("info")
+    @Post("info")
     async getUser(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const user = await this.UserModel.findOne({ _id: req.user["payload"].user_id })
             .select("-_v -password -createdAt")
