@@ -23,7 +23,7 @@ export class WalletTransactionController {
 
     @Get("/")
     async getTransactions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.wallet-transactions.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.wallet-transactions.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -34,7 +34,7 @@ export class WalletTransactionController {
         const sortType = req.query.sort_type ? req.query.sort_type : "asc";
         switch (req.query.sort) {
             case "کاربر":
-                sort = { "user.name": sortType, "user.family": sortType };
+                sort = { userFullname: sortType };
                 break;
             case "کد تراکنش":
                 sort = { transactionCode: sortType };
@@ -64,21 +64,12 @@ export class WalletTransactionController {
 
         // making the model with query
         let data = this.WalletTransactionModel.aggregate();
-        data.lookup({ from: "users", localField: "user", foreignField: "_id", as: "user" });
         data.match(query);
         data.sort(sort);
-        data.project({
-            "user.image": 1,
-            fullname: { $concat: [{ $arrayElemAt: ["$user.name", 0] }, " ", { $arrayElemAt: ["$user.family", 0] }] },
-            chargeAmount: 1,
-            paidAmount: 1,
-            transactionCode: 1,
-            status: 1,
-            createdAt: 1,
-        });
+        data.project({ user: 1, userFullname: 1, chargeAmount: 1, paidAmount: 1, transactionCode: 1, status: 1, createdAt: 1 });
         data.match({
             $or: [
-                { fullname: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                { userFullname: { $regex: new RegExp(`.*${search}.*`, "i") } },
                 { chargeAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
                 { paidAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
                 { transactionCode: { $regex: new RegExp(`.*${search}.*`, "i") } },
@@ -98,6 +89,12 @@ export class WalletTransactionController {
         if (error) throw new InternalServerErrorException();
         const total = results[0].total[0] ? results[0].total[0].count : 0;
 
+        // transform data
+        for (let i = 0; i < results[0].data.length; i++) {
+            const user = await this.UserModel.findOne({ _id: results[0].data[i].user }).exec();
+            results[0].data[i].userImage = !!user ? user.image : "";
+        }
+
         return res.json({
             records: results[0].data,
             page: page,
@@ -108,7 +105,7 @@ export class WalletTransactionController {
 
     @Get("/:id")
     async getTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.wallet-transactions.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.wallet-transactions.view"]))) throw new ForbiddenException();
 
         const transaction = await this.WalletTransactionModel.findOne({ _id: req.params.id }).exec();
         if (!transaction) throw new NotFoundException();
@@ -118,7 +115,7 @@ export class WalletTransactionController {
 
     @Post("/:id")
     async completeTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.wallet-transactions.complete"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.wallet-transactions.complete"]))) throw new ForbiddenException();
 
         const data = await this.WalletTransactionModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

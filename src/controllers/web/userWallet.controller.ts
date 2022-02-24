@@ -49,6 +49,7 @@ export class UserWalletController {
         // save the identifier
         await this.WalletTransactionModel.create({
             user: req.user.user._id,
+            userFullname: `${req.user.user.name} ${req.user.user.family}`,
             chargeAmount: amount,
             paidAmount: 0,
             authority: identifier,

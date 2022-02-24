@@ -16,6 +16,7 @@ import * as Jmoment from "jalali-moment";
 import * as json2xls from "json2xls";
 import { ExportUserDto, UpdateUserDto } from "src/dto/adminPanel/users.dto";
 import { UserCourseDocument } from "src/models/userCourses.schema";
+import { CourseDocument } from "src/models/courses.schema";
 
 @Controller("admin/users")
 export class UserController {
@@ -24,6 +25,7 @@ export class UserController {
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+        @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
     ) {}
 
     @Get("/export")
@@ -171,10 +173,18 @@ export class UserController {
             }
         }
 
+        const user = await this.UserModel.findOne({ _id: userId }).exec();
+        if (!user) throw new UnprocessableEntityException([{ property: "user", errors: ["کاربر پیدا نشد"] }]);
+
         for (let i = 0; i < selectedCourses.length; i++) {
+            const course = await this.CourseModel.findOne({ _id: selectedCourses[i] }).exec();
+            if (!course) continue;
+
             await this.UserCourseModel.create({
                 user: req.params.id,
-                course: selectedCourses[i],
+                userFullname: `${user.name} ${user.family}`,
+                course: course._id,
+                courseName: course.name,
                 coursePrice: 0,
                 coursePayablePrice: 0,
                 totalPrice: 0,

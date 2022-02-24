@@ -77,8 +77,7 @@ export class ImporterController {
         const ogName = files[0].originalname;
         const extension = ogName.slice(((ogName.lastIndexOf(".") - 1) >>> 0) + 2);
         // check file size
-        // if (files[0].size > 524288) throw new UnprocessableEntityException([{ property: "file", errors: ["حجم فایل باید کمتر از 500Kb باشد"] }]);
-        if (files[0].size > 1524288) throw new UnprocessableEntityException([{ property: "file", errors: ["حجم فایل باید کمتر از 1500Kb باشد"] }]);
+        if (files[0].size > 524288) throw new UnprocessableEntityException([{ property: "file", errors: ["حجم فایل باید کمتر از 500Kb باشد"] }]);
         // check file format
         let isMimeOk = extension == "json";
         if (!isMimeOk) throw new UnprocessableEntityException([{ property: "file", errors: ["فرمت فایل معتبر نیست"] }]);
@@ -387,6 +386,10 @@ export class ImporterController {
                 let author = null;
                 const admin = await this.UserModel.findOne({ email: row.author_email, role: "admin" }).exec();
                 if (admin) author = admin._id;
+                else {
+                    const backupAdmin = await this.UserModel.findOne({ role: "admin" }).exec();
+                    author = backupAdmin._id;
+                }
 
                 imports.push({
                     author: author,
@@ -456,19 +459,19 @@ export class ImporterController {
                 if (!course) continue;
 
                 const topics = [];
-                for (let j = 0; j < row.topics; i++) {
+                for (let j = 0; j < row.topics.length; j++) {
                     topics.push({
-                        order: row.topics[i].order,
-                        name: row.topics[i].name,
+                        order: row.topics[j].order,
+                        name: row.topics[j].name,
                         time: {
-                            hours: row.topics[i].time.hours,
-                            minutes: row.topics[i].time.minutes,
-                            seconds: row.topics[i].time.seconds,
+                            hours: row.topics[j].time.hours,
+                            minutes: row.topics[j].time.minutes,
+                            seconds: row.topics[j].time.seconds,
                         },
-                        description: row.topics[i].description,
-                        file: await this.courseService.generateLinkForTopic(req, row.topics[i].full_link, "courseVideo", { course_id: course._id }),
-                        isFree: row.topics[i].is_free == "1" ? true : false,
-                        isFreeForUsers: row.topics[i].is_free_for_users == "1" ? true : false,
+                        description: row.topics[j].description,
+                        file: await this.courseService.generateLinkForTopic(req, row.topics[j].full_link, "courseVideo", { course_id: course._id }),
+                        isFree: row.topics[j].is_free == "1" ? true : false,
+                        isFreeForUsers: row.topics[j].is_free_for_users == "1" ? true : false,
                         status: "active",
                         type: "link",
                     });
@@ -617,10 +620,10 @@ export class ImporterController {
             for (let i = 0; i < json.length; i++) {
                 const row = json[i];
 
-                const user = await this.UserModel.findOne({ email: row.user_email }).exec();
+                const user = await this.UserModel.findOne({ email: row.user_email }).select('_id name family').exec();
                 if (!user) continue;
 
-                const course = await this.CourseModel.findOne({ oid: row.course_id }).exec();
+                const course = await this.CourseModel.findOne({ oid: row.course_id }).select('_id name price').exec();
                 if (!course) continue;
 
                 let authority = "";
@@ -650,7 +653,9 @@ export class ImporterController {
 
                 imports.push({
                     user: user._id,
+                    userFullname: `${user.name} ${user.family}`,
                     course: course._id,
+                    courseName: course.name,
                     marketer: marketer,
                     teacherCut: !!row.teachers_cut ? parseInt(row.teachers_cut) : 0,
                     marketerCut: marketer_cut,
@@ -666,6 +671,7 @@ export class ImporterController {
                 });
             }
             await this.UserCourseModel.insertMany(imports);
+            await this.UserCourseModel.insertMany(imports,{});
         } catch (e) {
             console.log(e);
             throw new UnprocessableEntityException([{ property: "importer", errors: ["اطلاعات به درستی ایمپورت نشدند"] }]);

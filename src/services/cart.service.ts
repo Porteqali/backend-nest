@@ -117,7 +117,9 @@ export class CartService {
 
             inserts.push({
                 user: req.user.user._id,
+                userFullname: `${req.user.user.name} ${req.user.user.family}`,
                 course: course._id,
+                courseName: course.name,
                 marketer: marketer,
                 teacherCut: 0,
                 marketerCut: 0,

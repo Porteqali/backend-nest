@@ -10,11 +10,15 @@ export const UserCourseSchema = new Schema({
         ref: "User",
         required: true,
     },
+    userFullname: { type: String, required: true },
+
     course: {
         type: Schema.Types.ObjectId,
         ref: "Course",
         required: true,
     },
+    courseName: { type: String, required: true },
+
     marketer: {
         type: Schema.Types.ObjectId,
         ref: "User",
@@ -47,7 +51,11 @@ export const UserCourseSchema = new Schema({
 export interface UserCourse {
     _id: Schema.Types.ObjectId;
     user: User | Schema.Types.ObjectId;
+    userFullname: string,
+
     course: Course | Schema.Types.ObjectId | any;
+    courseName: string,
+    
     marketer?: User | Schema.Types.ObjectId;
 
     teacherCut: number;

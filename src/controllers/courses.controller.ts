@@ -1,4 +1,4 @@
-import { Controller, ForbiddenException, Get, Post, Req, Res } from "@nestjs/common";
+import { Controller, ForbiddenException, Get, InternalServerErrorException, Post, Req, Res } from "@nestjs/common";
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
@@ -44,36 +44,27 @@ export class CoursesController {
     async getTopTeachers(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const teachersQuery = this.UserModel.aggregate();
         teachersQuery.match({ role: "teacher" });
+        teachersQuery.limit(2);
         teachersQuery.lookup({
             from: "courses",
             let: { teacher_id: "$_id" },
             pipeline: [
-                {
-                    $match: {
-                        $expr: {
-                            $and: [{ $eq: ["$teacher", "$$teacher_id"] }, { $eq: ["$status", "active"] }],
-                        },
-                    },
-                },
-                {
-                    $lookup: {
-                        from: "coursegroups",
-                        localField: "groups",
-                        foreignField: "_id",
-                        as: "groups",
-                    },
-                },
+                { $match: { $expr: { $and: [{ $eq: ["$teacher", "$$teacher_id"] }, { $eq: ["$status", "active"] }] } } },
+                { $lookup: { from: "coursegroups", localField: "groups", foreignField: "_id", as: "groups" } },
                 { $limit: 3 },
             ],
             as: "courses",
         });
-        teachersQuery.limit(2);
         teachersQuery.project(
             "image title name family description socials courses._id courses.name courses.description courses.groups.icon courses.groups.name courses.topics",
         );
-        const teachers = await teachersQuery.exec().catch((e) => {
-            throw e;
+
+        let error = false;
+        const teachers: any = await teachersQuery.exec().catch((e) => {
+            console.log(e);
+            error = true;
         });
+        if (error) throw new InternalServerErrorException();
 
         for (let i = 0; i < teachers.length; i++) {
             teachers[i].courseCount = await this.CourseModel.countDocuments({ status: "active", teacher: teachers[i]._id }).exec();

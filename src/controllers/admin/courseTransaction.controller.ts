@@ -10,6 +10,7 @@ import { PermissionGroupDocument } from "src/models/permissionGroups.schema";
 import { AuthService } from "src/services/auth.service";
 import { WalletTransactionDocument } from "src/models/walletTransactions.schema";
 import { UserCourseDocument } from "src/models/userCourses.schema";
+import { CourseDocument } from "src/models/courses.schema";
 
 @Controller("admin/course-transactions")
 export class CourseTransactionController {
@@ -18,13 +19,14 @@ export class CourseTransactionController {
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+        @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
     ) {}
 
     // =============================================================================
 
     @Get("/")
     async getTransactions(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.course-transactions.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.course-transactions.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -35,10 +37,10 @@ export class CourseTransactionController {
         const sortType = req.query.sort_type ? req.query.sort_type : "asc";
         switch (req.query.sort) {
             case "کاربر":
-                sort = { "info.user.name": sortType, "info.user.family": sortType };
+                sort = { "info.userFullname": sortType };
                 break;
             case "دوره":
-                sort = { "info.course.name": sortType };
+                sort = { "info.courseName": sortType };
                 break;
             case "کد تراکنش":
                 sort = { "info.transactionCode": sortType };
@@ -69,24 +71,11 @@ export class CourseTransactionController {
         // making the model with query
         let data = this.UserCourseModel.aggregate();
         data.match(query);
-        data.lookup({ from: "users", localField: "user", foreignField: "_id", as: "user" });
-        data.lookup({ from: "courses", localField: "course", foreignField: "_id", as: "course" });
-        data.project({
-            "user.image": 1,
-            fullname: { $concat: [{ $arrayElemAt: ["$user.name", 0] }, " ", { $arrayElemAt: ["$user.family", 0] }] },
-            "course.image": 1,
-            "course.name": 1,
-            totalPrice: 1,
-            authority: 1,
-            paidAmount: 1,
-            transactionCode: 1,
-            status: 1,
-            createdAt: 1,
-        });
+        data.project({ userFullname: 1, courseName: 1, totalPrice: 1, authority: 1, paidAmount: 1, transactionCode: 1, status: 1, createdAt: 1 });
         data.match({
             $or: [
-                { fullname: { $regex: new RegExp(`.*${search}.*`, "i") } },
-                { "course.name": { $regex: new RegExp(`.*${search}.*`, "i") } },
+                { userFullname: { $regex: new RegExp(`.*${search}.*`, "i") } },
+                { courseName: { $regex: new RegExp(`.*${search}.*`, "i") } },
                 { chargeAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
                 { paidAmount: { $regex: new RegExp(`.*${search}.*`, "i") } },
                 { transactionCode: { $regex: new RegExp(`.*${search}.*`, "i") } },
@@ -108,6 +97,15 @@ export class CourseTransactionController {
         if (error) throw new InternalServerErrorException();
         const total = results[0].total[0] ? results[0].total[0].count : 0;
 
+        // transform data
+        for (let i = 0; i < results[0].data.length; i++) {
+            const user = await this.UserModel.findOne({ _id: results[0].data[i].user }).exec();
+            results[0].data[i].userImage = !!user ? user.image : "";
+
+            // const course = await this.CourseModel.findOne({ _id: results[0].data[i].course }).exec();
+            // results[0].data[i].courseImage = !!course ? course.image : "";
+        }
+
         return res.json({
             records: results[0].data,
             page: page,
@@ -118,7 +116,7 @@ export class CourseTransactionController {
 
     @Get("/:id")
     async getTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.course-transactions.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.course-transactions.view"]))) throw new ForbiddenException();
 
         const transaction = await this.UserCourseModel.find({ authority: req.params.id })
             .populate("user", "image name family email mobile")
@@ -131,7 +129,7 @@ export class CourseTransactionController {
 
     @Post("/:id")
     async completeTransaction(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.course-transactions.complete"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.course-transactions.complete"]))) throw new ForbiddenException();
 
         const data = await this.UserCourseModel.find({ authority: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);
