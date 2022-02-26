@@ -12,7 +12,7 @@ export class AboutUsController {
     @Get("/teachers")
     async getTeachers(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const teachers = await this.UserModel.find({ role: "teacher", status: "active" })
-            .select("-_id image title name family description socials")
+            .select("image title name family description socials")
             .sort({ createdAt: "desc" })
             .limit(8)
             .exec();

@@ -391,6 +391,9 @@ export class ImporterController {
                     author = backupAdmin._id;
                 }
 
+                // TODO
+                // alter inner body images to match from absolute path
+
                 imports.push({
                     author: author,
                     image: `https://porteqali.com/img/blogs/${row.blog_image}`,
