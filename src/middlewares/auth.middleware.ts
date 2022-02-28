@@ -7,8 +7,6 @@ import { Model } from "mongoose";
 import { SessionDocument } from "src/models/sessions.schema";
 import { UserDocument } from "src/models/users.schema";
 
-const sessionExpireTime = parseInt(process.env.SESSION_EXPIRE_TIME); //15 minutes
-
 /*
     Making sure the user is logged in
 */
@@ -36,7 +34,7 @@ export class AuthCheckMiddleware implements NestMiddleware {
             // check the request user-agent and ip with the session record and payload
 
             // check if session is expired
-            if (payload["iat"] * 1000 < Date.now() - sessionExpireTime * 1000) throw new UnauthorizedException(-3);
+            if (payload["iat"] * 1000 < Date.now() - parseInt(process.env.SESSION_EXPIRE_TIME) * 1000) throw new UnauthorizedException(-3);
 
             const user = await this.UserModel.findOne({ _id: payload["user_id"] }).exec();
             if (!user) throw new UnauthorizedException(-4);
@@ -73,7 +71,7 @@ export class GuestMiddleware implements NestMiddleware {
 
         // check if session is expired
         // if (new Date(payload["iat"] * 1000) >= session.expireAt) return next();
-        if (payload["iat"] * 1000 < Date.now() - sessionExpireTime * 1000) return next();
+        if (payload["iat"] * 1000 < Date.now() - parseInt(process.env.SESSION_EXPIRE_TIME) * 1000) return next();
 
         throw new ForbiddenException();
     }

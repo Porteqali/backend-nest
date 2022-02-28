@@ -138,7 +138,7 @@ export class CartService {
     async calcTeacherCut(req: Request, courseId: any, coursePrice: number): Promise<number> {
         const course = await this.CourseModel.findOne({ _id: courseId }).exec();
         if (!course) return 0;
-        
+
         const teacher = await this.UserModel.findOne({ _id: course.teacher }).exec();
         if (!teacher) return 0;
 

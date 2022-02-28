@@ -14,8 +14,6 @@ interface user {
     };
 }
 
-const sessionExpireTime = parseInt(process.env.SESSION_EXPIRE_TIME); //15 minutes
-
 const UserModel = model<UserDocument>("users", UserSchema);
 const SessionModel = model<SessionDocument>("sessions", SessionSchema);
 
@@ -38,7 +36,7 @@ export const loadUser = async (req: Request): Promise<null | user> => {
         // check the request user-agent and ip with the session record and payload
 
         // check if session is expired
-        if (payload["iat"] * 1000 < Date.now() - sessionExpireTime * 1000) return null;
+        if (payload["iat"] * 1000 < Date.now() - parseInt(process.env.SESSION_EXPIRE_TIME) * 1000) return null;
 
         const user = await UserModel.findOne({ _id: payload["user_id"] }).exec();
         if (!user) return null;

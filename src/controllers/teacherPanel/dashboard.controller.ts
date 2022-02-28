@@ -8,6 +8,8 @@ import { UserDocument } from "src/models/users.schema";
 import { AuthService } from "src/services/auth.service";
 import { CourseDocument } from "src/models/courses.schema";
 import * as Jmoment from "jalali-moment";
+import * as moment from "moment";
+import { CommissionPaymentDocument } from "src/models/commissionPayments.schema";
 
 @Controller("teacher-panel/dashboard")
 export class DashboardController {
@@ -15,11 +17,24 @@ export class DashboardController {
         private readonly authService: AuthService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
+        @InjectModel("CommissionPayment") private readonly CommissionPaymentModel: Model<CommissionPaymentDocument>,
     ) {}
 
     @Get("/general-details-info")
     async getGeneralDetails(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         // TODO
+        const startOfLastMonth = moment().startOf("month").subtract(2, "days").format("YYYY-MM-01T12:00:00");
+        const endOfLastMonth = moment().startOf("month").subtract(1, "day").format("YYYY-MM-DDT12:00:00");
+        const startOfMonth = moment().startOf("month").toDate();
+        const endOfMonth = moment().endOf("month").add(1, "day").toDate();
+
+        const totalPayedCommissionQuery = this.CommissionPaymentModel.aggregate();
+        totalPayedCommissionQuery.match({ user: req.user.user._id });
+        totalPayedCommissionQuery.group({ _id: null, total: { $sum: "$payedAmount" } });
+        const totalPayedCommission = await totalPayedCommissionQuery.exec();
+
+        console.log(totalPayedCommission);
+
         return res.json({
             totalSells: 0,
             lastMonthSells: 0,
@@ -29,8 +44,8 @@ export class DashboardController {
             lastMonthIncome: 0,
             lastMonthIncomePercentage: 12,
 
-            totalPayedCommission: 0,
-            commissionBalance: 0,
+            totalPayedCommission: totalPayedCommission[0] ? totalPayedCommission[0].total : 0,
+            commissionBalance: req.user.user.commissionBalance,
         });
     }
 

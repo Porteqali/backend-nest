@@ -10,8 +10,6 @@ import { RegisterDto } from "src/dto/auth/register.dto";
 
 @Injectable()
 export class AuthService {
-    private sessionExpireTime = parseInt(process.env.SESSION_EXPIRE_TIME); //15 minutes
-
     constructor(
         @InjectModel("Session") private readonly SessionModel: Model<SessionDocument>,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
@@ -32,7 +30,7 @@ export class AuthService {
 
         await this.SessionModel.updateOne(
             { user: req.user, userAgent: req.headers["user-agent"], ip: ip },
-            { expireAt: new Date(Date.now() + this.sessionExpireTime * 1000), updatedAt: new Date(Date.now()) },
+            { expireAt: new Date(Date.now() + parseInt(process.env.SESSION_EXPIRE_TIME) * 1000), updatedAt: new Date(Date.now()) },
             { upsert: true },
         );
 

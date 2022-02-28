@@ -3,9 +3,6 @@ import { Request, Response, NextFunction } from "express";
 
 export function serverOnly(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO
-        // adjust TT time base on content-length
-
         let diff = Date.now() - parseInt(req.headers.tt.toString());
         // if (diff > 20) console.log(`diff:${diff}`);
         // if (diff > 50) throw new ImATeapotException("TT");

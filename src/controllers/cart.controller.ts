@@ -73,7 +73,8 @@ export class CartController {
 
         const courseIds = Object.keys(cart);
         // check if any of cart courses are not in user's course list
-        const purcahsedCourses = await this.UserCourseModel.find({ course: { $in: courseIds }, status: "ok" }).exec();
+        const purcahsedCourses = await this.UserCourseModel.find({ user: req.user.user._id, course: { $in: courseIds }, status: "ok" }).exec();
+
         // remove any purcahse course from cart
         purcahsedCourses.forEach((purcahsedCourse) => courseIds.splice(courseIds.indexOf(purcahsedCourse.course), 1));
 
@@ -199,9 +200,6 @@ export class CartController {
             if (recentlyPurchasedCourses.length == 1 && recentlyPurchasedCourses[0].paidAmount == 0) {
                 return res.json({ redirectUrl: `/course/${recentlyPurchasedCourses[0].course}` });
             }
-            console.log(recentlyPurchasedCourses[0]);
-            console.log(recentlyPurchasedCourses[0].paidAmount);
-            console.log(recentlyPurchasedCourses[0].paidAmount == 0);
         }
 
         return res.json({ redirectUrl: "/purchase-result?status=200&message=Success" });

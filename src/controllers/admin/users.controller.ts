@@ -241,12 +241,6 @@ export class UserController {
         // making the model with query
         let data = this.UserModel.aggregate();
         data.match(query);
-        data.lookup({
-            from: "permissiongroups",
-            localField: "permissionGroup",
-            foreignField: "_id",
-            as: "permission_group",
-        });
         data.sort(sort);
         data.project({
             image: 1,

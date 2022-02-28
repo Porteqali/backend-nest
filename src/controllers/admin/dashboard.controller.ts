@@ -4,49 +4,98 @@ import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
+import * as Jmoment from "jalali-moment";
+import * as moment from "moment";
+import * as platformjs from "platform";
 import { UserDocument } from "src/models/users.schema";
 import { AuthService } from "src/services/auth.service";
 import { CourseDocument } from "src/models/courses.schema";
-import * as Jmoment from "jalali-moment";
+import { UserCourseDocument } from "src/models/userCourses.schema";
+import { SessionDocument } from "src/models/sessions.schema";
 
 @Controller("admin/dashboard")
 export class DashboardController {
     constructor(
         private readonly authService: AuthService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
+        @InjectModel("Session") private readonly SessionModel: Model<SessionDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
+        @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
     ) {}
 
     @Get("/general-details-info")
     async getGeneralDetails(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
+        const startOfLastMonth = moment().startOf("month").subtract(2, "days").format("YYYY-MM-01T12:00:00");
+        const endOfLastMonth = moment().startOf("month").subtract(1, "day").format("YYYY-MM-DDT12:00:00");
+        const startOfMonth = moment().startOf("month").toDate();
+        const endOfMonth = moment().endOf("month").add(1, "day").toDate();
+
+        const totalUsers = await this.UserModel.countDocuments().exec();
+        const totalMarketers = await this.UserModel.countDocuments({ role: "marketer" }).exec();
+        const totalTeachers = await this.UserModel.countDocuments({ role: "teacher" }).exec();
+        const totalAdmins = await this.UserModel.countDocuments({ role: "admin" }).exec();
+        const totalStudents = totalUsers - (totalMarketers + totalTeachers + totalAdmins);
+
+        const usersThatMadePurchaseQuery = await this.UserCourseModel.aggregate().match({ status: "ok" }).group({ _id: "$user" }).count("count").exec();
+        const usersThatMadePurchase = usersThatMadePurchaseQuery[0].count;
+
+        const totalPurchasesQuery = await this.UserCourseModel.aggregate().match({ status: "ok" }).group({ _id: "$authority" }).count("count").exec();
+        const totalPurchases = totalPurchasesQuery[0].count;
+
+        let lastMonthPurchasesQuery: any = this.UserCourseModel.aggregate();
+        lastMonthPurchasesQuery.match({ status: "ok", createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } });
+        lastMonthPurchasesQuery.group({ _id: "$authority" });
+        lastMonthPurchasesQuery.count("count");
+        lastMonthPurchasesQuery = await lastMonthPurchasesQuery.exec();
+        const lastMonthPurchases = lastMonthPurchasesQuery[0] ? lastMonthPurchasesQuery[0].count : 0;
+
+        let currentMonthPurchasesQuery: any = this.UserCourseModel.aggregate();
+        currentMonthPurchasesQuery.match({ status: "ok", createdAt: { $gte: startOfMonth, $lte: endOfMonth } });
+        currentMonthPurchasesQuery.group({ _id: "$authority" });
+        currentMonthPurchasesQuery.count("count");
+        currentMonthPurchasesQuery = await currentMonthPurchasesQuery.exec();
+        const currentMonthPurchases = currentMonthPurchasesQuery[0] ? currentMonthPurchasesQuery[0].count : 0;
+
+        let lastMonthPurchasesPercentage = "0";
+        if (lastMonthPurchases == 0) lastMonthPurchasesPercentage = currentMonthPurchases != 0 ? "100" : "0";
+        else if (currentMonthPurchases == 0) lastMonthPurchasesPercentage = lastMonthPurchases != 0 ? "-100" : "0";
+        else lastMonthPurchasesPercentage = (((currentMonthPurchases - lastMonthPurchases) / lastMonthPurchases) * 100).toFixed(2);
+
+        const minimumOnlineTimePeriod = moment().subtract(10, "minutes").toDate();
+        const onlineUserCount = await this.SessionModel.countDocuments({ updatedAt: { $gt: minimumOnlineTimePeriod } }).exec();
+
+        const activeCourseCount = await this.CourseModel.countDocuments({ status: "active" }).exec();
+
         return res.json({
-            totalUsers: 0,
+            totalUsers: totalUsers,
             lastMonthRegisters: 0,
             lastMonthRegistersPercentage: 12,
-            usersThatMadePurchase: 3123,
-            usersThatMadePurchasePercentage: 23,
-            totalStudents: 0,
-            totalMarketers: 0,
-            totalTeachers: 0,
-            totalAdmins: 0,
+            usersThatMadePurchase: usersThatMadePurchase,
+            usersThatMadePurchasePercentage: ((usersThatMadePurchase / totalUsers) * 100).toFixed(2),
+            totalStudents,
+            totalMarketers,
+            totalTeachers,
+            totalAdmins,
 
-            totalPurchases: 0,
-            lastMonthPurchases: 0,
-            lastMonthPurchasesPercentage: 12,
+            totalPurchases: totalPurchases,
+            lastMonthPurchases: lastMonthPurchases,
+            lastMonthPurchasesPercentage: lastMonthPurchasesPercentage,
 
+            // TODO
             totalIncome: 0,
             lastMonthIncome: 0,
-            lastMonthIncomePercentage: 12,
+            lastMonthIncomePercentage: 0,
 
-            activeCourseCount: 0,
-            onlineUserCount: 0,
+            activeCourseCount: activeCourseCount,
+            onlineUserCount: onlineUserCount,
         });
     }
 
     @Get("/main-chart")
     async getMainChartInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         // TODO
+        // we should store data daily for a month (last 30 days)
+        // and the rest of data should sum up on the end of the month and stored monthly
         const inputStartDate = req.query.startDate ? req.query.startDate.toString() : Jmoment(Date.now()).subtract("1", "day").format("jYYYY-jMM-jDDThh:mm:ss");
         const inputEndDate = req.query.endDate ? req.query.endDate.toString() : Jmoment(Date.now()).format("jYYYY-jMM-jDDThh:mm:ss");
 
@@ -68,22 +117,49 @@ export class DashboardController {
 
     @Get("/device-chart")
     async getDeviceChartInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        const type = req.query.type ? req.query.type.toString() : "device";
+        const type = req.query.type ? req.query.type.toString() : "browser";
 
-        // device : Mobile | PC | unknown
         // browser : chrome | firefox | edge | opera | unknown
         // os : windows | linux | mac | android | ios | unknown
 
+        const sessionsQuery = this.SessionModel.find({ expireAt: { $gt: new Date(Date.now()) } }).select("userAgent");
+        sessionsQuery.limit(10_000);
+        const sessions = await sessionsQuery.exec();
+
+        const data = [];
+        const label = [];
+        for (let i = 0; i < sessions.length; i++) {
+            const userAgent = sessions[i].userAgent || "";
+            const info = platformjs.parse(userAgent);
+            let name = "unknown";
+            switch (type) {
+                case "browser":
+                    name = info.name ? info.name : "unknown";
+                    break;
+                case "os":
+                    name = info.os && info.os.family ? info.os.family : "unknown";
+                    break;
+            }
+            if (label.indexOf(name) === -1) {
+                label.push(name);
+                data.push(1);
+            } else data[label.indexOf(name)] += 1;
+        }
+
         return res.json({
-            data: [2432, 523, 432, 432, 2432, 523],
-            label: ["windows", "linux", "mac", "android", "ios", "unknown"],
+            data: data,
+            label: label,
         });
     }
 
     @Get("/most-viewed-courses")
     async getMostViewedCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         // TODO
+        // create new collection to save views and sells of every course
+        // foreach course we save 3 record of yesterday info, current month info and last month info
+        // with every buy and view we update these info
+        // we write a job to reset yesterday info daily and monthly info monthly
+
         const courses = await this.CourseModel.find().select("-topics").populate("teacher", "image name family").limit(6).exec();
         return res.json(courses);
     }
@@ -91,7 +167,37 @@ export class DashboardController {
     @Get("/most-sold-courses")
     async getMostSoldCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         // TODO
+        // same as most-viewed-courses
+
         const courses = await this.CourseModel.find().select("-topics").populate("teacher", "image name family").limit(6).exec();
         return res.json(courses);
+    }
+
+    @Get("/user-locations")
+    async getUserLocations(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const total = await this.SessionModel.countDocuments({ expireAt: { $gt: new Date(Date.now()) } }).exec();
+
+        const sessionsQuery = this.SessionModel.aggregate();
+        sessionsQuery.match({ expireAt: { $gt: new Date(Date.now()) } });
+        sessionsQuery.group({ _id: "$location", count: { $sum: 1 } });
+        sessionsQuery.sort({ count: "desc" });
+        sessionsQuery.limit(10);
+        const sessions = await sessionsQuery.exec();
+
+        const colors = ["#222", "#333", "#444", "#555", "#666", "#777", "#888", "#999", "#aaa", "#bbb", "#ccc", "#ddd", "#eee"];
+        const info = [];
+        for (let i = 0; i < sessions.length; i++) {
+            const location = sessions[i]._id ? sessions[i]._id : "unknown";
+            info.push({
+                location: location,
+                count: sessions[i].count,
+                color: colors[i] || "#eee",
+            });
+        }
+
+        return res.json({
+            info: info,
+            total: total,
+        });
     }
 }

@@ -15,6 +15,7 @@ export const SessionSchema = new Schema({
         type: String,
         required: true,
     },
+    location: { type: String, default: "unknown" },
     expireAt: {
         type: Date,
         required: true,
@@ -34,6 +35,7 @@ export interface Session {
     user: Schema.Types.ObjectId;
     userAgent: string;
     ip: string;
+    location?: string;
     expireAt: Date;
     createdAt: Date;
     updatedAt: Date;
