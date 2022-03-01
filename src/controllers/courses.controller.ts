@@ -10,6 +10,7 @@ import { loadUser } from "src/helpers/auth.helper";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { CourseRatingDocument } from "src/models/courseRatings.schema";
 import { DiscountService } from "src/services/discount.service";
+import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
 
 @Controller()
 export class CoursesController {
@@ -19,6 +20,7 @@ export class CoursesController {
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
         @InjectModel("CourseRating") private readonly CourseRatingModel: Model<CourseRatingDocument>,
+        @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
     ) {}
 
     @Get("/most-viewed-courses")
@@ -204,6 +206,8 @@ export class CoursesController {
 
         // count the views
         await this.CourseModel.updateOne({ _id: req.params.id, status: "active" }, { viewCount: course.viewCount + 1 }).exec();
+        await this.CourseAnalyticModel.updateOne({ course: courseItem._id, type: "today" }, { $inc: { viewCount: 1 } }, { upsert: true }).exec();
+        await this.CourseAnalyticModel.updateOne({ course: courseItem._id, type: "current-month" }, { $inc: { viewCount: 1 } }, { upsert: true }).exec();
 
         const discountAndTag = await this.discountService.courseDiscount(req, course._id);
         course.discountInfo = discountAndTag;

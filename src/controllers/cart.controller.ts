@@ -11,6 +11,7 @@ import { CartService } from "src/services/cart.service";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { PaymentGateway } from "src/paymentGateways/PaymentGateway";
 import { MarketingService } from "src/services/marketing.service";
+import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
 
 @Controller("")
 export class CartController {
@@ -22,6 +23,7 @@ export class CartController {
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+        @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
     ) {}
 
     @Post("cart-total")
@@ -182,6 +184,8 @@ export class CartController {
 
             // increase the buyCount of the course
             await this.CourseModel.updateOne({ _id: userCourse.course }, { $inc: { buyCount: 1 } });
+            await this.CourseAnalyticModel.updateOne({ course: userCourse.course, type: "today" }, { $inc: { buyCount: 1 } }, { upsert: true }).exec();
+            await this.CourseAnalyticModel.updateOne({ course: userCourse.course, type: "current-month" }, { $inc: { buyCount: 1 } }, { upsert: true }).exec();
 
             // calculate teacher cut and marketer cut
             let teacherCut = await this.cartService.calcTeacherCut(req, userCourse.course, userCourse.coursePayablePrice);

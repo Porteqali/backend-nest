@@ -12,6 +12,7 @@ import { AuthService } from "src/services/auth.service";
 import { CourseDocument } from "src/models/courses.schema";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { SessionDocument } from "src/models/sessions.schema";
+import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
 
 @Controller("admin/dashboard")
 export class DashboardController {
@@ -21,6 +22,7 @@ export class DashboardController {
         @InjectModel("Session") private readonly SessionModel: Model<SessionDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+        @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
     ) {}
 
     @Get("/general-details-info")
@@ -94,9 +96,9 @@ export class DashboardController {
     @Get("/main-chart")
     async getMainChartInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         // TODO
-        // we should store data daily for a month (last 30 days)
-        // and the rest of data should sum up on the end of the month and stored monthly
-        const inputStartDate = req.query.startDate ? req.query.startDate.toString() : Jmoment(Date.now()).subtract("1", "day").format("jYYYY-jMM-jDDThh:mm:ss");
+        // we store data for total and for every marketer and every teacher both daily and monthly
+
+        const inputStartDate = req.query.startDate ? req.query.startDate.toString() : Jmoment(Date.now()).subtract("15", "day").format("jYYYY-jMM-jDDThh:mm:ss");
         const inputEndDate = req.query.endDate ? req.query.endDate.toString() : Jmoment(Date.now()).format("jYYYY-jMM-jDDThh:mm:ss");
 
         const startDate = Jmoment.from(inputStartDate, "fa", "YYYY-MM-DD hh:mm:ss");
@@ -154,22 +156,61 @@ export class DashboardController {
 
     @Get("/most-viewed-courses")
     async getMostViewedCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        // create new collection to save views and sells of every course
-        // foreach course we save 3 record of yesterday info, current month info and last month info
-        // with every buy and view we update these info
-        // we write a job to reset yesterday info daily and monthly info monthly
+        let type = "today";
+        switch (req.query.period) {
+            case "yesterday":
+                type = "yesterday";
+                break;
+            case "this-month":
+                type = "current-month";
+                break;
+            case "last-month":
+                type = "last-month";
+                break;
+        }
+        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ viewCount: "desc" }).select("course").limit(6).exec();
+        const courseIds = [];
+        const courses = [];
+        courseAnalytics.forEach((item) => {
+            courses.push(item.toJSON());
+            courseIds.push(item.course);
+        });
 
-        const courses = await this.CourseModel.find().select("-topics").populate("teacher", "image name family").limit(6).exec();
+        for (let i = 0; i < courses.length; i++) {
+            const courseInfo = await this.CourseModel.findOne({ _id: courses[i].course }).select("-topics").populate("teacher", "image name family").limit(6).exec();
+            courses[i].info = courseInfo;
+        }
+
         return res.json(courses);
     }
 
     @Get("/most-sold-courses")
     async getMostSoldCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        // same as most-viewed-courses
+        let type = "today";
+        switch (req.query.period) {
+            case "yesterday":
+                type = "yesterday";
+                break;
+            case "this-month":
+                type = "current-month";
+                break;
+            case "last-month":
+                type = "last-month";
+                break;
+        }
+        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ buyCount: "desc" }).select("course").limit(6).exec();
+        const courseIds = [];
+        const courses = [];
+        courseAnalytics.forEach((item) => {
+            courses.push(item.toJSON());
+            courseIds.push(item.course);
+        });
 
-        const courses = await this.CourseModel.find().select("-topics").populate("teacher", "image name family").limit(6).exec();
+        for (let i = 0; i < courses.length; i++) {
+            const courseInfo = await this.CourseModel.findOne({ _id: courses[i].course }).select("-topics").populate("teacher", "image name family").limit(6).exec();
+            courses[i].info = courseInfo;
+        }
+
         return res.json(courses);
     }
 

@@ -13,6 +13,8 @@ import { CoursesController } from "src/controllers/teacherPanel/courses.controll
 import { CommentsController } from "src/controllers/teacherPanel/comments.controller";
 import { CommentSchema } from "src/models/comments.schema";
 import { DashboardController } from "src/controllers/teacherPanel/dashboard.controller";
+import { CourseAnalyticSchema } from "src/models/courseAnalytics.schema";
+import { AnalyticsSchema } from "src/models/analytics.schema";
 
 @Module({
     imports: [
@@ -24,6 +26,8 @@ import { DashboardController } from "src/controllers/teacherPanel/dashboard.cont
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "Comment", schema: CommentSchema },
             { name: "MarketerCourse", schema: MarketerCoursesSchema },
+            { name: "CourseAnalytic", schema: CourseAnalyticSchema },
+            { name: "Analytic", schema: AnalyticsSchema },
         ]),
     ],
     controllers: [CommissionPaymentsController, CommissionsController, CoursesController, CommentsController,DashboardController],

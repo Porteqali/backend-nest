@@ -6,7 +6,7 @@ import { Request } from "src/interfaces/Request";
 import { Model } from "mongoose";
 import { SessionDocument } from "src/models/sessions.schema";
 import { UserDocument } from "src/models/users.schema";
-import { RegisterDto } from "src/dto/auth/register.dto";
+import * as moment from "moment";
 
 @Injectable()
 export class AuthService {
@@ -76,5 +76,16 @@ export class AuthService {
         }
 
         return false;
+    }
+
+    async registerUserForMarketer(req: Request, userId) {
+        const marketingCode = req.cookies["marketing_code"] || "";
+        if (!marketingCode) return;
+
+        const marketer = await this.UserModel.findOne({ marketingCode: marketingCode, role: "marketer" }).exec();
+        if (!marketer) return;
+
+        const endsAt = moment().add(marketer.period, "days").toDate();
+        await this.UserModel.updateOne({ _id: userId }, { registeredWith: { marketer: marketer._id, period: marketer.period, endsAt: endsAt } }).exec();
     }
 }

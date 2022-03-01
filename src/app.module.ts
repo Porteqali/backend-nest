@@ -44,6 +44,8 @@ import { StaticPagesController } from "./controllers/web/staticPages.controller"
 import { ScheduleModule } from "@nestjs/schedule";
 import { SchedulerModule } from "./modules/scheduler.module";
 import { MetadataSchema } from "./models/metadatas.schema";
+import { AnalyticsSchema } from "./models/analytics.schema";
+import { AnalyticsService } from "./services/analytics.service";
 
 @Module({
     imports: [
@@ -76,6 +78,7 @@ import { MetadataSchema } from "./models/metadatas.schema";
             { name: "Discount", schema: DiscountSchema },
             { name: "WalletTransaction", schema: WalletTransactionSchema },
             { name: "Metadata", schema: MetadataSchema },
+            { name: "Analytic", schema: AnalyticsSchema },
         ]),
     ],
     controllers: [
@@ -92,7 +95,7 @@ import { MetadataSchema } from "./models/metadatas.schema";
         UserWalletController,
         MetadataController,
     ],
-    providers: [AppService, SearchService, DiscountService],
+    providers: [AppService, SearchService, DiscountService, AnalyticsService],
     exports: [],
 })
 export class AppModule implements NestModule {

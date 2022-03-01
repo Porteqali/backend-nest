@@ -7,6 +7,7 @@ import { CourseSchema } from "src/models/courses.schema";
 import { DiscountSchema } from "src/models/discount.schema";
 import { UserCourseSchema } from "src/models/userCourses.schema";
 import { UserSchema } from "src/models/users.schema";
+import { CourseAnalyticSchema } from "src/models/courseAnalytics.schema";
 import { DiscountService } from "src/services/discount.service";
 
 @Module({
@@ -18,6 +19,7 @@ import { DiscountService } from "src/services/discount.service";
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "CourseRating", schema: CourseRatingSchema },
             { name: "Discount", schema: DiscountSchema },
+            { name: "CourseAnalytic", schema: CourseAnalyticSchema },
         ]),
     ],
     controllers: [CoursesController],

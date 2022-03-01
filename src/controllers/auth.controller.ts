@@ -130,6 +130,9 @@ export class AuthController {
             { name: inputs.name, family: inputs.family, password: await hash(inputs.password, 5), status: "active" },
         ).exec();
 
+        // register user with marketer if cookie available
+        await this.authService.registerUserForMarketer(req, user._id);
+
         // generate token and session
         req.user = user.id;
         const sessionId = await this.authService.getSession(req);

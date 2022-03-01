@@ -48,6 +48,9 @@ import { MetadataController } from "src/controllers/admin/metadata.controller";
 import { MetadataSchema } from "src/models/metadatas.schema";
 import { ImporterController } from "src/controllers/admin/importer.controller";
 import { CourseRatingSchema } from "src/models/courseRatings.schema";
+import { CourseAnalyticSchema } from "src/models/courseAnalytics.schema";
+import { AnalyticsSchema } from "src/models/analytics.schema";
+import { AnalyticsService } from "src/services/analytics.service";
 
 @Module({
     imports: [
@@ -73,6 +76,8 @@ import { CourseRatingSchema } from "src/models/courseRatings.schema";
             { name: "MarketerCourse", schema: MarketerCoursesSchema },
             { name: "Metadata", schema: MetadataSchema },
             { name: "CourseRating", schema: CourseRatingSchema },
+            { name: "CourseAnalytic", schema: CourseAnalyticSchema },
+            { name: "Analytic", schema: AnalyticsSchema },
         ]),
     ],
     controllers: [
@@ -102,7 +107,7 @@ import { CourseRatingSchema } from "src/models/courseRatings.schema";
         MetadataController,
         ImporterController,
     ],
-    providers: [AuthService, CourseService],
+    providers: [AuthService, CourseService, AnalyticsService],
     exports: [],
 })
 export class AdminPanelModule {}

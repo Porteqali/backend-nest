@@ -10,6 +10,8 @@ import { CourseDocument } from "src/models/courses.schema";
 import { CommissionPaymentDocument } from "src/models/commissionPayments.schema";
 import * as Jmoment from "jalali-moment";
 import * as moment from "moment";
+import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
+import { MarketerCoursesDocument } from "src/models/marketerCourses.schema";
 
 @Controller("marketer-panel/dashboard")
 export class DashboardController {
@@ -18,6 +20,8 @@ export class DashboardController {
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("CommissionPayment") private readonly CommissionPaymentModel: Model<CommissionPaymentDocument>,
+        @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
+        @InjectModel("MarketerCourse") private readonly MarketerCourseModel: Model<MarketerCoursesDocument>,
     ) {}
 
     @Get("/marketing-code")
@@ -78,16 +82,39 @@ export class DashboardController {
 
     @Get("/most-sold-courses")
     async getMostSoldCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        // list the teacher active courses
-        // and find most sold course from course analytic collection for this set of courses
+        // list the marketer active courses
+        const marketerCourseList = [];
+        const marketerCourses = await this.MarketerCourseModel.find({ status: "active", marketer: req.user.user._id }).select("course").exec();
+        marketerCourses.forEach((item) => marketerCourseList.push(item.course));
 
-        let courses: any = await this.CourseModel.find().select("-topics").populate("teacher", "image name family").limit(6).sort({ buyCount: "desc" }).exec();
-        courses = courses.map((course) => {
-            course = course.toJSON();
-            course.sellCount = course.buyCount;
-            return course;
+        let type = "today";
+        switch (req.query.period) {
+            case "yesterday":
+                type = "yesterday";
+                break;
+            case "this-month":
+                type = "current-month";
+                break;
+            case "last-month":
+                type = "last-month";
+                break;
+        }
+        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type, course: { $in: marketerCourseList } })
+            .sort({ buyCount: "desc" })
+            .select("course")
+            .limit(6)
+            .exec();
+        const courseIds = [];
+        const courses = [];
+        courseAnalytics.forEach((item) => {
+            courses.push(item.toJSON());
+            courseIds.push(item.course);
         });
+
+        for (let i = 0; i < courses.length; i++) {
+            const courseInfo = await this.CourseModel.findOne({ _id: courses[i].course }).select("-topics").populate("teacher", "image name family").limit(6).exec();
+            courses[i].info = courseInfo;
+        }
 
         return res.json(courses);
     }

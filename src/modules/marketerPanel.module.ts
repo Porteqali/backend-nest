@@ -12,6 +12,8 @@ import { CommissionPaymentsController } from "src/controllers/marketerPanel/comm
 import { CoursesController } from "src/controllers/marketerPanel/courses.controller";
 import { DashboardController } from "src/controllers/marketerPanel/dashboard.controller";
 import { CourseSchema } from "src/models/courses.schema";
+import { CourseAnalyticSchema } from "src/models/courseAnalytics.schema";
+import { AnalyticsSchema } from "src/models/analytics.schema";
 
 @Module({
     imports: [
@@ -22,6 +24,8 @@ import { CourseSchema } from "src/models/courses.schema";
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "MarketerCourse", schema: MarketerCoursesSchema },
             { name: "Course", schema: CourseSchema },
+            { name: "CourseAnalytic", schema: CourseAnalyticSchema },
+            { name: "Analytic", schema: AnalyticsSchema },
         ]),
     ],
     controllers: [CustomersController, CommissionsController, CommissionPaymentsController, CoursesController, DashboardController],

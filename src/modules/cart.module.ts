@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { CartController } from "src/controllers/cart.controller";
 import { CommissionSchema } from "src/models/commissions.schema";
+import { CourseAnalyticSchema } from "src/models/courseAnalytics.schema";
 import { CourseSchema } from "src/models/courses.schema";
 import { DiscountSchema } from "src/models/discount.schema";
 import { MarketerCoursesSchema } from "src/models/marketerCourses.schema";
@@ -20,6 +21,7 @@ import { MarketingService } from "src/services/marketing.service";
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "MarketerCourse", schema: MarketerCoursesSchema },
             { name: "Commission", schema: CommissionSchema },
+            { name: "CourseAnalytic", schema: CourseAnalyticSchema },
         ]),
     ],
     controllers: [CartController],
