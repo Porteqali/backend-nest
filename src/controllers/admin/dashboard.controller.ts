@@ -13,6 +13,7 @@ import { CourseDocument } from "src/models/courses.schema";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { SessionDocument } from "src/models/sessions.schema";
 import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
+import { AnalyticsDocument } from "src/models/analytics.schema";
 
 @Controller("admin/dashboard")
 export class DashboardController {
@@ -23,27 +24,52 @@ export class DashboardController {
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
         @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
+        @InjectModel("Analytic") private readonly AnalyticModel: Model<AnalyticsDocument>,
     ) {}
 
     @Get("/general-details-info")
     async getGeneralDetails(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        // date ranges
         const startOfLastMonth = moment().startOf("month").subtract(2, "days").format("YYYY-MM-01T12:00:00");
         const endOfLastMonth = moment().startOf("month").subtract(1, "day").format("YYYY-MM-DDT12:00:00");
         const startOfMonth = moment().startOf("month").toDate();
         const endOfMonth = moment().endOf("month").add(1, "day").toDate();
 
+        // total users in details
         const totalUsers = await this.UserModel.countDocuments().exec();
         const totalMarketers = await this.UserModel.countDocuments({ role: "marketer" }).exec();
         const totalTeachers = await this.UserModel.countDocuments({ role: "teacher" }).exec();
         const totalAdmins = await this.UserModel.countDocuments({ role: "admin" }).exec();
         const totalStudents = totalUsers - (totalMarketers + totalTeachers + totalAdmins);
 
+        // ==========================
+        let lastMonthRegistersQuery: any = this.UserModel.aggregate();
+        lastMonthRegistersQuery.match({ status: "active", role: "user", createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } });
+        lastMonthRegistersQuery.count("count");
+        lastMonthRegistersQuery = await lastMonthRegistersQuery.exec();
+        const lastMonthRegisters = lastMonthRegistersQuery[0] ? lastMonthRegistersQuery[0].count : 0;
+
+        let currentMonthRegistersQuery: any = this.UserModel.aggregate();
+        currentMonthRegistersQuery.match({ status: "active", role: "user", createdAt: { $gte: startOfMonth, $lte: endOfMonth } });
+        currentMonthRegistersQuery.count("count");
+        currentMonthRegistersQuery = await currentMonthRegistersQuery.exec();
+        const currentMonthRegisters = currentMonthRegistersQuery[0] ? currentMonthRegistersQuery[0].count : 0;
+
+        let lastMonthRegistersPercentage = "0";
+        if (lastMonthRegisters == 0) lastMonthRegistersPercentage = currentMonthRegisters != 0 ? "100" : "0";
+        else if (currentMonthRegisters == 0) lastMonthRegistersPercentage = lastMonthRegisters != 0 ? "-100" : "0";
+        else lastMonthRegistersPercentage = (((currentMonthRegisters - lastMonthRegisters) / lastMonthRegisters) * 100).toFixed(2);
+        // ==========================
+
+        // ==========================
         const usersThatMadePurchaseQuery = await this.UserCourseModel.aggregate().match({ status: "ok" }).group({ _id: "$user" }).count("count").exec();
-        const usersThatMadePurchase = usersThatMadePurchaseQuery[0].count;
+        const usersThatMadePurchase = usersThatMadePurchaseQuery[0] ? usersThatMadePurchaseQuery[0].count : 0;
 
         const totalPurchasesQuery = await this.UserCourseModel.aggregate().match({ status: "ok" }).group({ _id: "$authority" }).count("count").exec();
-        const totalPurchases = totalPurchasesQuery[0].count;
+        const totalPurchases = totalPurchasesQuery[0] ? totalPurchasesQuery[0].count : 0;
+        // ==========================
 
+        // ==========================
         let lastMonthPurchasesQuery: any = this.UserCourseModel.aggregate();
         lastMonthPurchasesQuery.match({ status: "ok", createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } });
         lastMonthPurchasesQuery.group({ _id: "$authority" });
@@ -62,6 +88,32 @@ export class DashboardController {
         if (lastMonthPurchases == 0) lastMonthPurchasesPercentage = currentMonthPurchases != 0 ? "100" : "0";
         else if (currentMonthPurchases == 0) lastMonthPurchasesPercentage = lastMonthPurchases != 0 ? "-100" : "0";
         else lastMonthPurchasesPercentage = (((currentMonthPurchases - lastMonthPurchases) / lastMonthPurchases) * 100).toFixed(2);
+        // ==========================
+
+        // ==========================
+        let lastMonthIncomeQuery: any = this.AnalyticModel.aggregate();
+        lastMonthIncomeQuery.match({ type: "monthly", forGroup: "total", infoName: "income" });
+        lastMonthIncomeQuery.match({ date: { $gte: startOfLastMonth, $lte: endOfLastMonth } });
+        lastMonthIncomeQuery = await lastMonthIncomeQuery.project("count").limit(1).exec();
+        const lastMonthIncome = lastMonthIncomeQuery[0] ? lastMonthIncomeQuery[0].count : 0;
+
+        let currentMonthIncomeQuery: any = this.AnalyticModel.aggregate();
+        currentMonthIncomeQuery.match({ type: "monthly", forGroup: "total", infoName: "income" });
+        currentMonthIncomeQuery.match({ date: { $gte: startOfMonth, $lte: endOfMonth } });
+        currentMonthIncomeQuery = await currentMonthIncomeQuery.project("count").limit(1).exec();
+        const currentMonthIncome = currentMonthIncomeQuery[0] ? currentMonthIncomeQuery[0].count : 0;
+
+        let lastMonthIncomePercentage = "0";
+        if (lastMonthIncome == 0) lastMonthIncomePercentage = currentMonthIncome != 0 ? "100" : "0";
+        else if (currentMonthIncome == 0) lastMonthIncomePercentage = lastMonthIncome != 0 ? "-100" : "0";
+        else lastMonthIncomePercentage = (((currentMonthIncome - lastMonthIncome) / lastMonthIncome) * 100).toFixed(2);
+        // ==========================
+
+        let totalIncomeQuery: any = this.AnalyticModel.aggregate();
+        totalIncomeQuery.match({ type: "monthly", forGroup: "total", infoName: "income" });
+        totalIncomeQuery.group({ _id: null, total: { $sum: "$count" } });
+        totalIncomeQuery = await totalIncomeQuery.project("count").limit(1).exec();
+        const totalIncome = totalIncomeQuery[0] ? totalIncomeQuery[0].total : 0;
 
         const minimumOnlineTimePeriod = moment().subtract(10, "minutes").toDate();
         const onlineUserCount = await this.SessionModel.countDocuments({ updatedAt: { $gt: minimumOnlineTimePeriod } }).exec();
@@ -70,8 +122,8 @@ export class DashboardController {
 
         return res.json({
             totalUsers: totalUsers,
-            lastMonthRegisters: 0,
-            lastMonthRegistersPercentage: 12,
+            lastMonthRegisters: lastMonthRegisters,
+            lastMonthRegistersPercentage: lastMonthRegistersPercentage,
             usersThatMadePurchase: usersThatMadePurchase,
             usersThatMadePurchasePercentage: ((usersThatMadePurchase / totalUsers) * 100).toFixed(2),
             totalStudents,
@@ -83,10 +135,9 @@ export class DashboardController {
             lastMonthPurchases: lastMonthPurchases,
             lastMonthPurchasesPercentage: lastMonthPurchasesPercentage,
 
-            // TODO
-            totalIncome: 0,
-            lastMonthIncome: 0,
-            lastMonthIncomePercentage: 0,
+            totalIncome: totalIncome,
+            lastMonthIncome: lastMonthIncome,
+            lastMonthIncomePercentage: lastMonthIncomePercentage,
 
             activeCourseCount: activeCourseCount,
             onlineUserCount: onlineUserCount,
@@ -95,9 +146,7 @@ export class DashboardController {
 
     @Get("/main-chart")
     async getMainChartInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        // we store data for total and for every marketer and every teacher both daily and monthly
-
+        const type = req.query.type;
         const inputStartDate = req.query.startDate ? req.query.startDate.toString() : Jmoment(Date.now()).subtract("15", "day").format("jYYYY-jMM-jDDThh:mm:ss");
         const inputEndDate = req.query.endDate ? req.query.endDate.toString() : Jmoment(Date.now()).format("jYYYY-jMM-jDDThh:mm:ss");
 
@@ -106,12 +155,33 @@ export class DashboardController {
         const endDate = Jmoment.from(inputEndDate, "fa", "YYYY-MM-DD hh:mm:ss");
         endDate.add("minutes", 206);
 
+        const diffInDays = endDate.diff(startDate, "days");
+        if (diffInDays <= 0) throw new UnprocessableEntityException([{ property: "date", errors: ["بازه تاریخ ها جابه جاست"] }]);
+
+        let analyticsQuery = this.AnalyticModel.aggregate();
+        analyticsQuery.match({ date: { $gte: startDate.toDate(), $lte: endDate.toDate() } });
+        analyticsQuery.match({ forGroup: "total", infoName: type });
+        // if its less than 30 days: get the data for that period with type of daily from analytics
+        analyticsQuery.match({ type: diffInDays <= 30 ? "daily" : "monthly" });
+        const analyticsData = await analyticsQuery.sort({ date: "desc" }).exec();
+
         const data = [];
         const label = [];
-        const count = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
-        for (let i = 0; i <= count; i++) {
-            data.push(Math.floor(Math.random() * (5000 - 10 + 1)) + 10);
-            label.push(`data#${i.toString()}`);
+        for (let i = 0; i < analyticsData.length; i++) {
+            const record = analyticsData[0];
+            if (diffInDays <= 30) {
+                data.push(parseInt(record.count));
+                label.push(Jmoment(record.date).locale("fa").subtract(1, "day").format("jMMM jDD").toString());
+            } else if (30 < diffInDays && diffInDays <= 365) {
+                data.push(parseInt(record.count));
+                label.push(Jmoment(record.date).locale("fa").format("jYYYY jMMM").toString());
+            } else {
+                const labelName = Jmoment(record.date).locale("fa").format("jYYYY").toString();
+                if (label.indexOf(labelName) === -1) {
+                    data.push(parseInt(record.count));
+                    label.push(labelName);
+                } else data[label.indexOf(labelName)] += parseInt(record.count);
+            }
         }
 
         return res.json({ data, label, startDate: inputStartDate, endDate: inputEndDate });
@@ -120,9 +190,6 @@ export class DashboardController {
     @Get("/device-chart")
     async getDeviceChartInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const type = req.query.type ? req.query.type.toString() : "browser";
-
-        // browser : chrome | firefox | edge | opera | unknown
-        // os : windows | linux | mac | android | ios | unknown
 
         const sessionsQuery = this.SessionModel.find({ expireAt: { $gt: new Date(Date.now()) } }).select("userAgent");
         sessionsQuery.limit(10_000);
@@ -168,7 +235,7 @@ export class DashboardController {
                 type = "last-month";
                 break;
         }
-        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ viewCount: "desc" }).select("course").limit(6).exec();
+        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ viewCount: "desc" }).select("course viewCount").limit(6).exec();
         const courseIds = [];
         const courses = [];
         courseAnalytics.forEach((item) => {
@@ -198,7 +265,7 @@ export class DashboardController {
                 type = "last-month";
                 break;
         }
-        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ buyCount: "desc" }).select("course").limit(6).exec();
+        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ buyCount: "desc" }).select("course buyCount").limit(6).exec();
         const courseIds = [];
         const courses = [];
         courseAnalytics.forEach((item) => {

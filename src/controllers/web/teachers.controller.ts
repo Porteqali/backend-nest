@@ -48,7 +48,12 @@ export class TeachersController {
 
         const courseCount = await this.CourseModel.countDocuments({ teacher: id, status: "active" }).exec();
 
-        return res.json({ teacher, courseCount });
+        const studentCountQuery = this.CourseModel.aggregate();
+        studentCountQuery.match({ teacher: teacher._id, status: "active" });
+        studentCountQuery.group({ _id: null, students: { $sum: "$buyCount" } });
+        const studentCount = await studentCountQuery.exec();
+
+        return res.json({ teacher, courseCount, studentCount: studentCount[0] ? studentCount[0].students : 0 });
     }
 
     @Get("/:id/courses")

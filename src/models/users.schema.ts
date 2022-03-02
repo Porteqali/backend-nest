@@ -11,13 +11,20 @@ export const UserSchema = new Schema({
     title: { type: String },
     name: { type: String },
     family: { type: String },
+
     email: { type: String },
     emailVerifiedAt: { type: Date },
     emailVerificationCode: { type: String },
+
     mobile: { type: String },
     mobileVerifiedAt: { type: Date },
     mobileVerificationCode: { type: String },
+
     verficationCodeSentAt: { type: Date },
+
+    forgetPasswordCode: { type: String },
+    forgetPasswordCodeSentAt: { type: Date },
+
     tel: { type: String },
     password: { type: String },
     role: {
@@ -99,6 +106,8 @@ export interface User {
     mobileVerifiedAt?: Date;
     mobileVerificationCode?: string;
     verficationCodeSentAt?: Date;
+    forgetPasswordCode?: string;
+    forgetPasswordCodeSentAt?: Date;
     tel?: string;
     password: string;
     status: string;

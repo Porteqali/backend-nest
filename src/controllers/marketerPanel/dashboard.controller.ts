@@ -12,6 +12,7 @@ import * as Jmoment from "jalali-moment";
 import * as moment from "moment";
 import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
 import { MarketerCoursesDocument } from "src/models/marketerCourses.schema";
+import { AnalyticsDocument } from "src/models/analytics.schema";
 
 @Controller("marketer-panel/dashboard")
 export class DashboardController {
@@ -22,6 +23,7 @@ export class DashboardController {
         @InjectModel("CommissionPayment") private readonly CommissionPaymentModel: Model<CommissionPaymentDocument>,
         @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
         @InjectModel("MarketerCourse") private readonly MarketerCourseModel: Model<MarketerCoursesDocument>,
+        @InjectModel("Analytic") private readonly AnalyticModel: Model<AnalyticsDocument>,
     ) {}
 
     @Get("/marketing-code")
@@ -33,11 +35,60 @@ export class DashboardController {
 
     @Get("/general-details-info")
     async getGeneralDetails(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
         const startOfLastMonth = moment().startOf("month").subtract(2, "days").format("YYYY-MM-01T12:00:00");
         const endOfLastMonth = moment().startOf("month").subtract(1, "day").format("YYYY-MM-DDT12:00:00");
         const startOfMonth = moment().startOf("month").toDate();
         const endOfMonth = moment().endOf("month").add(1, "day").toDate();
+
+        // ==========================
+        let lastMonthIncomeQuery: any = this.AnalyticModel.aggregate();
+        lastMonthIncomeQuery.match({ marketer: req.user.user._id, type: "monthly", forGroup: "marketer", infoName: "income" });
+        lastMonthIncomeQuery.match({ date: { $gte: startOfLastMonth, $lte: endOfLastMonth } });
+        lastMonthIncomeQuery = await lastMonthIncomeQuery.project("count").limit(1).exec();
+        const lastMonthIncome = lastMonthIncomeQuery[0] ? lastMonthIncomeQuery[0].count : 0;
+
+        let currentMonthIncomeQuery: any = this.AnalyticModel.aggregate();
+        currentMonthIncomeQuery.match({ marketer: req.user.user._id, type: "monthly", forGroup: "marketer", infoName: "income" });
+        currentMonthIncomeQuery.match({ date: { $gte: startOfMonth, $lte: endOfMonth } });
+        currentMonthIncomeQuery = await currentMonthIncomeQuery.project("count").limit(1).exec();
+        const currentMonthIncome = currentMonthIncomeQuery[0] ? currentMonthIncomeQuery[0].count : 0;
+
+        let lastMonthIncomePercentage = "0";
+        if (lastMonthIncome == 0) lastMonthIncomePercentage = currentMonthIncome != 0 ? "100" : "0";
+        else if (currentMonthIncome == 0) lastMonthIncomePercentage = lastMonthIncome != 0 ? "-100" : "0";
+        else lastMonthIncomePercentage = (((currentMonthIncome - lastMonthIncome) / lastMonthIncome) * 100).toFixed(2);
+        // ==========================
+
+        let totalIncomeQuery: any = this.AnalyticModel.aggregate();
+        totalIncomeQuery.match({ marketer: req.user.user._id, type: "monthly", forGroup: "marketer", infoName: "income" });
+        totalIncomeQuery.group({ _id: null, total: { $sum: "$count" } });
+        totalIncomeQuery = await totalIncomeQuery.project("count").limit(1).exec();
+        const totalIncome = totalIncomeQuery[0] ? totalIncomeQuery[0].total : 0;
+
+        // ==========================
+        let lastMonthSellsQuery: any = this.AnalyticModel.aggregate();
+        lastMonthSellsQuery.match({ marketer: req.user.user._id, type: "monthly", forGroup: "marketer", infoName: "sells" });
+        lastMonthSellsQuery.match({ date: { $gte: startOfLastMonth, $lte: endOfLastMonth } });
+        lastMonthSellsQuery = await lastMonthSellsQuery.project("count").limit(1).exec();
+        const lastMonthSells = lastMonthSellsQuery[0] ? lastMonthSellsQuery[0].count : 0;
+
+        let currentMonthSellsQuery: any = this.AnalyticModel.aggregate();
+        currentMonthSellsQuery.match({ marketer: req.user.user._id, type: "monthly", forGroup: "marketer", infoName: "sells" });
+        currentMonthSellsQuery.match({ date: { $gte: startOfMonth, $lte: endOfMonth } });
+        currentMonthSellsQuery = await currentMonthSellsQuery.project("count").limit(1).exec();
+        const currentMonthSells = currentMonthSellsQuery[0] ? currentMonthSellsQuery[0].count : 0;
+
+        let lastMonthSellsPercentage = "0";
+        if (lastMonthSells == 0) lastMonthSellsPercentage = currentMonthSells != 0 ? "100" : "0";
+        else if (currentMonthSells == 0) lastMonthSellsPercentage = lastMonthSells != 0 ? "-100" : "0";
+        else lastMonthSellsPercentage = (((currentMonthSells - lastMonthSells) / lastMonthSells) * 100).toFixed(2);
+        // ==========================
+
+        let totalSellsQuery: any = this.AnalyticModel.aggregate();
+        totalSellsQuery.match({ marketer: req.user.user._id, type: "monthly", forGroup: "marketer", infoName: "sells" });
+        totalSellsQuery.group({ _id: null, total: { $sum: "$count" } });
+        totalSellsQuery = await totalSellsQuery.project("count").limit(1).exec();
+        const totalSells = totalSellsQuery[0] ? totalSellsQuery[0].total : 0;
 
         const totalPayedCommissionQuery = this.CommissionPaymentModel.aggregate();
         totalPayedCommissionQuery.match({ user: req.user.user._id });
@@ -45,13 +96,13 @@ export class DashboardController {
         const totalPayedCommission = await totalPayedCommissionQuery.exec();
 
         return res.json({
-            totalSells: 0,
-            lastMonthSells: 0,
-            lastMonthSellsPercentage: 12,
+            totalSells: totalSells,
+            lastMonthSells: lastMonthSells,
+            lastMonthSellsPercentage: lastMonthSellsPercentage,
 
-            totalIncome: 0,
-            lastMonthIncome: 0,
-            lastMonthIncomePercentage: 12,
+            totalIncome: totalIncome,
+            lastMonthIncome: lastMonthIncome,
+            lastMonthIncomePercentage: lastMonthIncomePercentage,
 
             totalPayedCommission: totalPayedCommission[0] ? totalPayedCommission[0].total : 0,
             commissionBalance: req.user.user.commissionBalance,
@@ -101,7 +152,7 @@ export class DashboardController {
         }
         const courseAnalytics = await this.CourseAnalyticModel.find({ type: type, course: { $in: marketerCourseList } })
             .sort({ buyCount: "desc" })
-            .select("course")
+            .select("course buyCount")
             .limit(6)
             .exec();
         const courseIds = [];

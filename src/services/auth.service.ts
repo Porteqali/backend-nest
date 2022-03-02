@@ -6,11 +6,13 @@ import { Request } from "src/interfaces/Request";
 import { Model } from "mongoose";
 import { SessionDocument } from "src/models/sessions.schema";
 import { UserDocument } from "src/models/users.schema";
+import { AnalyticsService } from "./analytics.service";
 import * as moment from "moment";
 
 @Injectable()
 export class AuthService {
     constructor(
+        private readonly analyticsService: AnalyticsService,
         @InjectModel("Session") private readonly SessionModel: Model<SessionDocument>,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
     ) {}
@@ -87,5 +89,7 @@ export class AuthService {
 
         const endsAt = moment().add(marketer.period, "days").toDate();
         await this.UserModel.updateOne({ _id: userId }, { registeredWith: { marketer: marketer._id, period: marketer.period, endsAt: endsAt } }).exec();
+
+        await this.analyticsService.analyticCountUp(req, marketer._id, null, 1, "new-users", "marketer");
     }
 }

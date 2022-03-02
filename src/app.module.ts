@@ -138,6 +138,7 @@ export class AppModule implements NestModule {
             { path: "auth/verify", method: RequestMethod.ALL },
             { path: "auth/register", method: RequestMethod.ALL },
             { path: "auth/login", method: RequestMethod.ALL },
+            { path: "auth/forget-password/*", method: RequestMethod.ALL },
 
             { path: "auth/continue-with-google", method: RequestMethod.ALL },
         );

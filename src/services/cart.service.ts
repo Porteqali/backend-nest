@@ -10,6 +10,7 @@ import { UserCourseDocument } from "src/models/userCourses.schema";
 import { courseDiscountOutput } from "./discount.service";
 import { MarketingService } from "./marketing.service";
 import { CommissionDocument } from "src/models/commissions.schema";
+import { AnalyticsService } from "./analytics.service";
 
 interface cartInfo {
     totalPrice: number;
@@ -27,6 +28,7 @@ interface ElevatedCourse extends Course {
 export class CartService {
     constructor(
         private readonly marketingService: MarketingService,
+        private readonly analyticsService: AnalyticsService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
@@ -159,6 +161,9 @@ export class CartService {
 
         // add teacherCut to him/her commission balance
         await this.UserModel.updateOne({ _id: teacher._id }, { commissionBalance: teacher.commissionBalance + teacherCut }).exec();
+
+        await this.analyticsService.analyticCountUp(req, null, teacher._id, teacherCut, "income", "teacher");
+        await this.analyticsService.analyticCountUp(req, null, teacher._id, 1, "sells", "teacher");
 
         return teacherCut;
     }

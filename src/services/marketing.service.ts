@@ -4,10 +4,12 @@ import { Request } from "src/interfaces/Request";
 import { Model } from "mongoose";
 import { UserDocument } from "src/models/users.schema";
 import { MarketerCoursesDocument } from "src/models/marketerCourses.schema";
+import { AnalyticsService } from "./analytics.service";
 
 @Injectable()
 export class MarketingService {
     constructor(
+        private readonly analyticsService: AnalyticsService,
         @InjectModel("MarketerCourse") private readonly MarketerCourseModel: Model<MarketerCoursesDocument>,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
     ) {}
@@ -59,6 +61,9 @@ export class MarketingService {
 
         // add marketerCut to him/her commission balance
         await this.UserModel.updateOne({ _id: marketer._id }, { commissionBalance: marketer.commissionBalance + marketerCut }).exec();
+
+        await this.analyticsService.analyticCountUp(req, marketer._id, null, marketerCut, "income", "marketer");
+        await this.analyticsService.analyticCountUp(req, marketer._id, null, 1, "sells", "marketer");
 
         return marketerCut;
     }

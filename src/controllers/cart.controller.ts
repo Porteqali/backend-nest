@@ -12,6 +12,7 @@ import { UserCourseDocument } from "src/models/userCourses.schema";
 import { PaymentGateway } from "src/paymentGateways/PaymentGateway";
 import { MarketingService } from "src/services/marketing.service";
 import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
+import { AnalyticsService } from "src/services/analytics.service";
 
 @Controller("")
 export class CartController {
@@ -19,6 +20,7 @@ export class CartController {
         private readonly discountService: DiscountService,
         private readonly cartService: CartService,
         private readonly marketingService: MarketingService,
+        private readonly analyticsService: AnalyticsService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
@@ -190,6 +192,8 @@ export class CartController {
             // calculate teacher cut and marketer cut
             let teacherCut = await this.cartService.calcTeacherCut(req, userCourse.course, userCourse.coursePayablePrice);
             let marketerCut = await this.marketingService.calcMarketerCut(req, userCourse.course, userCourse.marketer, userCourse.coursePayablePrice);
+
+            await this.analyticsService.analyticCountUp(req, null, null, userCourse.totalPrice - teacherCut - marketerCut, "income", "total");
 
             await this.UserCourseModel.updateOne(
                 { _id: userCourse._id },

@@ -14,13 +14,18 @@ import { UserDocument } from "src/models/users.schema";
 import Email from "src/notifications/channels/Email";
 import Sms from "src/notifications/channels/Sms";
 import { VerifyDto } from "src/dto/auth/verify.dto";
+import { AnalyticsService } from "src/services/analytics.service";
 
 @Controller("auth")
 export class AuthController {
     // private tokenExpireTime = 3600 * 24 * 7; // 1 week
     private verficationCodeExpireTime = 120; // 2 minutes
 
-    constructor(private readonly authService: AuthService, @InjectModel("User") private readonly UserModel: Model<UserDocument>) {}
+    constructor(
+        private readonly authService: AuthService,
+        private readonly analyticsService: AnalyticsService,
+        @InjectModel("User") private readonly UserModel: Model<UserDocument>,
+    ) {}
 
     @Post("send-code")
     public async sendCode(@Body() inputs: SendCodeDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
@@ -132,6 +137,9 @@ export class AuthController {
 
         // register user with marketer if cookie available
         await this.authService.registerUserForMarketer(req, user._id);
+
+        // count user in analytics
+        await this.analyticsService.analyticCountUp(req, null, null, 1, "new-users", "total");
 
         // generate token and session
         req.user = user.id;

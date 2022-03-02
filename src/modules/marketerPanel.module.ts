@@ -14,6 +14,7 @@ import { DashboardController } from "src/controllers/marketerPanel/dashboard.con
 import { CourseSchema } from "src/models/courses.schema";
 import { CourseAnalyticSchema } from "src/models/courseAnalytics.schema";
 import { AnalyticsSchema } from "src/models/analytics.schema";
+import { AnalyticsService } from "src/services/analytics.service";
 
 @Module({
     imports: [
@@ -29,7 +30,7 @@ import { AnalyticsSchema } from "src/models/analytics.schema";
         ]),
     ],
     controllers: [CustomersController, CommissionsController, CommissionPaymentsController, CoursesController, DashboardController],
-    providers: [AuthService],
+    providers: [AuthService, AnalyticsService],
     exports: [],
 })
 export class MarketerPanelModule {}

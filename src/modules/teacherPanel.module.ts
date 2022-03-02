@@ -15,6 +15,7 @@ import { CommentSchema } from "src/models/comments.schema";
 import { DashboardController } from "src/controllers/teacherPanel/dashboard.controller";
 import { CourseAnalyticSchema } from "src/models/courseAnalytics.schema";
 import { AnalyticsSchema } from "src/models/analytics.schema";
+import { AnalyticsService } from "src/services/analytics.service";
 
 @Module({
     imports: [
@@ -30,8 +31,8 @@ import { AnalyticsSchema } from "src/models/analytics.schema";
             { name: "Analytic", schema: AnalyticsSchema },
         ]),
     ],
-    controllers: [CommissionPaymentsController, CommissionsController, CoursesController, CommentsController,DashboardController],
-    providers: [AuthService],
+    controllers: [CommissionPaymentsController, CommissionsController, CoursesController, CommentsController, DashboardController],
+    providers: [AuthService, AnalyticsService],
     exports: [],
 })
 export class TeacherPanelModule {}

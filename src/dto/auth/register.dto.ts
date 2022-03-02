@@ -27,3 +27,21 @@ export class RegisterDto {
     @IsNotEmpty({ message: "رمزعبورها باهم همخوانی ندارند" })
     readonly passwordConfirmation: string;
 }
+
+export class ForgetPassDto {
+    @IsNotEmpty({ message: "ایمیل یا شماره همراه خود را وارد کنید" })
+    readonly username: string;
+
+    @Length(6, 6, { message: "کد نامعتبر" })
+    @IsString({ message: "کد ارسال شده را وارد کنید" })
+    @IsNotEmpty({ message: "کد ارسال شده را وارد کنید" })
+    readonly code: string;
+
+    @MinLength(8, { message: "رمزعبور حداقل 8 کاراکتر میباشد" })
+    @IsString({ message: "رمزعبور برای حساب خود انتخاب کنید" })
+    @IsNotEmpty({ message: "رمزعبور برای حساب خود انتخاب کنید" })
+    readonly password: string;
+
+    @IsNotEmpty({ message: "رمزعبورها باهم همخوانی ندارند" })
+    readonly passwordConfirmation: string;
+}

@@ -22,8 +22,8 @@ export class AnalyticsService {
         forGroup: "total" | "marketer" | "teacher",
         type: "both" | "daily" | "monthly" = "both",
     ): Promise<void> {
-        const today = moment().format("YYYY-MM-DDT00:00:00");
-        const thisMonth = moment().format("YYYY-MM-01T00:00:00");
+        const today = moment().add(1, "day").format("YYYY-MM-DDT00:00:00");
+        const thisMonth = moment().add(1, "day").format("YYYY-MM-01T00:00:00");
 
         if (type == "both") {
             this.update(marketer, teacher, incrementBy, infoName, forGroup, "daily", today);
