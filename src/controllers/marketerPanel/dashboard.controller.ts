@@ -111,8 +111,8 @@ export class DashboardController {
 
     @Get("/main-chart")
     async getMainChartInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        // TODO
-        const inputStartDate = req.query.startDate ? req.query.startDate.toString() : Jmoment(Date.now()).subtract("1", "day").format("jYYYY-jMM-jDDThh:mm:ss");
+        const type = req.query.type;
+        const inputStartDate = req.query.startDate ? req.query.startDate.toString() : Jmoment(Date.now()).subtract("15", "day").format("jYYYY-jMM-jDDThh:mm:ss");
         const inputEndDate = req.query.endDate ? req.query.endDate.toString() : Jmoment(Date.now()).format("jYYYY-jMM-jDDThh:mm:ss");
 
         const startDate = Jmoment.from(inputStartDate, "fa", "YYYY-MM-DD hh:mm:ss");
@@ -120,12 +120,33 @@ export class DashboardController {
         const endDate = Jmoment.from(inputEndDate, "fa", "YYYY-MM-DD hh:mm:ss");
         endDate.add("minutes", 206);
 
+        const diffInDays = endDate.diff(startDate, "days");
+        if (diffInDays <= 0) throw new UnprocessableEntityException([{ property: "date", errors: ["بازه تاریخ ها جابه جاست"] }]);
+
+        let analyticsQuery = this.AnalyticModel.aggregate();
+        analyticsQuery.match({ date: { $gte: startDate.toDate(), $lte: endDate.toDate() } });
+        analyticsQuery.match({ marketer: req.user.user._id, forGroup: "marketer", infoName: type });
+        // if its less than 30 days: get the data for that period with type of daily from analytics
+        analyticsQuery.match({ type: diffInDays <= 30 ? "daily" : "monthly" });
+        const analyticsData = await analyticsQuery.sort({ date: "desc" }).exec();
+
         const data = [];
         const label = [];
-        const count = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
-        for (let i = 0; i <= count; i++) {
-            data.push(Math.floor(Math.random() * (5000 - 10 + 1)) + 10);
-            label.push(`data#${i.toString()}`);
+        for (let i = 0; i < analyticsData.length; i++) {
+            const record = analyticsData[0];
+            if (diffInDays <= 30) {
+                data.push(parseInt(record.count));
+                label.push(Jmoment(record.date).locale("fa").subtract(1, "day").format("jMMM jDD").toString());
+            } else if (30 < diffInDays && diffInDays <= 365) {
+                data.push(parseInt(record.count));
+                label.push(Jmoment(record.date).locale("fa").format("jYYYY jMMM").toString());
+            } else {
+                const labelName = Jmoment(record.date).locale("fa").format("jYYYY").toString();
+                if (label.indexOf(labelName) === -1) {
+                    data.push(parseInt(record.count));
+                    label.push(labelName);
+                } else data[label.indexOf(labelName)] += parseInt(record.count);
+            }
         }
 
         return res.json({ data, label, startDate: inputStartDate, endDate: inputEndDate });
