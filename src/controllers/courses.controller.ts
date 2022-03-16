@@ -105,8 +105,11 @@ export class CoursesController {
         // sort
         let sort = {};
         switch (order) {
-            case "most-popular":
+            case "most-sold":
                 sort["buyCount"] = "desc";
+                break;
+            case "most-popular":
+                sort["viewCount"] = "desc";
                 break;
             case "oldest":
                 sort["createdAt"] = "asc";
