@@ -41,6 +41,7 @@ export class TeachersController {
 
         let teacher: any = await this.UserModel.findOne({ _id: id, role: "teacher", status: "active" })
             .select("image title name family groups description socials")
+            .populate("groups", "icon name topGroup")
             .exec();
         if (!teacher) throw new NotFoundException();
         teacher = teacher.toJSON();

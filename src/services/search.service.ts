@@ -130,6 +130,12 @@ export class SearchService {
         // making the model with query
         let data = this.UserModel.aggregate();
         data.match(query);
+        data.lookup({
+            from: "coursegroups",
+            localField: "groups",
+            foreignField: "_id",
+            as: "groups",
+        });
         data.match({
             $or: [
                 { name: { $regex: new RegExp(`.*${search}.*`, "i") } },
@@ -139,7 +145,7 @@ export class SearchService {
             ],
         });
         data.sort(sort);
-        data.project("image title name family description socials");
+        data.project("image title name family description socials groups");
 
         // paginating
         data = data.facet({
