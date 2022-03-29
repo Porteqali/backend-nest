@@ -40,7 +40,7 @@ export class ArticlesController {
     @Get("/articles")
     async getArticles(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
-        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 10;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 8;
 
         const search = req.query.search ? req.query.search.toString() : "";
         const order = req.query.order ? req.query.order.toString() : "";

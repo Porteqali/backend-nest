@@ -132,15 +132,16 @@ export class UsersController {
         // check if email or mobile is unique
         const user = await this.UserModel.findOne({ [field]: req.body.username }).exec();
         if (user) {
-            if (user._id != req.user["payload"].user_id) {
+            if (user._id.toString() != req.user["payload"].user_id) {
                 if (field == "email") errMsg = "ایمیل قبلا ثبت شده";
                 else errMsg = "شماره همراه قبلا ثبت شده";
                 throw new ForbiddenException([{ property: "username", errors: [errMsg] }]);
             } else {
-                if (!!user.emailVerifiedAt) {
-                    if (field == "email") errMsg = "ایمیل تایید شده";
-                    else errMsg = "شماره همراه تایید شده";
-                    throw new ForbiddenException([{ property: "username", errors: [errMsg] }]);
+                if (field == "email" && !!user.emailVerifiedAt) {
+                    throw new ForbiddenException([{ property: "username", errors: ["ایمیل تایید شده"] }]);
+                }
+                if (field == "mobile" && !!user.mobileVerifiedAt) {
+                    throw new ForbiddenException([{ property: "username", errors: ["شماره همراه تایید شده"] }]);
                 }
                 if (!!user.verficationCodeSentAt) {
                     let sendTime = moment(user.verficationCodeSentAt);
