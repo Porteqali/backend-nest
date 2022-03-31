@@ -12,6 +12,7 @@ import { DiscountDocument } from "src/models/discount.schema";
 import { CourseDocument } from "src/models/courses.schema";
 import { CourseGroupDocument } from "src/models/courseGroups.schema";
 import { CreateNewDiscountDto, UpdateDiscountDto } from "src/dto/adminPanel/discounts.dto";
+import { BundleDocument } from "src/models/bundles.schema";
 
 @Controller("admin/discounts")
 export class DiscountController {
@@ -20,13 +21,14 @@ export class DiscountController {
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
+        @InjectModel("Bundle") private readonly BundleModel: Model<BundleDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("CourseGroup") private readonly CourseGroupModel: Model<CourseGroupDocument>,
     ) {}
 
     @Get("/search/:query")
     async search(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.discounts.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.discounts.view"]))) throw new ForbiddenException();
 
         const search = req.params.query ? req.params.query.toString() : "";
         const section = req.query.section ? req.query.section.toString() : "course";
@@ -36,6 +38,11 @@ export class DiscountController {
         // making the model with query
         let data;
         switch (section) {
+            case "bundle":
+                data = this.BundleModel.aggregate();
+                data.project({ _id: 1, image: 1, name: "$title" });
+                data.match({ name: { $regex: new RegExp(`.*${search}.*`, "i") } });
+                break;
             case "course":
                 data = this.CourseModel.aggregate();
                 data.project("_id image name");
@@ -90,7 +97,7 @@ export class DiscountController {
 
     @Get("/")
     async getDiscounts(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.discounts.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.discounts.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -167,7 +174,7 @@ export class DiscountController {
 
     @Get("/:id")
     async getDiscount(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.discounts.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.discounts.view"]))) throw new ForbiddenException();
 
         let discount: any = await this.DiscountModel.findOne({ _id: req.params.id }).exec();
         if (!discount) throw new NotFoundException();
@@ -206,7 +213,7 @@ export class DiscountController {
 
     @Post("/")
     async addDiscount(@Body() input: CreateNewDiscountDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.discounts.add"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.discounts.add"]))) throw new ForbiddenException();
 
         const startDate = Jmoment.from(input.startDate, "fa").toDate();
         const endDate = Jmoment.from(input.endDate, "fa").toDate();
@@ -229,7 +236,7 @@ export class DiscountController {
 
     @Put("/:id")
     async editDiscount(@Body() input: UpdateDiscountDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.discounts.edit"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.discounts.edit"]))) throw new ForbiddenException();
 
         const startDate = Jmoment.from(input.startDate, "fa").toDate();
         const endDate = Jmoment.from(input.endDate, "fa").toDate();
@@ -257,7 +264,7 @@ export class DiscountController {
 
     @Delete("/:id")
     async deleteDiscount(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.discounts.delete"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.discounts.delete"]))) throw new ForbiddenException();
 
         const data = await this.DiscountModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

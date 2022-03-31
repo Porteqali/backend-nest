@@ -51,6 +51,10 @@ import { CourseRatingSchema } from "src/models/courseRatings.schema";
 import { CourseAnalyticSchema } from "src/models/courseAnalytics.schema";
 import { AnalyticsSchema } from "src/models/analytics.schema";
 import { AnalyticsService } from "src/services/analytics.service";
+import { BundleSchema } from "src/models/bundles.schema";
+import { MajorSchema } from "src/models/majors.schema";
+import { BundleController } from "src/controllers/admin/bundle.controller";
+import { MajorController } from "src/controllers/admin/major.controller";
 
 @Module({
     imports: [
@@ -64,6 +68,8 @@ import { AnalyticsService } from "src/services/analytics.service";
             { name: "Discount", schema: DiscountSchema },
             { name: "Course", schema: CourseSchema },
             { name: "CourseGroup", schema: CourseGroupSchema },
+            { name: "Bundle", schema: BundleSchema },
+            { name: "Major", schema: MajorSchema },
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "Article", schema: ArticleSchema },
             { name: "Comment", schema: CommentSchema },
@@ -89,6 +95,8 @@ import { AnalyticsService } from "src/services/analytics.service";
         TeacherController,
         CommissionController,
         CourseGroupsController,
+        BundleController,
+        MajorController,
         DiscountController,
         WalletTransactionController,
         CourseTransactionController,

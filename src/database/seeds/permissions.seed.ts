@@ -42,6 +42,16 @@ export const records = [
     { _id: "admin.course-groups.edit", label: "ویرایش گروه دوره ها", group: "course-groups", groupLabel: "گروه دوره ها" },
     { _id: "admin.course-groups.delete", label: "حذف گروه دوره", group: "course-groups", groupLabel: "گروه دوره ها" },
 
+    { _id: "admin.bundles.view", label: "مشاهده لیست باندل های نقشه راه", group: "bundles", groupLabel: "باندل های نقشه راه ها" },
+    { _id: "admin.bundles.add", label: "ایجاد باندل نقشه راه جدید", group: "bundles", groupLabel: "باندل های نقشه راه ها" },
+    { _id: "admin.bundles.edit", label: "ویرایش باندل های نقشه راه", group: "bundles", groupLabel: "باندل های نقشه راه ها" },
+    { _id: "admin.bundles.delete", label: "حذف باندل نقشه راه", group: "bundles", groupLabel: "باندل های نقشه راه ها" },
+
+    { _id: "admin.majors.view", label: "مشاهده لیست تخصص ها", group: "majors", groupLabel: "تخصص ها" },
+    { _id: "admin.majors.add", label: "ایجاد تخصص جدید", group: "majors", groupLabel: "تخصص ها" },
+    { _id: "admin.majors.edit", label: "ویرایش تخصص ها", group: "majors", groupLabel: "تخصص ها" },
+    { _id: "admin.majors.delete", label: "حذف تخصص", group: "majors", groupLabel: "تخصص ها" },
+
     { _id: "admin.commissions.view", label: "مشاهده کمیسیون ها", group: "commissions", groupLabel: "کمیسیون ها" },
     { _id: "admin.commissions.add", label: "ایجاد کمیسیون جدید", group: "commissions", groupLabel: "کمیسیون ها" },
     { _id: "admin.commissions.edit", label: "ویرایش کمیسیون ها", group: "commissions", groupLabel: "کمیسیون ها" },
