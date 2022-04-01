@@ -46,6 +46,11 @@ import { SchedulerModule } from "./modules/scheduler.module";
 import { MetadataSchema } from "./models/metadatas.schema";
 import { AnalyticsSchema } from "./models/analytics.schema";
 import { AnalyticsService } from "./services/analytics.service";
+import { MajorsController } from "./controllers/majors.controller";
+import { MajorSchema } from "./models/majors.schema";
+import { BundlesModule } from "./modules/bundles.module";
+import { MajorsModule } from "./modules/majors.module";
+import { BundleSchema } from "./models/bundles.schema";
 
 @Module({
     imports: [
@@ -65,6 +70,8 @@ import { AnalyticsService } from "./services/analytics.service";
         TeacherPanelModule,
         SeederModule,
         SchedulerModule,
+        BundlesModule,
+        MajorsModule,
         ScheduleModule.forRoot(),
         ConfigModule.forRoot(),
         MongooseModule.forRoot(process.env.MONGO_URL, { dbName: "porteqali" }),
@@ -79,6 +86,8 @@ import { AnalyticsService } from "./services/analytics.service";
             { name: "WalletTransaction", schema: WalletTransactionSchema },
             { name: "Metadata", schema: MetadataSchema },
             { name: "Analytic", schema: AnalyticsSchema },
+            { name: "Major", schema: MajorSchema },
+            { name: "Bundle", schema: BundleSchema },
         ]),
     ],
     controllers: [
@@ -93,6 +102,7 @@ import { AnalyticsService } from "./services/analytics.service";
         SearchController,
         UserProfileController,
         UserWalletController,
+        MajorsController,
         MetadataController,
     ],
     providers: [AppService, SearchService, DiscountService, AnalyticsService],
