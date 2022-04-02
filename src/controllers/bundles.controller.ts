@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res } from "@nestjs/common";
+import { Controller, Get, Post, Req, Res, UnprocessableEntityException } from "@nestjs/common";
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
@@ -6,13 +6,17 @@ import { Model } from "mongoose";
 import { BundleDocument } from "src/models/bundles.schema";
 import { CourseDocument } from "src/models/courses.schema";
 import { DiscountService } from "src/services/discount.service";
+import { UserCourseDocument } from "src/models/userCourses.schema";
+import { UserRoadmapDocument } from "src/models/userRoadmaps.schema";
 
 @Controller("bundles")
 export class BundleController {
     constructor(
         private readonly discountService: DiscountService,
         @InjectModel("Bundle") private readonly BundleModel: Model<BundleDocument>,
+        @InjectModel("UserRoadmap") private readonly UserRoadmapModel: Model<UserRoadmapDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
+        @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
     ) {}
 
     @Get("/")
@@ -70,5 +74,55 @@ export class BundleController {
             total: total,
             pageTotal: Math.ceil(total / pp),
         });
+    }
+
+    @Get("/info/:id")
+    async getBundleInfo(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const bundleResult: any = await this.BundleModel.findOne({ _id: req.params.id }).exec();
+        if (!bundleResult) return res.status(404).end();
+
+        const bundle = bundleResult.toJSON();
+        bundle.price = 0;
+
+        for (let i = 0; i < bundle.courses.length; i++) {
+            const courseId = bundle.courses[i].course;
+
+            let course: any = await this.CourseModel.findOne({ _id: courseId }).select("image name teacher price").populate("teacher", "image name family").exec();
+            course = course.toJSON();
+            bundle.courses[i].course = course;
+            bundle.courses[i].course.discountInfo = await this.discountService.courseDiscount(req, course._id);
+
+            const hasBeenPurchased = await this.UserCourseModel.exists({ user: req.user.user._id, course: courseId, status: "ok" });
+            bundle.courses[i].course.hasBeenPurchased = hasBeenPurchased;
+
+            if (!hasBeenPurchased) {
+                bundle.price += bundle.courses[i].course.discountInfo.discountedPrice;
+            }
+        }
+        bundle.discountedPrice = bundle.price - bundle.price * (bundle.discountPercent / 100);
+
+        return res.json(bundle);
+    }
+
+    @Post("/activate/:id")
+    async activateBundle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const bundle = await this.BundleModel.findOne({ _id: req.params.id }).exec();
+        if (!bundle) return res.status(404).end();
+
+        // checl if any bundle is active or not
+        const activeRoadmap = await this.UserRoadmapModel.exists({ user: req.user.user._id, status: "active" });
+        if (activeRoadmap) throw new UnprocessableEntityException([{ property: "roadmap", errors: ["درحال حاضر شما نقشه راه فعال شده ای دارید!"] }]);
+
+        // if no bundle is active then activate the bundle for user
+        await this.UserRoadmapModel.create({
+            user: req.user.user._id,
+            bundle: bundle._id,
+            currentCourse: bundle.courses[0].course,
+            currentCourseStartDate: new Date(Date.now()),
+            status: "active",
+            startDate: new Date(Date.now()),
+        });
+
+        return res.end();
     }
 }

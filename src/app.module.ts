@@ -126,7 +126,7 @@ export class AppModule implements NestModule {
             { path: "wallet-payment", method: RequestMethod.ALL },
             { path: "wallet-payment-callback/*", method: RequestMethod.ALL },
 
-            { path: "users/info", method: RequestMethod.POST },
+            { path: "users/info", method: RequestMethod.GET },
             { path: "users/edit-info", method: RequestMethod.POST },
             { path: "users/edit-avatar-image", method: RequestMethod.POST },
             { path: "users/delete-avatar-image", method: RequestMethod.DELETE },
@@ -141,6 +141,9 @@ export class AppModule implements NestModule {
             { path: "admin/*", method: RequestMethod.ALL },
             { path: "marketer-panel/*", method: RequestMethod.ALL },
             { path: "teacher-panel/*", method: RequestMethod.ALL },
+
+            { path: "bundles/info/*", method: RequestMethod.GET },
+            { path: "bundles/activate/*", method: RequestMethod.POST },
         );
 
         consumer.apply(GuestMiddleware).forRoutes(

@@ -9,7 +9,7 @@ export const BundleSchema = new Schema({
     giftCodePercent: { type: Number },
     giftCodeDeadline: { type: Date },
 
-    discountPercent: { type: Number },
+    discountPercent: { type: Number, default: 0 },
     courses: [
         new Schema({
             order: { type: Number },

@@ -13,6 +13,7 @@ import { PaymentGateway } from "src/paymentGateways/PaymentGateway";
 import { MarketingService } from "src/services/marketing.service";
 import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
 import { AnalyticsService } from "src/services/analytics.service";
+import { BundleDocument } from "src/models/bundles.schema";
 
 @Controller("")
 export class CartController {
@@ -22,6 +23,7 @@ export class CartController {
         private readonly marketingService: MarketingService,
         private readonly analyticsService: AnalyticsService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
+        @InjectModel("Bundle") private readonly BundleModel: Model<BundleDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
@@ -60,8 +62,10 @@ export class CartController {
     async payment(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const method = req.body.method || "wallet";
         const list = req.body.list;
+        const bundleId = req.body.bundleId;
         const couponCode = req.body.couponCode || "";
         let cart = {};
+        let type = "list"; // list | bundle
 
         if (process.env.PAYMENT_IN_TEST == "true" && req.user.user.role != "admin") {
             throw new UnprocessableEntityException([
@@ -69,8 +73,15 @@ export class CartController {
             ]);
         }
 
+        let bundle = null;
+        if (bundleId) bundle = await this.BundleModel.findOne({ _id: bundleId }).exec();
+
         try {
-            cart = JSON.parse(list);
+            if (list) cart = JSON.parse(list);
+            else {
+                for (let i = 0; i < bundle.courses.length; i++) cart[bundle.courses[i].course.toString()] = bundle.courses[i].course;
+                type = "bundle";
+            }
         } catch (e) {
             throw new UnprocessableEntityException([{ property: "cart", errors: ["ساختار سبد خرید صحیح نیست"] }]);
         }
@@ -80,7 +91,10 @@ export class CartController {
         const purcahsedCourses = await this.UserCourseModel.find({ user: req.user.user._id, course: { $in: courseIds }, status: "ok" }).exec();
 
         // remove any purcahse course from cart
-        purcahsedCourses.forEach((purcahsedCourse) => courseIds.splice(courseIds.indexOf(purcahsedCourse.course), 1));
+        purcahsedCourses.forEach((purcahsedCourse) => {
+            const index = courseIds.indexOf(purcahsedCourse.course.toString());
+            if (index >= 0) courseIds.splice(index, 1);
+        });
 
         const courses: any = await this.CourseModel.find({ _id: { $in: courseIds }, status: "active" })
             .select("-commission -topics")
@@ -93,6 +107,8 @@ export class CartController {
         }
         // calc cart total
         const cartInfo = await this.cartService.cartTotal(req, courses, couponCode);
+
+        if (type == "bundle") cartInfo.payablePrice = cartInfo.payablePrice - cartInfo.payablePrice * (bundle.discountPercent / 100);
 
         if (method == "wallet") {
             // check if user have enough money in wallet
