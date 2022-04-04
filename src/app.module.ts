@@ -51,6 +51,8 @@ import { MajorSchema } from "./models/majors.schema";
 import { BundlesModule } from "./modules/bundles.module";
 import { MajorsModule } from "./modules/majors.module";
 import { BundleSchema } from "./models/bundles.schema";
+import { UserRoadmapController } from "./controllers/web/userRoadmap.controller";
+import { UserRoadmapSchema } from "./models/userRoadmaps.schema";
 
 @Module({
     imports: [
@@ -88,6 +90,7 @@ import { BundleSchema } from "./models/bundles.schema";
             { name: "Analytic", schema: AnalyticsSchema },
             { name: "Major", schema: MajorSchema },
             { name: "Bundle", schema: BundleSchema },
+            { name: "UserRoadmap", schema: UserRoadmapSchema },
         ]),
     ],
     controllers: [
@@ -102,6 +105,7 @@ import { BundleSchema } from "./models/bundles.schema";
         SearchController,
         UserProfileController,
         UserWalletController,
+        UserRoadmapController,
         MajorsController,
         MetadataController,
     ],
@@ -137,6 +141,7 @@ export class AppModule implements NestModule {
             { path: "user-profile/comments", method: RequestMethod.GET },
             { path: "user-profile/transactions/wallet", method: RequestMethod.GET },
             { path: "user-profile/transactions/course", method: RequestMethod.GET },
+            { path: "user-roadmap/*", method: RequestMethod.ALL },
 
             { path: "admin/*", method: RequestMethod.ALL },
             { path: "marketer-panel/*", method: RequestMethod.ALL },

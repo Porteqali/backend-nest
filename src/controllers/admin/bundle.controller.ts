@@ -142,15 +142,12 @@ export class BundleController {
         if (!bundleResult) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
         const bundle = bundleResult.toJSON();
 
-        const giftCodeDeadline = Jmoment.from(input.giftCodeDeadline, "fa", "YYYY-MM-DD hh:mm:ss");
-        giftCodeDeadline.add("minutes", 206);
-
         await this.BundleModel.updateOne(
             { _id: req.params.id },
             {
                 title: input.title,
                 giftCodePercent: input.giftCodePercent,
-                giftCodeDeadline: giftCodeDeadline.toDate(),
+                giftCodeDeadline: input.giftCodeDeadline,
                 discountPercent: input.discountPercent,
             },
         );

@@ -7,7 +7,7 @@ export const BundleSchema = new Schema({
     title: { type: String, required: true },
 
     giftCodePercent: { type: Number },
-    giftCodeDeadline: { type: Date },
+    giftCodeDeadline: { type: Number }, // in days
 
     discountPercent: { type: Number, default: 0 },
     courses: [
@@ -27,7 +27,7 @@ export interface Bundle {
     _id: Schema.Types.ObjectId;
     title: string;
     giftCodePercent: number;
-    giftCodeDeadline: Date;
+    giftCodeDeadline: number;
     discountPercent: number;
     courses: BundleCourse[];
     createdAt: Date;

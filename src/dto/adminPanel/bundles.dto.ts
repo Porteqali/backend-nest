@@ -12,7 +12,7 @@ export class CreateNewBundleDto {
     readonly giftCodePercent?: number;
 
     @IsOptional()
-    readonly giftCodeDeadline?: string;
+    readonly giftCodeDeadline?: number;
 
     @IsNumberString({ message: "درصد تخفیف باید عدد باشد" })
     @IsNotEmpty({ message: "درصد تخفیف را وارد کنید" })
@@ -31,7 +31,7 @@ export class UpdateBundleDto {
     readonly giftCodePercent?: number;
 
     @IsOptional()
-    readonly giftCodeDeadline?: string;
+    readonly giftCodeDeadline?: number;
 
     @IsNumberString({ message: "درصد تخفیف باید عدد باشد" })
     @IsNotEmpty({ message: "درصد تخفیف را وارد کنید" })
