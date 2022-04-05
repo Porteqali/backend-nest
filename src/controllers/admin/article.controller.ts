@@ -25,7 +25,7 @@ export class ArticleController {
     @Post("/image-upload")
     @UseInterceptors(FilesInterceptor("files"))
     async uploadInTextImages(@UploadedFiles() files: Array<Express.Multer.File>, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.articles.add", "admin.articles.edit"], "OR")) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.articles.add", "admin.articles.edit"], "OR"))) throw new ForbiddenException();
 
         let imageLink = "";
         if (!!files.length) {
@@ -53,7 +53,7 @@ export class ArticleController {
 
     @Get("/")
     async getArticles(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.articles.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.articles.view"]))) throw new ForbiddenException();
 
         const search = req.query.search ? req.query.search.toString() : "";
         const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
@@ -61,7 +61,7 @@ export class ArticleController {
 
         // sort
         let sort = {};
-        const sortType = req.query.sort_type ? req.query.sort_type : "asc";
+        const sortType = req.query.sort_type ? req.query.sort_type : "desc";
         switch (req.query.sort) {
             case "عنوان":
                 sort = { title: sortType };
@@ -119,7 +119,7 @@ export class ArticleController {
 
     @Get("/:id")
     async getArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.articles.view"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.articles.view"]))) throw new ForbiddenException();
 
         const article = await this.ArticleModel.findOne({ _id: req.params.id }).exec();
         if (!article) throw new NotFoundException();
@@ -134,7 +134,7 @@ export class ArticleController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.articles.add"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.articles.add"]))) throw new ForbiddenException();
 
         const isSlugExists = await this.ArticleModel.exists({ slug: input.slug });
         if (isSlugExists) {
@@ -196,13 +196,14 @@ export class ArticleController {
             status: input.status,
             description: input.description,
             body: input.body,
-            tags: input.tags ? JSON.parse(input.tags) : null,
+            tags: input.tags ? JSON.parse(input.tags) : [],
+            category: input.category ? JSON.parse(input.category) : null,
             metadata: {
                 thumbnail: thumbnailLink,
                 title: input.metadataTitle,
                 description: input.metadataDescription,
                 author: `${req.user.user.name} ${req.user.user.family}`,
-                keywords: JSON.parse(input.tags).toString(),
+                keywords: input.tags ? JSON.parse(input.tags).toString() : "",
             },
             inTextImageList: JSON.parse(input.inTextImageList),
         });
@@ -218,7 +219,7 @@ export class ArticleController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.articles.edit"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.articles.edit"]))) throw new ForbiddenException();
 
         const isSlugExists = await this.ArticleModel.exists({ _id: { $ne: req.params.id }, slug: input.slug });
         if (isSlugExists) {
@@ -241,7 +242,7 @@ export class ArticleController {
             if (!isMimeOk0) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            if(!!article.image) await unlink(article.image.replace("/file/", "storage/")).catch((e) => {});
+            if (!!article.image) await unlink(article.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName0 = randStr(10);
             const img0 = sharp(Buffer.from(files[0].buffer));
@@ -271,7 +272,7 @@ export class ArticleController {
             if (!isMimeOk1) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            if(!!article.imageVertical) await unlink(article.imageVertical.replace("/file/", "storage/")).catch((e) => {});
+            if (!!article.imageVertical) await unlink(article.imageVertical.replace("/file/", "storage/")).catch((e) => {});
 
             const randName1 = randStr(15);
             const img1 = sharp(Buffer.from(files[1].buffer));
@@ -286,6 +287,8 @@ export class ArticleController {
         const publishedAt = Jmoment.from(input.publishedAt, "fa", "YYYY-MM-DD hh:mm:ss");
         publishedAt.add("minutes", 206);
 
+        const categoryId: any = input.category || null;
+
         await this.ArticleModel.updateOne(
             { _id: req.params.id },
             {
@@ -298,13 +301,14 @@ export class ArticleController {
                 status: input.status,
                 description: input.description,
                 body: input.body,
-                tags: input.tags ? JSON.parse(input.tags) : null,
+                tags: input.tags ? JSON.parse(input.tags) : [],
+                category: input.category ? categoryId : null,
                 metadata: {
                     thumbnail: thumbnailLink || "",
                     title: input.metadataTitle,
                     description: input.metadataDescription,
                     author: `${req.user.user.name} ${req.user.user.family}`,
-                    keywords: JSON.parse(input.tags).toString(),
+                    keywords: input.tags ? JSON.parse(input.tags).toString() : "",
                 },
                 inTextImageList: JSON.parse(input.inTextImageList),
             },
@@ -315,7 +319,7 @@ export class ArticleController {
 
     @Delete("/:id")
     async deleteArticle(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        if (! await this.authService.authorize(req, "admin", ["admin.articles.delete"])) throw new ForbiddenException();
+        if (!(await this.authService.authorize(req, "admin", ["admin.articles.delete"]))) throw new ForbiddenException();
 
         const data = await this.ArticleModel.findOne({ _id: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);

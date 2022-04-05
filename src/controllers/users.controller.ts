@@ -52,6 +52,17 @@ export class UsersController {
         });
     }
 
+    @Get("check-verification")
+    async checkVerification(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const user = await this.UserModel.findOne({ _id: req.user["payload"].user_id }).select("-_v -password -createdAt").exec();
+        if (!user) throw NotFoundException;
+
+        return res.json({
+            emailVerified: !!user.emailVerifiedAt,
+            mobileVerified: !!user.mobileVerifiedAt,
+        });
+    }
+
     @Post("edit-info")
     async editUserInfo(@Body() input: EditUserInfoDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const user = await this.UserModel.findOne({ _id: req.user["payload"].user_id }).exec();

@@ -46,7 +46,7 @@ export class CommentsController {
         });
         data.match(query);
         data.sort({ createdAt: "desc" });
-        data.project("author.image author.name author.family text createdAt");
+        data.project("author.image author.name author.family author.role text createdAt");
 
         // paginating
         data = data.facet({
@@ -98,7 +98,7 @@ export class CommentsController {
         });
         data.match(query);
         data.sort({ createdAt: "desc" });
-        data.project("author.image author.name author.family text createdAt");
+        data.project("author.image author.name author.family author.role text createdAt");
 
         // paginating
         data = data.facet({

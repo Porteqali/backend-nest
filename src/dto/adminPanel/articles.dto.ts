@@ -29,6 +29,9 @@ export class CreateNewArticleDto {
     @IsOptional()
     readonly tags?: string;
 
+    @IsOptional()
+    readonly category?: string;
+
     @IsString({ message: "عنوان متادیتا را وارد کنید" })
     @IsNotEmpty({ message: "عنوان متادیتا را وارد کنید" })
     readonly metadataTitle: string;
@@ -74,6 +77,9 @@ export class UpdateArticleDto {
 
     @IsOptional()
     readonly tags?: string;
+
+    @IsOptional()
+    readonly category?: string;
 
     @IsString({ message: "عنوان متادیتا را وارد کنید" })
     @IsNotEmpty({ message: "عنوان متادیتا را وارد کنید" })

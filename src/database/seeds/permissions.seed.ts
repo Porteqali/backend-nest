@@ -52,6 +52,16 @@ export const records = [
     { _id: "admin.majors.edit", label: "ویرایش تخصص ها", group: "majors", groupLabel: "تخصص ها" },
     { _id: "admin.majors.delete", label: "حذف تخصص", group: "majors", groupLabel: "تخصص ها" },
 
+    { _id: "admin.roadmap-questions.view", label: "مشاهده سوالات نقشه راه", group: "roadmap-questions", groupLabel: "سوالات نقشه راه" },
+    { _id: "admin.roadmap-questions.add", label: "ایجاد سوال نقشه راه جدید", group: "roadmap-questions", groupLabel: "سوالات نقشه راه" },
+    { _id: "admin.roadmap-questions.edit", label: "ویرایش سوالات نقشه راه", group: "roadmap-questions", groupLabel: "سوالات نقشه راه" },
+    { _id: "admin.roadmap-questions.delete", label: "حذف سوال نقشه راه", group: "roadmap-questions", groupLabel: "سوالات نقشه راه" },
+
+    { _id: "admin.roadmap-question-category.view", label: "مشاهده لیست گروه سوالات نقشه راه", group: "roadmap-question-category", groupLabel: "گروه سوالات نقشه راه" },
+    { _id: "admin.roadmap-question-category.add", label: "ایجاد گروه سوال نقشه راه جدید", group: "roadmap-question-category", groupLabel: "گروه سوالات نقشه راه" },
+    { _id: "admin.roadmap-question-category.edit", label: "ویرایش گروه سوالات نقشه راه", group: "roadmap-question-category", groupLabel: "گروه سوالات نقشه راه" },
+    { _id: "admin.roadmap-question-category.delete", label: "حذف گروه سوال نقشه راه", group: "roadmap-question-category", groupLabel: "گروه سوالات نقشه راه" },
+
     { _id: "admin.commissions.view", label: "مشاهده کمیسیون ها", group: "commissions", groupLabel: "کمیسیون ها" },
     { _id: "admin.commissions.add", label: "ایجاد کمیسیون جدید", group: "commissions", groupLabel: "کمیسیون ها" },
     { _id: "admin.commissions.edit", label: "ویرایش کمیسیون ها", group: "commissions", groupLabel: "کمیسیون ها" },
@@ -94,6 +104,11 @@ export const records = [
     { _id: "admin.articles.add", label: "ایجاد مقاله جدید", group: "articles", groupLabel: "مقالات" },
     { _id: "admin.articles.edit", label: "ویرایش مقالات", group: "articles", groupLabel: "مقالات" },
     { _id: "admin.articles.delete", label: "حذف مقاله", group: "articles", groupLabel: "مقالات" },
+
+    { _id: "admin.article-groups.view", label: "مشاهده لیست گروه مقالات", group: "article-groups", groupLabel: "گروه مقالات" },
+    { _id: "admin.article-groups.add", label: "ایجاد گروه مقاله جدید", group: "article-groups", groupLabel: "گروه مقالات" },
+    { _id: "admin.article-groups.edit", label: "ویرایش گروه مقالات", group: "article-groups", groupLabel: "گروه مقالات" },
+    { _id: "admin.article-groups.delete", label: "حذف گروه مقاله", group: "article-groups", groupLabel: "گروه مقالات" },
 
     { _id: "admin.latest-news.view", label: "مشاهده اخبار سایت", group: "latest-news", groupLabel: "اخبار سایت" },
     { _id: "admin.latest-news.edit", label: "ویرایش اخبار سایت", group: "latest-news", groupLabel: "اخبار سایت" },

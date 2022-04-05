@@ -90,8 +90,8 @@ export class ArticlesController {
                 { body: { $regex: new RegExp(`.*${search}.*`, "i") } },
             ],
         });
-        data.sort(sort);
         data.project("author.image author.name author.family image imageVertical title slug description category.name likes publishedAt");
+        data.sort(sort);
 
         // paginating
         data = data.facet({

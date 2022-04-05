@@ -27,7 +27,7 @@ export class FaqController {
 
         // sort
         let sort = {};
-        const sortType = req.query.sort_type ? req.query.sort_type : "asc";
+        const sortType = req.query.sort_type ? req.query.sort_type : "desc";
         switch (req.query.sort) {
             case "سوال":
                 sort = { question: sortType };

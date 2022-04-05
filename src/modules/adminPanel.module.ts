@@ -55,6 +55,12 @@ import { BundleSchema } from "src/models/bundles.schema";
 import { MajorSchema } from "src/models/majors.schema";
 import { BundleController } from "src/controllers/admin/bundle.controller";
 import { MajorController } from "src/controllers/admin/major.controller";
+import { ArticleCategorySchema } from "src/models/articleCategories.schema";
+import { ArticleGroupsController } from "src/controllers/admin/articleGroup.controller";
+import { RoadmapQuestionCategoryController } from "src/controllers/admin/roadmapQuestionCategory.controller";
+import { RoadmapQuestionSchema } from "src/models/roadmapQuestions.schema";
+import { RoadmapQuestionCategorySchema } from "src/models/roadmapQuestionCategories.schema";
+import { RoadmapQuestionController } from "src/controllers/admin/roadmapQuestion.controller";
 
 @Module({
     imports: [
@@ -70,8 +76,11 @@ import { MajorController } from "src/controllers/admin/major.controller";
             { name: "CourseGroup", schema: CourseGroupSchema },
             { name: "Bundle", schema: BundleSchema },
             { name: "Major", schema: MajorSchema },
+            { name: "RoadmapQuestion", schema: RoadmapQuestionSchema },
+            { name: "RoadmapQuestionCategory", schema: RoadmapQuestionCategorySchema },
             { name: "UserCourse", schema: UserCourseSchema },
             { name: "Article", schema: ArticleSchema },
+            { name: "ArticleCategory", schema: ArticleCategorySchema },
             { name: "Comment", schema: CommentSchema },
             { name: "WalletTransaction", schema: WalletTransactionSchema },
             { name: "CollaborateRequest", schema: CollaborateRequestSchema },
@@ -97,6 +106,8 @@ import { MajorController } from "src/controllers/admin/major.controller";
         CourseGroupsController,
         BundleController,
         MajorController,
+        RoadmapQuestionCategoryController,
+        RoadmapQuestionController,
         DiscountController,
         WalletTransactionController,
         CourseTransactionController,
@@ -108,6 +119,7 @@ import { MajorController } from "src/controllers/admin/major.controller";
         BannerController,
         ContactInfoController,
         ArticleController,
+        ArticleGroupsController,
         CourseController,
         DashboardController,
         StaticPagesController,

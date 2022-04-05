@@ -27,7 +27,7 @@ export class MetadataController {
 
         // sort
         let sort = {};
-        const sortType = req.query.sort_type ? req.query.sort_type : "asc";
+        const sortType = req.query.sort_type ? req.query.sort_type : "desc";
         switch (req.query.sort) {
             case "صفحه":
                 sort = { page: sortType };
