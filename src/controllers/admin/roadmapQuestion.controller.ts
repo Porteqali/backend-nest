@@ -87,9 +87,27 @@ export class RoadmapQuestionController {
     async addRoadmapQuestion(@Body() input: CreateNewRoadmapQuestionDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
         if (!(await this.authService.authorize(req, "admin", ["admin.roadmap-questions.add"]))) throw new ForbiddenException();
 
-        await this.RoadmapQuestionModel.create({ question: input.question, author: req.user.user._id });
+        const answers = [
+            { optionNumber: 1, text: input.option1, majorPoints: [] },
+            { optionNumber: 2, text: input.option2, majorPoints: [] },
+            { optionNumber: 3, text: input.option3 || "", majorPoints: [] },
+            { optionNumber: 4, text: input.option4 || "", majorPoints: [] },
+        ];
 
-        // TODO
+        for (const majorId in input.majors) {
+            const major = input.majors[majorId];
+            answers[0].majorPoints.push({ major: major._id, point: major.options.opt1 });
+            answers[1].majorPoints.push({ major: major._id, point: major.options.opt2 });
+            answers[2].majorPoints.push({ major: major._id, point: major.options.opt3 });
+            answers[3].majorPoints.push({ major: major._id, point: major.options.opt4 });
+        }
+
+        await this.RoadmapQuestionModel.create({
+            author: req.user.user._id,
+            question: input.question,
+            answers: answers,
+            category: input.questionGroup,
+        });
 
         return res.end();
     }
@@ -102,9 +120,30 @@ export class RoadmapQuestionController {
         const roadmapQuestion = await this.RoadmapQuestionModel.findOne({ _id: req.params.id }).exec();
         if (!roadmapQuestion) throw new NotFoundException([{ property: "record", errors: ["رکوردی برای ویرایش پیدا نشد"] }]);
 
-        await this.RoadmapQuestionModel.updateOne({ _id: req.params.id }, { question: input.question, author: req.user.user._id });
+        const answers: any = [
+            { optionNumber: 1, text: input.option1, majorPoints: [] },
+            { optionNumber: 2, text: input.option2, majorPoints: [] },
+            { optionNumber: 3, text: input.option3 || "", majorPoints: [] },
+            { optionNumber: 4, text: input.option4 || "", majorPoints: [] },
+        ];
 
-        // TODO
+        for (const majorId in input.majors) {
+            const major = input.majors[majorId];
+            answers[0].majorPoints.push({ major: major._id, point: major.options.opt1 });
+            answers[1].majorPoints.push({ major: major._id, point: major.options.opt2 });
+            answers[2].majorPoints.push({ major: major._id, point: major.options.opt3 });
+            answers[3].majorPoints.push({ major: major._id, point: major.options.opt4 });
+        }
+
+        await this.RoadmapQuestionModel.updateOne(
+            { _id: req.params.id },
+            {
+                author: req.user.user._id,
+                question: input.question,
+                answers: answers,
+                category: input.questionGroup,
+            },
+        );
 
         return res.end();
     }

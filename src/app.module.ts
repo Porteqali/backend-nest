@@ -53,6 +53,8 @@ import { MajorsModule } from "./modules/majors.module";
 import { BundleSchema } from "./models/bundles.schema";
 import { UserRoadmapController } from "./controllers/web/userRoadmap.controller";
 import { UserRoadmapSchema } from "./models/userRoadmaps.schema";
+import { RoadmapQuestionController } from "./controllers/roadmapQuestions.controller";
+import { RoadmapQuestionSchema } from "./models/roadmapQuestions.schema";
 
 @Module({
     imports: [
@@ -91,6 +93,7 @@ import { UserRoadmapSchema } from "./models/userRoadmaps.schema";
             { name: "Major", schema: MajorSchema },
             { name: "Bundle", schema: BundleSchema },
             { name: "UserRoadmap", schema: UserRoadmapSchema },
+            { name: "RoadmapQuestion", schema: RoadmapQuestionSchema },
         ]),
     ],
     controllers: [
@@ -108,6 +111,7 @@ import { UserRoadmapSchema } from "./models/userRoadmaps.schema";
         UserRoadmapController,
         MajorsController,
         MetadataController,
+        RoadmapQuestionController,
     ],
     providers: [AppService, SearchService, DiscountService, AnalyticsService],
     exports: [],

@@ -16,6 +16,7 @@ export const RoadmapQuestionSchema = new Schema({
     answers: [
         new Schema({
             optionNumber: { type: Number },
+            text: { type: String },
             majorPoints: [
                 {
                     major: { type: Schema.Types.ObjectId, ref: "Major" },
@@ -46,6 +47,7 @@ export interface RoadmapQuestion {
 export interface Answer {
     _id: Schema.Types.ObjectId;
     optionNumber: number;
+    text: string;
     majorPoints: majorPoint[];
 }
 
