@@ -143,10 +143,7 @@ export class AppModule implements NestModule {
             { path: "users/send-verification-code", method: RequestMethod.POST },
             { path: "users/verify", method: RequestMethod.POST },
 
-            { path: "user-profile/courses", method: RequestMethod.GET },
-            { path: "user-profile/comments", method: RequestMethod.GET },
-            { path: "user-profile/transactions/wallet", method: RequestMethod.GET },
-            { path: "user-profile/transactions/course", method: RequestMethod.GET },
+            { path: "user-profile/*", method: RequestMethod.ALL },
             { path: "user-roadmap/*", method: RequestMethod.ALL },
 
             { path: "admin/*", method: RequestMethod.ALL },

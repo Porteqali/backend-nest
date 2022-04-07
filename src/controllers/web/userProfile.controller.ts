@@ -7,14 +7,59 @@ import { Model } from "mongoose";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { CommentDocument } from "src/models/comments.schema";
 import { WalletTransactionDocument } from "src/models/walletTransactions.schema";
+import { DiscountDocument } from "src/models/discount.schema";
 
 @Controller("user-profile")
 export class UserProfileController {
     constructor(
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
+        @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
         @InjectModel("Comment") private readonly CommentModel: Model<CommentDocument>,
         @InjectModel("WalletTransaction") private readonly WalletTransactionModel: Model<WalletTransactionDocument>,
     ) {}
+
+    @Get("/coupons")
+    async getUserCoupons(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 10;
+
+        // the base query object
+        let query = {
+            type: "code",
+            status: "active",
+            emmitTo: "singleUser",
+            emmitToId: req.user.user._id,
+            endDate: { $gte: new Date(Date.now()) },
+        };
+
+        // sort
+        let sort = { createdAt: "desc" };
+
+        // making the model with query
+        let data = this.DiscountModel.aggregate();
+        data.match(query);
+        data.sort(sort);
+        data.project("name code amount amountType type startDate endDate");
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        const results = await data.exec().catch((e) => {
+            throw e;
+        });
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+        });
+    }
 
     @Get("/courses")
     async getUserCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
