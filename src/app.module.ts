@@ -127,6 +127,7 @@ export class AppModule implements NestModule {
             { path: "comments/send", method: RequestMethod.POST },
             { path: "like-article/*", method: RequestMethod.POST },
             { path: "/course/*/score", method: RequestMethod.POST },
+            { path: "/cart-purchased-courses", method: RequestMethod.ALL },
 
             { path: "/course-payment", method: RequestMethod.ALL },
             { path: "/course-payment-callback/*", method: RequestMethod.ALL },

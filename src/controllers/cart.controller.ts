@@ -30,6 +30,28 @@ export class CartController {
         @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
     ) {}
 
+    @Post("cart-purchased-courses")
+    async getPurchasedCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const list = req.body.list;
+        let cart = {};
+
+        try {
+            cart = JSON.parse(list);
+        } catch (e) {
+            throw new UnprocessableEntityException([{ property: "cart", errors: ["ساختار سبد خرید صحیح نیست"] }]);
+        }
+
+        const courseIds = Object.keys(cart);
+        const purcahsedCourses = await this.UserCourseModel.find({ user: req.user.user._id, course: { $in: courseIds }, status: "ok" })
+            .populate("course", "_id image name price")
+            .exec();
+
+        const coursesToRemove = [];
+        purcahsedCourses.forEach((userCourse) => coursesToRemove.push(userCourse.course));
+
+        return res.json({ coursesToRemove });
+    }
+
     @Post("cart-total")
     async calcCartTotal(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const list = req.body.list;

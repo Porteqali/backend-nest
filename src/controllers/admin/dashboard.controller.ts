@@ -235,7 +235,14 @@ export class DashboardController {
                 type = "last-month";
                 break;
         }
-        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ viewCount: "desc" }).select("course viewCount").limit(6).exec();
+
+        let courseAnalytics;
+        if (type == "all-times") {
+            courseAnalytics = await this.CourseModel.aggregate().sort({ viewCount: "desc" }).project({ course: "$_id", viewCount: 1 }).limit(6).exec();
+        } else {
+            courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ viewCount: "desc" }).select("course viewCount").limit(6).exec();
+        }
+
         const courseIds = [];
         const courses = [];
         courseAnalytics.forEach((item) => {
@@ -265,7 +272,14 @@ export class DashboardController {
                 type = "last-month";
                 break;
         }
-        const courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ buyCount: "desc" }).select("course buyCount").limit(6).exec();
+
+        let courseAnalytics;
+        if (type == "all-times") {
+            courseAnalytics = await this.CourseModel.aggregate().sort({ buyCount: "desc" }).project({ course: "$_id", buyCount: 1 }).limit(6).exec();
+        } else {
+            courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ buyCount: "desc" }).select("course buyCount").limit(6).exec();
+        }
+
         const courseIds = [];
         const courses = [];
         courseAnalytics.forEach((item) => {
