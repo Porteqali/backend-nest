@@ -135,7 +135,7 @@ export class AppModule implements NestModule {
             { path: "wallet-payment", method: RequestMethod.ALL },
             { path: "wallet-payment-callback/*", method: RequestMethod.ALL },
 
-            { path: "users/info", method: RequestMethod.GET },
+            { path: "users/info", method: RequestMethod.ALL },
             { path: "users/check-verification", method: RequestMethod.GET },
             { path: "users/edit-info", method: RequestMethod.POST },
             { path: "users/edit-avatar-image", method: RequestMethod.POST },

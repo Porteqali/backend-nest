@@ -14,6 +14,7 @@ import { MarketingService } from "src/services/marketing.service";
 import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
 import { AnalyticsService } from "src/services/analytics.service";
 import { BundleDocument } from "src/models/bundles.schema";
+import { loadUser } from "src/helpers/auth.helper";
 
 @Controller("")
 export class CartController {
@@ -29,6 +30,24 @@ export class CartController {
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
         @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
     ) {}
+
+    @Post("check-coupon-code")
+    async checkCouponCode(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const code: string = req.body.couponCode.toString() || "";
+        const today = new Date(Date.now());
+        const error = "کد تخفیف وارد شده معتبر نیست یا منقضی شده";
+
+        const discountCode = await this.DiscountModel.findOne({ type: "code", code: code, startDate: { $lte: today }, endDate: { $gte: today } }).exec();
+        if (!discountCode) throw new UnprocessableEntityException([{ property: "discount", errors: [error] }]);
+
+        if (discountCode.emmitTo == "singleUser") {
+            const loadedUser = await loadUser(req);
+            if (!loadedUser) throw new UnprocessableEntityException([{ property: "discount", errors: [error] }]);
+            if (discountCode.emmitToId != loadedUser.user._id) throw new UnprocessableEntityException([{ property: "discount", errors: [error] }]);
+        }
+
+        return res.json({ code: discountCode.code, amount: discountCode.amount, amountType: discountCode.amountType });
+    }
 
     @Post("cart-purchased-courses")
     async getPurchasedCourses(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
