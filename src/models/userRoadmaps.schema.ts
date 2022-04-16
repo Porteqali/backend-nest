@@ -36,7 +36,7 @@ export interface UserRoadmap {
 
     finishedCourses: Array<Course | Schema.Types.ObjectId>;
     currentCourse: Course | Schema.Types.ObjectId;
-    currentCourseStartDate: Date;
+    currentCourseStartDate?: Date;
 
     status: string;
     startDate: Date;

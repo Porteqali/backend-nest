@@ -1,6 +1,12 @@
 import { IsEmail, IsNotEmpty, Length, IsString, IsArray, IsIn, IsOptional, IsDateString } from "class-validator";
 
 export class UpdateBannerDto {
+    @IsNotEmpty({ message: "وضعیت نمایش عکس را مشخص کنید" })
+    readonly withImage?: string;
+
+    @IsNotEmpty({ message: "وضعیت نمایش متن را مشخص کنید" })
+    readonly withText?: string;
+
     @IsOptional()
     readonly image?: string;
 

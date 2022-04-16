@@ -11,13 +11,15 @@ import { CourseDocument } from "src/models/courses.schema";
 import * as moment from "moment";
 import { DiscountDocument } from "src/models/discount.schema";
 import { randStr } from "src/helpers/str.helper";
+import { UserCourseDocument } from "src/models/userCourses.schema";
 
 @Controller("user-roadmap")
 export class UserRoadmapController {
     constructor(
+        @InjectModel("User") private readonly UserModel: Model<UserDocument>,
+        @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
         @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
-        @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Bundle") private readonly BundleModel: Model<BundleDocument>,
         @InjectModel("UserRoadmap") private readonly UserRoadmapModel: Model<UserRoadmapDocument>,
     ) {}
@@ -106,9 +108,17 @@ export class UserRoadmapController {
         }
         const nextCourseId: any = courseIds[nextCourseIndex];
 
+        // check if user purchased next course or not
+        // if user purchased the course then fill the 'currentCourseStartDate'
+        const purchased = await this.UserCourseModel.exists({ user: req.user.user._id, course: nextCourseId, status: "ok" });
+
         await this.UserRoadmapModel.updateOne(
             { _id: roadmap._id },
-            { finishedCourses: [...roadmap.finishedCourses, roadmap.currentCourse], currentCourse: nextCourseId, currentCourseStartDate: new Date(Date.now()) },
+            {
+                finishedCourses: [...roadmap.finishedCourses, roadmap.currentCourse],
+                currentCourse: nextCourseId,
+                currentCourseStartDate: purchased ? new Date(Date.now()) : null,
+            },
         ).exec();
 
         const currentCourseEndDate = moment(Date.now()).add(courses[nextCourseId].minimumTimeNeeded, "days");
@@ -117,7 +127,7 @@ export class UserRoadmapController {
         return res.json({
             finishedCourses: [...roadmap.finishedCourses, roadmap.currentCourse],
             currentCourse: courses[nextCourseId],
-            currentCourseStartDate: new Date(Date.now()),
+            currentCourseStartDate: purchased ? new Date(Date.now()) : null,
             canStartNextCourse: false,
             willOpenIn,
         });

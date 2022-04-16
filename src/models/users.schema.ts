@@ -81,10 +81,12 @@ export const UserSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "UsanceType",
     },
-    socials: new Schema({
-        name: { type: String },
-        link: { type: String },
-    }),
+    socials: [
+        new Schema({
+            name: { type: String },
+            link: { type: String },
+        }),
+    ],
     financial: {
         cardNumber: { type: String },
         cardOwnerName: { type: String },

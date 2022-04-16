@@ -9,6 +9,7 @@ import { CourseSchema } from "src/models/courses.schema";
 import { DiscountSchema } from "src/models/discount.schema";
 import { MarketerCoursesSchema } from "src/models/marketerCourses.schema";
 import { UserCourseSchema } from "src/models/userCourses.schema";
+import { UserRoadmapSchema } from "src/models/userRoadmaps.schema";
 import { UserSchema } from "src/models/users.schema";
 import { AnalyticsService } from "src/services/analytics.service";
 import { CartService } from "src/services/cart.service";
@@ -27,6 +28,7 @@ import { MarketingService } from "src/services/marketing.service";
             { name: "Commission", schema: CommissionSchema },
             { name: "CourseAnalytic", schema: CourseAnalyticSchema },
             { name: "Analytic", schema: AnalyticsSchema },
+            { name: "UserRoadmap", schema: UserRoadmapSchema },
         ]),
     ],
     controllers: [CartController],

@@ -221,7 +221,7 @@ export class CartController {
                 else return false;
             })
             .catch(async (error) => {
-                // change the booked record status and save error
+                // change the purchased record status and save error
                 await this.UserCourseModel.updateMany({ authority: transactionResponse.identifier }, { status: "error", error: error.response || null }).exec();
                 return false;
             });
@@ -256,6 +256,8 @@ export class CartController {
                 { _id: userCourse._id },
                 { status: "ok", transactionCode: transactionCode, paidAmount: userCourse.totalPrice, teacherCut: teacherCut, marketerCut: marketerCut },
             ).exec();
+
+            await this.cartService.activateInRoadmap(req, userCourse.course);
         }
 
         if (method == "wallet") {

@@ -8,7 +8,7 @@ const createAboutUsJSON = async () => {
 
 const createBannerJSON = async () => {
     const filename = "banner.json";
-    const structure = { bgImage: "", bgColor: "", text: "", code: "", link: "", endDate: "", status: "active" };
+    const structure = { withImage: false, bgImage: "", bgColor: "", withText: false, text: "", code: "", link: "", endDate: "", status: "active" };
     await writeFile(`./static/${filename}`, JSON.stringify(structure), { flag: "wx" }).catch((e) => console.log(e));
 };
 

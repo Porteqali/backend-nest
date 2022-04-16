@@ -11,6 +11,7 @@ import { courseDiscountOutput } from "./discount.service";
 import { MarketingService } from "./marketing.service";
 import { CommissionDocument } from "src/models/commissions.schema";
 import { AnalyticsService } from "./analytics.service";
+import { UserRoadmapDocument } from "src/models/userRoadmaps.schema";
 
 interface cartInfo {
     totalPrice: number;
@@ -34,6 +35,7 @@ export class CartService {
         @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
         @InjectModel("Commission") private readonly CommissionModel: Model<CommissionDocument>,
+        @InjectModel("UserRoadmap") private readonly UserRoadmapModel: Model<UserRoadmapDocument>,
     ) {}
 
     // returns the total paybale price of given courses
@@ -166,5 +168,16 @@ export class CartService {
         await this.analyticsService.analyticCountUp(req, null, teacher._id, 1, "sells", "teacher");
 
         return teacherCut;
+    }
+
+    // =======================================
+
+    async activateInRoadmap(req: Request, courseId: any) {
+        // check if this course is the same as user's active roadmap current course or not
+        const userRoadmap = await this.UserRoadmapModel.findOne({ user: req.user.user._id, currentCourse: courseId, status: "active" }).exec();
+        if (!userRoadmap) return;
+
+        // if so then start the counter for the course in roadmap
+        await this.UserRoadmapModel.updateOne({ _id: userRoadmap._id }, { currentCourseStartDate: new Date(Date.now()) }).exec();
     }
 }

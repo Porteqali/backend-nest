@@ -117,12 +117,16 @@ export class BundleController {
         const alreadyFinished = await this.UserRoadmapModel.exists({ user: req.user.user._id, bundle: bundle._id, status: "finished" });
         if (alreadyFinished) throw new UnprocessableEntityException([{ property: "roadmap", errors: ["شما قبلا این مجموعه دوره را گذرانده اید!"] }]);
 
+        // check if user purchased next course or not
+        // if user purchased the course then fill the 'currentCourseStartDate'
+        const purchased = await this.UserCourseModel.exists({ user: req.user.user._id, course: bundle.courses[0].course, status: "ok" });
+
         // if no bundle is active then activate the bundle for user
         await this.UserRoadmapModel.create({
             user: req.user.user._id,
             bundle: bundle._id,
             currentCourse: bundle.courses[0].course,
-            currentCourseStartDate: new Date(Date.now()),
+            currentCourseStartDate: purchased ? new Date(Date.now()) : null,
             status: "active",
             startDate: new Date(Date.now()),
         });
