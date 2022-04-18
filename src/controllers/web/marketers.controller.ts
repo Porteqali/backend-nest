@@ -23,7 +23,6 @@ export class MarketersController {
         if (marketer) {
             // count the click for link
             await this.analyticsService.analyticCountUp(req, marketer._id, null, 1, "link-clicked", "marketer");
-
             return res.end();
         }
 

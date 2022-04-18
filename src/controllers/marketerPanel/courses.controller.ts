@@ -52,7 +52,7 @@ export class CoursesController {
         });
         data.match(query);
         data.sort(sort);
-        data.project("course.image course.name commissionAmount commissionType code status createdAt");
+        data.project("course._id course.image course.name commissionAmount commissionType code status createdAt");
         if (!!search) {
             data.match({
                 $or: [

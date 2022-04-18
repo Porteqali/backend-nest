@@ -600,12 +600,14 @@ export class ImporterController {
                 const course = await this.CourseModel.findOne({ oid: row.course_id }).exec();
                 if (!course) continue;
 
+                const code = `${marketer.marketingCode}${randStr(4)}`;
+
                 imports.push({
                     marketer: marketer._id,
                     course: course._id,
                     commissionAmount: parseInt(row.commission_amount),
                     commissionType: row.commission_type,
-                    code: marketer.marketingCode,
+                    code: code,
                     status: row.disable == "1" ? "deactive" : "active",
                     createdAt: new Date(row.created_at),
                 });
@@ -623,10 +625,10 @@ export class ImporterController {
             for (let i = 0; i < json.length; i++) {
                 const row = json[i];
 
-                const user = await this.UserModel.findOne({ email: row.user_email }).select('_id name family').exec();
+                const user = await this.UserModel.findOne({ email: row.user_email }).select("_id name family").exec();
                 if (!user) continue;
 
-                const course = await this.CourseModel.findOne({ oid: row.course_id }).select('_id name price').exec();
+                const course = await this.CourseModel.findOne({ oid: row.course_id }).select("_id name price").exec();
                 if (!course) continue;
 
                 let authority = "";
@@ -674,7 +676,7 @@ export class ImporterController {
                 });
             }
             await this.UserCourseModel.insertMany(imports);
-            await this.UserCourseModel.insertMany(imports,{});
+            await this.UserCourseModel.insertMany(imports, {});
         } catch (e) {
             console.log(e);
             throw new UnprocessableEntityException([{ property: "importer", errors: ["اطلاعات به درستی ایمپورت نشدند"] }]);

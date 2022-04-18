@@ -172,9 +172,9 @@ export class CartService {
 
     // =======================================
 
-    async activateInRoadmap(req: Request, courseId: any) {
+    async activateInRoadmap(user_id: any, courseId: any) {
         // check if this course is the same as user's active roadmap current course or not
-        const userRoadmap = await this.UserRoadmapModel.findOne({ user: req.user.user._id, currentCourse: courseId, status: "active" }).exec();
+        const userRoadmap = await this.UserRoadmapModel.findOne({ user: user_id, currentCourse: courseId, status: "active" }).exec();
         if (!userRoadmap) return;
 
         // if so then start the counter for the course in roadmap

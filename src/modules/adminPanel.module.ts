@@ -61,6 +61,9 @@ import { RoadmapQuestionCategoryController } from "src/controllers/admin/roadmap
 import { RoadmapQuestionSchema } from "src/models/roadmapQuestions.schema";
 import { RoadmapQuestionCategorySchema } from "src/models/roadmapQuestionCategories.schema";
 import { RoadmapQuestionController } from "src/controllers/admin/roadmapQuestion.controller";
+import { CartService } from "src/services/cart.service";
+import { MarketingService } from "src/services/marketing.service";
+import { UserRoadmapSchema } from "src/models/userRoadmaps.schema";
 
 @Module({
     imports: [
@@ -93,6 +96,7 @@ import { RoadmapQuestionController } from "src/controllers/admin/roadmapQuestion
             { name: "CourseRating", schema: CourseRatingSchema },
             { name: "CourseAnalytic", schema: CourseAnalyticSchema },
             { name: "Analytic", schema: AnalyticsSchema },
+            { name: "UserRoadmap", schema: UserRoadmapSchema },
         ]),
     ],
     controllers: [
@@ -127,7 +131,7 @@ import { RoadmapQuestionController } from "src/controllers/admin/roadmapQuestion
         MetadataController,
         ImporterController,
     ],
-    providers: [AuthService, CourseService, AnalyticsService],
+    providers: [AuthService, CourseService, AnalyticsService, CartService, MarketingService],
     exports: [],
 })
 export class AdminPanelModule {}

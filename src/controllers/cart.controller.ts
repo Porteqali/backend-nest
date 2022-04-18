@@ -257,7 +257,7 @@ export class CartController {
                 { status: "ok", transactionCode: transactionCode, paidAmount: userCourse.totalPrice, teacherCut: teacherCut, marketerCut: marketerCut },
             ).exec();
 
-            await this.cartService.activateInRoadmap(req, userCourse.course);
+            await this.cartService.activateInRoadmap(req.user.user._id, userCourse.course);
         }
 
         if (method == "wallet") {

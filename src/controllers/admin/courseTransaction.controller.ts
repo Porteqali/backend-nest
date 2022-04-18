@@ -11,11 +11,13 @@ import { AuthService } from "src/services/auth.service";
 import { WalletTransactionDocument } from "src/models/walletTransactions.schema";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { CourseDocument } from "src/models/courses.schema";
+import { CartService } from "src/services/cart.service";
 
 @Controller("admin/course-transactions")
 export class CourseTransactionController {
     constructor(
         private readonly authService: AuthService,
+        private readonly cartService: CartService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
@@ -133,6 +135,11 @@ export class CourseTransactionController {
 
         const data = await this.UserCourseModel.find({ authority: req.params.id }).exec();
         if (!data) throw new NotFoundException([{ property: "delete", errors: ["رکورد پیدا نشد!"] }]);
+
+        // check if this course is the same as user's active roadmap current course or not
+        // if so then start the counter for the course in roadmap
+        const user = data[0].user;
+        for (let i = 0; i < data.length; i++) await this.cartService.activateInRoadmap(user, data[i].course);
 
         // update the thing
         await this.UserCourseModel.updateMany({ authority: req.params.id }, { status: "ok" }).exec();
