@@ -43,7 +43,9 @@ export class CartController {
         if (discountCode.emmitTo == "singleUser") {
             const loadedUser = await loadUser(req);
             if (!loadedUser) throw new UnprocessableEntityException([{ property: "discount", errors: [error] }]);
-            if (discountCode.emmitToId != loadedUser.user._id) throw new UnprocessableEntityException([{ property: "discount", errors: [error] }]);
+            if (discountCode.emmitToId.toString() != loadedUser.user._id.toString()) {
+                throw new UnprocessableEntityException([{ property: "discount", errors: [error] }]);
+            }
         }
 
         return res.json({ code: discountCode.code, amount: discountCode.amount, amountType: discountCode.amountType });

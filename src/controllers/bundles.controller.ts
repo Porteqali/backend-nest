@@ -109,6 +109,9 @@ export class BundleController {
         const bundle = await this.BundleModel.findOne({ _id: req.params.id }).exec();
         if (!bundle) return res.status(404).end();
 
+        // TODO
+        // check if user had this bundle before and the status is canceled, activate that bundle and re-calc the current course start date
+
         // check if any bundle is active or not
         const activeRoadmap = await this.UserRoadmapModel.exists({ user: req.user.user._id, status: "active" });
         if (activeRoadmap) throw new UnprocessableEntityException([{ property: "roadmap", errors: ["درحال حاضر شما نقشه راه فعال شده ای دارید!"] }]);

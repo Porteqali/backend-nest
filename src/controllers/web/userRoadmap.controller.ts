@@ -24,6 +24,60 @@ export class UserRoadmapController {
         @InjectModel("UserRoadmap") private readonly UserRoadmapModel: Model<UserRoadmapDocument>,
     ) {}
 
+    @Get("/roadmaps")
+    async getUserRoadmaps(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const page = req.query.page ? parseInt(req.query.page.toString()) : 1;
+        const pp = req.query.pp ? parseInt(req.query.pp.toString()) : 10;
+
+        // the base query object
+        let query = {
+            user: req.user.user._id,
+            status: { $in: ["finished", "canceled"] },
+        };
+
+        // sort
+        let sort = { createdAt: "desc" };
+
+        // making the model with query
+        let data = this.UserRoadmapModel.aggregate();
+        data.match(query);
+        data.lookup({ from: "bundles", localField: "bundle", foreignField: "_id", as: "bundle" });
+        data.sort(sort);
+        data.project("finishedCourses currentCourse currentCourseStartDate status bundle.title bundle.courses");
+
+        // paginating
+        data = data.facet({
+            data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
+            total: [{ $group: { _id: null, count: { $sum: 1 } } }],
+        });
+
+        // executing query and getting the results
+        const results = await data.exec().catch((e) => {
+            throw e;
+        });
+        const total = results[0].total[0] ? results[0].total[0].count : 0;
+
+        for (let i = 0; i < results[0].data.length; i++) {
+            const userRoadmap = results[0].data[i];
+            const bundle = userRoadmap.bundle[0];
+            
+            for (let j = 0; j < bundle.courses.length; j++) {
+                bundle.courses[j].course = await this.CourseModel.findOne({ _id: bundle.courses[j].course })
+                    .select("image name teacher price")
+                    .populate("teacher", "image name family")
+                    .exec();
+            }
+            results[0].data[i].bundle = bundle;
+        }
+
+        return res.json({
+            records: results[0].data,
+            page: page,
+            total: total,
+            pageTotal: Math.ceil(total / pp),
+        });
+    }
+
     @Get("/active-roadmap")
     async getUserActiveRoadmap(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
         const roadmap = await this.UserRoadmapModel.findOne({ user: req.user.user._id, status: "active" }).exec();
