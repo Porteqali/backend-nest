@@ -89,7 +89,7 @@ export class MajorsController {
         //     $or: [{ title: { $regex: new RegExp(`.*${search}.*`, "i") } }],
         // });
         data.sort({ createdAt: "desc" });
-        data.project("_id title giftCodePercent giftCodeDeadline discountPercent courses");
+        data.project("_id title desc giftCodePercent giftCodeDeadline discountPercent courses");
 
         // paginating
         data = data.facet({

@@ -23,6 +23,8 @@ export const UserRoadmapSchema = new Schema({
 
     discount: { type: Schema.Types.ObjectId, ref: "Discount" },
 
+    passedDaysOfCurrentCourse: { type: Number, default: 0 }, // in days
+    canceledAt: { type: Date },
     createdAt: {
         type: Date,
         default: new Date(Date.now()),
@@ -44,5 +46,7 @@ export interface UserRoadmap {
 
     discount?: Discount | Schema.Types.ObjectId;
 
+    passedDaysOfCurrentCourse: number;
+    canceledAt: Date;
     createdAt: Date;
 }

@@ -3,6 +3,7 @@ import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
+import * as moment from "moment";
 import { BundleDocument } from "src/models/bundles.schema";
 import { CourseDocument } from "src/models/courses.schema";
 import { DiscountService } from "src/services/discount.service";
@@ -36,7 +37,7 @@ export class BundleController {
             $or: [{ title: { $regex: new RegExp(`.*${search}.*`, "i") } }],
         });
         data.sort({ createdAt: "desc" });
-        data.project("_id title giftCodePercent giftCodeDeadline discountPercent courses");
+        data.project("_id title desc giftCodePercent giftCodeDeadline discountPercent courses");
 
         // paginating
         data = data.facet({
@@ -109,9 +110,6 @@ export class BundleController {
         const bundle = await this.BundleModel.findOne({ _id: req.params.id }).exec();
         if (!bundle) return res.status(404).end();
 
-        // TODO
-        // check if user had this bundle before and the status is canceled, activate that bundle and re-calc the current course start date
-
         // check if any bundle is active or not
         const activeRoadmap = await this.UserRoadmapModel.exists({ user: req.user.user._id, status: "active" });
         if (activeRoadmap) throw new UnprocessableEntityException([{ property: "roadmap", errors: ["درحال حاضر شما نقشه راه فعال شده ای دارید!"] }]);
@@ -119,6 +117,15 @@ export class BundleController {
         // check if user finished this bundle or not
         const alreadyFinished = await this.UserRoadmapModel.exists({ user: req.user.user._id, bundle: bundle._id, status: "finished" });
         if (alreadyFinished) throw new UnprocessableEntityException([{ property: "roadmap", errors: ["شما قبلا این مجموعه دوره را گذرانده اید!"] }]);
+
+        // check if user had this bundle before and the status is canceled, activate that bundle and re-calc the current course start date
+        const canceledRoadmap = await this.UserRoadmapModel.findOne({ user: req.user.user._id, bundle: bundle._id, status: "canceled" }).exec();
+        if (!!canceledRoadmap) {
+            // re-calcing the currentCourseStartDate
+            const newCurrentCourseStartDate = moment().subtract(canceledRoadmap.passedDaysOfCurrentCourse, "days").toDate();
+            await this.UserRoadmapModel.updateOne({ _id: canceledRoadmap._id }, { status: "active", currentCourseStartDate: newCurrentCourseStartDate }).exec();
+            return res.end();
+        }
 
         // check if user purchased next course or not
         // if user purchased the course then fill the 'currentCourseStartDate'

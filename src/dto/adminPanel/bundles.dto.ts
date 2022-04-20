@@ -6,6 +6,9 @@ export class CreateNewBundleDto {
     @IsNotEmpty({ message: "عنوان باندل نقشه راه را وارد کنید" })
     readonly title: string;
 
+    @IsOptional()
+    readonly desc?: string;
+
     @IsNumberString({ message: "درصد کد هدیه باید عدد باشد" })
     @IsNotEmpty({ message: "درصد کد هدیه را وارد کنید" })
     @IsOptional()
@@ -24,6 +27,9 @@ export class UpdateBundleDto {
     @IsString({ message: "عنوان باندل نقشه راه را وارد کنید" })
     @IsNotEmpty({ message: "عنوان باندل نقشه راه را وارد کنید" })
     readonly title: string;
+
+    @IsOptional()
+    readonly desc?: string;
 
     @IsNumberString({ message: "درصد کد هدیه باید عدد باشد" })
     @IsNotEmpty({ message: "درصد کد هدیه را وارد کنید" })

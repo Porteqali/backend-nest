@@ -125,6 +125,7 @@ export class BundleController {
 
         await this.BundleModel.create({
             title: input.title,
+            desc: input.desc || "",
             giftCodePercent: input.giftCodePercent,
             giftCodeDeadline: input.giftCodeDeadline,
             discountPercent: input.discountPercent,
@@ -146,6 +147,7 @@ export class BundleController {
             { _id: req.params.id },
             {
                 title: input.title,
+                desc: input.desc || "",
                 giftCodePercent: input.giftCodePercent,
                 giftCodeDeadline: input.giftCodeDeadline,
                 discountPercent: input.discountPercent,

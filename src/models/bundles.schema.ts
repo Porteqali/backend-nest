@@ -5,6 +5,7 @@ export type BundleDocument = Bundle & Document;
 
 export const BundleSchema = new Schema({
     title: { type: String, required: true },
+    desc: { type: String },
 
     giftCodePercent: { type: Number },
     giftCodeDeadline: { type: Number }, // in days
@@ -26,6 +27,7 @@ export const BundleSchema = new Schema({
 export interface Bundle {
     _id: Schema.Types.ObjectId;
     title: string;
+    desc?: string;
     giftCodePercent: number;
     giftCodeDeadline: number;
     discountPercent: number;

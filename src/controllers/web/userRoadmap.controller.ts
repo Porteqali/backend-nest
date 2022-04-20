@@ -43,7 +43,7 @@ export class UserRoadmapController {
         data.match(query);
         data.lookup({ from: "bundles", localField: "bundle", foreignField: "_id", as: "bundle" });
         data.sort(sort);
-        data.project("finishedCourses currentCourse currentCourseStartDate status bundle.title bundle.courses");
+        data.project("finishedCourses currentCourse currentCourseStartDate status bundle._id bundle.title bundle.courses");
 
         // paginating
         data = data.facet({
@@ -60,7 +60,7 @@ export class UserRoadmapController {
         for (let i = 0; i < results[0].data.length; i++) {
             const userRoadmap = results[0].data[i];
             const bundle = userRoadmap.bundle[0];
-            
+
             for (let j = 0; j < bundle.courses.length; j++) {
                 bundle.courses[j].course = await this.CourseModel.findOne({ _id: bundle.courses[j].course })
                     .select("image name teacher price")
@@ -250,5 +250,40 @@ export class UserRoadmapController {
         }
 
         return res.json({ discountGift });
+    }
+
+    @Post("/cancel-roadmap")
+    async cancelRoadmap(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const roadmap = await this.UserRoadmapModel.findOne({ user: req.user.user._id, status: "active" }).exec();
+        if (!roadmap) throw NotFoundException;
+
+        const bundleResult = await this.BundleModel.findOne({ _id: roadmap.bundle }).exec();
+        if (!bundleResult) throw NotFoundException;
+        const bundle: any = bundleResult.toJSON();
+
+        const courses = {};
+        for (let i = 0; i < bundle.courses.length; i++) courses[bundle.courses[i].course] = bundle.courses[i];
+        bundle.courses = courses;
+
+        let currentCourse: any = {};
+        for (const courseId in bundle.courses) {
+            if (courseId.toString() == roadmap.currentCourse.toString()) {
+                const course = await this.CourseModel.findOne({ _id: new Types.ObjectId(courseId.toString()) })
+                    .select("image name teacher")
+                    .populate("teacher", "image name family")
+                    .exec();
+                bundle.courses[courseId].course = { _id: course._id, image: course.image, name: course.name, teacher: course.teacher };
+                bundle.courses[courseId].course.minimumTimeNeeded = bundle.courses[courseId].minimumTimeNeeded;
+                currentCourse = bundle.courses[courseId].course;
+            }
+        }
+
+        const currentCourseStartDate = moment(roadmap.currentCourseStartDate);
+        const now = moment(Date.now());
+        const passedDaysOfCurrentCourse = now.diff(currentCourseStartDate, "days");
+
+        await this.UserRoadmapModel.updateOne({ _id: roadmap._id }, { status: "canceled", canceledAt: new Date(Date.now()), passedDaysOfCurrentCourse }).exec();
+
+        return res.end();
     }
 }
