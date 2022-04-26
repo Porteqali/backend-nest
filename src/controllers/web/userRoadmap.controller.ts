@@ -280,7 +280,7 @@ export class UserRoadmapController {
 
         const currentCourseStartDate = moment(roadmap.currentCourseStartDate);
         const now = moment(Date.now());
-        const passedDaysOfCurrentCourse = now.diff(currentCourseStartDate, "days");
+        const passedDaysOfCurrentCourse = now.diff(currentCourseStartDate, "days") || 0;
 
         await this.UserRoadmapModel.updateOne({ _id: roadmap._id }, { status: "canceled", canceledAt: new Date(Date.now()), passedDaysOfCurrentCourse }).exec();
 
