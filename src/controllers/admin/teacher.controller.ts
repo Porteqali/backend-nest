@@ -48,6 +48,7 @@ export class TeacherController {
             commissionAmountAfterPayment: teacher.commissionBalance + parseInt(input.amount),
             cardNumber: input.cardNumber || null,
             bank: input.bank || null,
+            createdAt: new Date(Date.now()),
         });
 
         // update teacher's commissionBalance

@@ -134,6 +134,7 @@ export class CartService {
                 authority: identifier,
                 paymentMethod: method,
                 ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,
+                createdAt: new Date(Date.now()),
             });
         }
         await this.UserCourseModel.insertMany(inserts);

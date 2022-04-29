@@ -52,6 +52,7 @@ export class MarketerController {
             commissionAmountAfterPayment: marketer.commissionBalance + parseInt(input.amount),
             cardNumber: input.cardNumber || null,
             bank: input.bank || null,
+            createdAt: new Date(Date.now()),
         });
 
         // update marketer's commissionBalance
