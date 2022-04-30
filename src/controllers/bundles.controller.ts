@@ -84,6 +84,7 @@ export class BundleController {
 
         const bundle = bundleResult.toJSON();
         bundle.price = 0;
+        bundle.canBuy = false;
 
         for (let i = 0; i < bundle.courses.length; i++) {
             const courseId = bundle.courses[i].course;
@@ -98,6 +99,7 @@ export class BundleController {
 
             if (!hasBeenPurchased) {
                 bundle.price += bundle.courses[i].course.discountInfo.discountedPrice;
+                bundle.canBuy = true;
             }
         }
         bundle.discountedPrice = bundle.price - bundle.price * (bundle.discountPercent / 100);

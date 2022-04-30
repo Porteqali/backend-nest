@@ -17,12 +17,14 @@ import * as json2xls from "json2xls";
 import { ExportUserDto, UpdateUserDto } from "src/dto/adminPanel/users.dto";
 import { UserCourseDocument } from "src/models/userCourses.schema";
 import { CourseDocument } from "src/models/courses.schema";
+import { NewsletterSubscriberDocument } from "src/models/newsletterSubscribers.schema";
 
 @Controller("admin/users")
 export class UserController {
     constructor(
         private readonly authService: AuthService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
+        @InjectModel("NewsletterSubscriber") private readonly NewsletterSubscriberModel: Model<NewsletterSubscriberDocument>,
         @InjectModel("PermissionGroup") private readonly PermissionGroupModel: Model<PermissionGroupDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
@@ -63,6 +65,23 @@ export class UserController {
         await writeFile("./storage/private/user_export.xlsx", xls, "binary").catch((e) => {});
 
         return res.json({ link: `file/private/user_export.xlsx` });
+    }
+
+    @Get("/export-newsletter-subscribers")
+    async exportNewsletterSubscribers(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
+        const users = this.NewsletterSubscriberModel.aggregate();
+        users.match({ status: "active" });
+        const project: any = { _id: 0, ایمیل: "$email" };
+        users.project(project);
+
+        let error = false;
+        const results = await users.exec().catch((e) => (error = true));
+        if (error) throw new InternalServerErrorException();
+
+        const xls = json2xls(results);
+        await writeFile("./storage/private/newsletter_subscribers_export.xlsx", xls, "binary").catch((e) => {});
+
+        return res.json({ link: `file/private/newsletter_subscribers_export.xlsx` });
     }
 
     @Get("/courses/:id")

@@ -64,6 +64,7 @@ import { RoadmapQuestionController } from "src/controllers/admin/roadmapQuestion
 import { CartService } from "src/services/cart.service";
 import { MarketingService } from "src/services/marketing.service";
 import { UserRoadmapSchema } from "src/models/userRoadmaps.schema";
+import { NewsletterSubscriberSchema } from "src/models/newsletterSubscribers.schema";
 
 @Module({
     imports: [
@@ -97,6 +98,7 @@ import { UserRoadmapSchema } from "src/models/userRoadmaps.schema";
             { name: "CourseAnalytic", schema: CourseAnalyticSchema },
             { name: "Analytic", schema: AnalyticsSchema },
             { name: "UserRoadmap", schema: UserRoadmapSchema },
+            { name: "NewsletterSubscriber", schema: NewsletterSubscriberSchema },
         ]),
     ],
     controllers: [
