@@ -281,7 +281,8 @@ export class ImporterController {
                 courseGroups.forEach((item) => groups.push(item._id));
 
                 imports.push({
-                    image: `https://porteqali.com/img/teachers/${row.avatar_image}`,
+                    // image: `https://porteqali.com/img/teachers/${row.avatar_image}`,
+                    image: `/file/public/user_avatars/${row.avatar_image}`,
                     name: row.name,
                     family: row.family,
                     email: row.email,
@@ -355,7 +356,8 @@ export class ImporterController {
                 }
 
                 imports.push({
-                    image: `https://porteqali.com/img/customers/${row.image}`,
+                    // image: `https://porteqali.com/img/customers/${row.image}`,
+                    image: `/file/public/user_avatars/${row.image}`,
                     name: row.name,
                     family: row.family,
                     email: row.email,
@@ -391,19 +393,18 @@ export class ImporterController {
                     author = backupAdmin._id;
                 }
 
-                // TODO
-                // alter inner body images to match from absolute path
-
                 imports.push({
                     author: author,
-                    image: `https://porteqali.com/img/blogs/${row.blog_image}`,
-                    imageVertical: `https://porteqali.com/img/blogs/${row.blog_image_vertical}`,
+                    // image: `https://porteqali.com/img/blogs/${row.blog_image}`,
+                    image: `/file/public/article_images/${row.blog_image}`,
+                    // imageVertical: `https://porteqali.com/img/blogs/${row.blog_image_vertical}`,
+                    imageVertical: `/file/public/article_images/${row.blog_image_vertical}`,
                     title: row.title,
                     slug: row.slug,
                     description: row.desc,
-                    body: row.text,
+                    body: row.text.replaceAll('../../img/blogs/',`/file/public/article_images/`),
                     tags: [],
-                    metadata: { thumbnail: "", title: "", description: "", author: "", keywords: "" },
+                    metadata: { thumbnail: `/file/public/article_images/${row.blog_image}`, title: "", description: "", author: "", keywords: "" },
                     status: row.disabled == "1" ? "pending" : "published",
                     likes: 0,
                     publishedAt: new Date(row.created_at),
@@ -433,13 +434,15 @@ export class ImporterController {
 
                 imports.push({
                     oid: row.id,
-                    image: `https://porteqali.com/img/courses/${row.course_image}`,
+                    // image: `https://porteqali.com/img/courses/${row.course_image}`,
+                    image: `/file/public/course_images/${row.course_image}`,
                     name: row.name,
                     teacher: teacher,
                     description: row.description,
                     price: row.tuition,
+                    // [{ name: "فایل تمرین", file: `https://porteqali.com/course_compress_files/${row.course_compress_file}`, size: "0" }]
                     exerciseFiles: row.course_compress_file
-                        ? [{ name: "فایل تمرین", file: `https://porteqali.com/course_compress_files/${row.course_compress_file}`, size: "0" }]
+                        ? [{ name: "فایل تمرین", file: `/file/public/course_exercise_files/${row.course_compress_file}`, size: "0" }]
                         : [],
                     groups: [courseGroup],
                     tags: [],
@@ -472,11 +475,13 @@ export class ImporterController {
                             seconds: row.topics[j].time.seconds,
                         },
                         description: row.topics[j].description,
-                        file: await this.courseService.generateLinkForTopic(req, row.topics[j].full_link, "courseVideo", { course_id: course._id }),
+                        // file: await this.courseService.generateLinkForTopic(req, row.topics[j].full_link, "courseVideo", { course_id: course._id }),
+                        file: `/file/private/course_videos/${course._id}/${row.topics[j].file_name}`,
                         isFree: row.topics[j].is_free == "1" ? true : false,
                         isFreeForUsers: row.topics[j].is_free_for_users == "1" ? true : false,
                         status: "active",
-                        type: "link",
+                        // type: "link",
+                        type: "file",
                     });
                 }
 

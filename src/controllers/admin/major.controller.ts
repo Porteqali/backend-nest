@@ -134,7 +134,7 @@ export class MajorController {
 
         let thumbnailLink = "";
         let imageLink = "";
-        if (!files[0].originalname) throw new UnprocessableEntityException([{ property: "image", errors: ["عکس اصلی مقاله را انتخاب کنید"] }]);
+        if (!files[0]) throw new UnprocessableEntityException([{ property: "image", errors: ["عکس اصلی حرفه را انتخاب کنید"] }]);
         if (!!files.length) {
             const ogName0 = files[0].originalname;
             const extension0 = ogName0.slice(((ogName0.lastIndexOf(".") - 1) >>> 0) + 2);

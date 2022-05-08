@@ -144,8 +144,8 @@ export class ArticleController {
         let thumbnailLink = "";
         let imageLink = "";
         let imageVerticalLink = "";
-        if (!files[0].originalname) throw new UnprocessableEntityException([{ property: "image", errors: ["عکس اصلی مقاله را انتخاب کنید"] }]);
-        if (!files[1].originalname) throw new UnprocessableEntityException([{ property: "imageVertical", errors: ["عکس عمودی مقاله را انتخاب کنید"] }]);
+        if (!files[0]) throw new UnprocessableEntityException([{ property: "image", errors: ["عکس اصلی مقاله را انتخاب کنید"] }]);
+        if (!files[1]) throw new UnprocessableEntityException([{ property: "imageVertical", errors: ["عکس عمودی مقاله را انتخاب کنید"] }]);
         if (!!files.length) {
             const ogName0 = files[0].originalname;
             const ogName1 = files[1].originalname;
