@@ -681,7 +681,6 @@ export class ImporterController {
                 });
             }
             await this.UserCourseModel.insertMany(imports);
-            await this.UserCourseModel.insertMany(imports, {});
         } catch (e) {
             console.log(e);
             throw new UnprocessableEntityException([{ property: "importer", errors: ["اطلاعات به درستی ایمپورت نشدند"] }]);
