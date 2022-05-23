@@ -92,6 +92,7 @@ export class CourseTransactionController {
             data: [{ $skip: (page - 1) * pp }, { $limit: pp }],
             total: [{ $group: { _id: null, count: { $sum: 1 } } }],
         });
+        data.allowDiskUse(true);
 
         // executing query and getting the results
         let error = false;
