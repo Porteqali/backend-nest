@@ -95,7 +95,10 @@ export class CourseTransactionController {
 
         // executing query and getting the results
         let error = false;
-        const results = await data.exec().catch((e) => (error = true));
+        const results = await data.exec().catch((e) => {
+            error = true;
+            console.log(e);
+        });
         if (error) throw new InternalServerErrorException();
         const total = results[0].total[0] ? results[0].total[0].count : 0;
 
