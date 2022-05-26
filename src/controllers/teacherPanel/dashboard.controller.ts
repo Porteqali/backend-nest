@@ -53,7 +53,7 @@ export class DashboardController {
         let totalIncomeQuery: any = this.AnalyticModel.aggregate();
         totalIncomeQuery.match({ teacher: req.user.user._id, type: "monthly", forGroup: "teacher", infoName: "income" });
         totalIncomeQuery.group({ _id: null, total: { $sum: "$count" } });
-        totalIncomeQuery = await totalIncomeQuery.project("count").limit(1).exec();
+        totalIncomeQuery = await totalIncomeQuery.project("total").limit(1).exec();
         const totalIncome = totalIncomeQuery[0] ? totalIncomeQuery[0].total : 0;
 
         // ==========================
@@ -78,7 +78,7 @@ export class DashboardController {
         let totalSellsQuery: any = this.AnalyticModel.aggregate();
         totalSellsQuery.match({ teacher: req.user.user._id, type: "monthly", forGroup: "teacher", infoName: "sells" });
         totalSellsQuery.group({ _id: null, total: { $sum: "$count" } });
-        totalSellsQuery = await totalSellsQuery.project("count").limit(1).exec();
+        totalSellsQuery = await totalSellsQuery.project("count total").limit(1).exec();
         const totalSells = totalSellsQuery[0] ? totalSellsQuery[0].total : 0;
 
         const totalPayedCommissionQuery = this.CommissionPaymentModel.aggregate();

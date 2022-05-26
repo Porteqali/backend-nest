@@ -112,13 +112,15 @@ export class DashboardController {
         let totalIncomeQuery: any = this.AnalyticModel.aggregate();
         totalIncomeQuery.match({ type: "monthly", forGroup: "total", infoName: "income" });
         totalIncomeQuery.group({ _id: null, total: { $sum: "$count" } });
-        totalIncomeQuery = await totalIncomeQuery.project("count").limit(1).exec();
+        totalIncomeQuery = await totalIncomeQuery.project("total").limit(1).exec();
         const totalIncome = totalIncomeQuery[0] ? totalIncomeQuery[0].total : 0;
 
         const minimumOnlineTimePeriod = moment().subtract(10, "minutes").toDate();
         const onlineUserCount = await this.SessionModel.countDocuments({ updatedAt: { $gt: minimumOnlineTimePeriod } }).exec();
 
         const activeCourseCount = await this.CourseModel.countDocuments({ status: "active" }).exec();
+
+        console.log({ totalIncome : totalIncomeQuery[0] });
 
         return res.json({
             totalUsers: totalUsers,
