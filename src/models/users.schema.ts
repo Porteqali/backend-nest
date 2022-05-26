@@ -12,7 +12,7 @@ export const UserSchema = new Schema({
     name: { type: String },
     family: { type: String },
 
-    email: { type: String },
+    email: { type: String, lowercase: true },
     emailVerifiedAt: { type: Date },
     emailVerificationCode: { type: String },
 
