@@ -120,7 +120,7 @@ export class DashboardController {
 
         const activeCourseCount = await this.CourseModel.countDocuments({ status: "active" }).exec();
 
-        console.log({ totalIncome : totalIncomeQuery[0] });
+        console.log({ totalIncome: totalIncomeQuery[0] });
 
         return res.json({
             totalUsers: totalUsers,
@@ -165,12 +165,12 @@ export class DashboardController {
         analyticsQuery.match({ forGroup: "total", infoName: type });
         // if its less than 30 days: get the data for that period with type of daily from analytics
         analyticsQuery.match({ type: diffInDays <= 30 ? "daily" : "monthly" });
-        const analyticsData = await analyticsQuery.sort({ date: "desc" }).exec();
+        const analyticsData = await analyticsQuery.sort({ date: "asc" }).exec();
 
         const data = [];
         const label = [];
         for (let i = 0; i < analyticsData.length; i++) {
-            const record = analyticsData[0];
+            const record = analyticsData[i];
             if (diffInDays <= 30) {
                 data.push(parseInt(record.count));
                 label.push(Jmoment(record.date).locale("fa").subtract(1, "day").format("jMMM jDD").toString());

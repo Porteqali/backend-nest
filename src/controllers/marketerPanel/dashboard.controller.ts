@@ -133,7 +133,7 @@ export class DashboardController {
         const data = [];
         const label = [];
         for (let i = 0; i < analyticsData.length; i++) {
-            const record = analyticsData[0];
+            const record = analyticsData[i];
             if (diffInDays <= 30) {
                 data.push(parseInt(record.count));
                 label.push(Jmoment(record.date).locale("fa").subtract(1, "day").format("jMMM jDD").toString());
