@@ -28,8 +28,6 @@ export class ForgetPassowrdController {
 
     @Post("send-code")
     public async sendCode(@Body() inputs: SendCodeDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        console.log(1);
-        
         let field = "mobile";
         const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(inputs.username);
         if (isEmail) field = "email";

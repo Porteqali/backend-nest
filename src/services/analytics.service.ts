@@ -26,11 +26,11 @@ export class AnalyticsService {
         const thisMonth = moment().add(1, "day").format("YYYY-MM-01T00:00:00");
 
         if (type == "both") {
-            this.update(marketer, teacher, incrementBy, infoName, forGroup, "daily", today);
-            this.update(marketer, teacher, incrementBy, infoName, forGroup, "monthly", thisMonth);
+            await this.update(marketer, teacher, incrementBy, infoName, forGroup, "daily", today);
+            await this.update(marketer, teacher, incrementBy, infoName, forGroup, "monthly", thisMonth);
         } else {
             const date = type == "daily" ? today : thisMonth;
-            this.update(marketer, teacher, incrementBy, infoName, forGroup, type, date);
+            await this.update(marketer, teacher, incrementBy, infoName, forGroup, type, date);
         }
     }
 
