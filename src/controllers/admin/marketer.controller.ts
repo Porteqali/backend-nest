@@ -572,7 +572,7 @@ export class MarketerController {
                 {
                     $match: { $expr: { $eq: ["$$user_id", "$user"] } },
                 },
-                { $project: { totalPaid: { $sum: "$payedAmount" }, totalCommission: { $sum: ["$$commissionBalance", { $sum: "$payedAmount" }] } } },
+                { $project: { totalPaid: { $sum: "$payedAmount" } } },
             ],
             as: "commissionPayments",
         });
@@ -595,7 +595,8 @@ export class MarketerController {
             createdAt: 1,
             customerCount: { $size: "$userCount" },
             totalPaid: { $sum: "$commissionPayments.totalPaid" },
-            totalCommission: { $sum: "$commissionPayments.totalCommission" },
+            // totalCommission: { $sum: "$commissionPayments.totalCommission" },
+            totalCommission: { $add: [{ $sum: "$commissionPayments.totalPaid" }, "$commissionBalance"] },
         });
 
         // paginating
@@ -606,7 +607,10 @@ export class MarketerController {
 
         // executing query and getting the results
         let error = false;
-        const results = await data.exec().catch((e) => (error = true));
+        const results = await data.exec().catch((e) => {
+            error = true;
+            console.log(e);
+        });
         if (error) throw new InternalServerErrorException();
         const total = results[0].total[0] ? results[0].total[0].count : 0;
 
@@ -743,7 +747,7 @@ export class MarketerController {
             if (!isMimeOk) throw new UnprocessableEntityException([{ property: "image", errors: ["فرمت فایل معتبر نیست"] }]);
 
             // delete the old image from system
-            if(!!marketer.image) await unlink(marketer.image.replace("/file/", "storage/")).catch((e) => {});
+            if (!!marketer.image) await unlink(marketer.image.replace("/file/", "storage/")).catch((e) => {});
 
             const randName = randStr(10);
             const img = sharp(Buffer.from(files[0].buffer));

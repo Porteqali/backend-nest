@@ -14,11 +14,13 @@ import { UserCourseDocument } from "src/models/userCourses.schema";
 import { SessionDocument } from "src/models/sessions.schema";
 import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
 import { AnalyticsDocument } from "src/models/analytics.schema";
+import { AnalyticsService } from "src/services/analytics.service";
 
 @Controller("admin/dashboard")
 export class DashboardController {
     constructor(
         private readonly authService: AuthService,
+        private readonly analyticsService: AnalyticsService,
         @InjectModel("User") private readonly UserModel: Model<UserDocument>,
         @InjectModel("Session") private readonly SessionModel: Model<SessionDocument>,
         @InjectModel("Course") private readonly CourseModel: Model<CourseDocument>,
@@ -120,8 +122,6 @@ export class DashboardController {
 
         const activeCourseCount = await this.CourseModel.countDocuments({ status: "active" }).exec();
 
-        console.log({ totalIncome: totalIncomeQuery[0] });
-
         return res.json({
             totalUsers: totalUsers,
             lastMonthRegisters: lastMonthRegisters,
@@ -159,6 +159,8 @@ export class DashboardController {
 
         const diffInDays = endDate.diff(startDate, "days");
         if (diffInDays <= 0) throw new UnprocessableEntityException([{ property: "date", errors: ["بازه تاریخ ها جابه جاست"] }]);
+
+        await this.analyticsService.analyticCountUp(req, null, null, 20000, "income", "total");
 
         let analyticsQuery = this.AnalyticModel.aggregate();
         analyticsQuery.match({ date: { $gte: startDate.toDate(), $lte: endDate.toDate() } });
