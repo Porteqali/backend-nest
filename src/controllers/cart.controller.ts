@@ -239,7 +239,6 @@ export class CartController {
         }
 
         const transactionCode = verficationResponse.transactionCode;
-        const totalOfCart = userCourses[0].totalPrice;
         let totalCuts = 0;
         for (let i = 0; i < userCourses.length; i++) {
             const userCourse = userCourses[i];
@@ -265,7 +264,7 @@ export class CartController {
         }
 
         // calculate the income for analytics
-        await this.analyticsService.analyticCountUp(req, null, null, totalOfCart - totalCuts, "income", "total");
+        await this.analyticsService.analyticCountUp(req, null, null, userCourses[0].totalPrice - totalCuts, "income", "total");
 
         if (method == "wallet") {
             const recentlyPurchasedCourses = await this.UserCourseModel.find({ authority: transactionResponse.identifier }, { status: "ok" })
