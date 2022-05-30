@@ -239,6 +239,8 @@ export class CartController {
         }
 
         const transactionCode = verficationResponse.transactionCode;
+        const totalOfCart = userCourses[0].totalPrice;
+        let totalCuts = 0;
         for (let i = 0; i < userCourses.length; i++) {
             const userCourse = userCourses[i];
             if (userCourse.status != "waiting_for_payment") continue;
@@ -252,7 +254,7 @@ export class CartController {
             let teacherCut = await this.cartService.calcTeacherCut(req, userCourse.course, userCourse.coursePayablePrice);
             let marketerCut = await this.marketingService.calcMarketerCut(req, userCourse.course, userCourse.marketer, userCourse.coursePayablePrice);
 
-            await this.analyticsService.analyticCountUp(req, null, null, userCourse.totalPrice - teacherCut - marketerCut, "income", "total");
+            totalCuts += teacherCut + marketerCut;
 
             await this.UserCourseModel.updateOne(
                 { _id: userCourse._id },
@@ -261,6 +263,9 @@ export class CartController {
 
             await this.cartService.activateInRoadmap(req.user.user._id, userCourse.course);
         }
+
+        // calculate the income for analytics
+        await this.analyticsService.analyticCountUp(req, null, null, totalOfCart - totalCuts, "income", "total");
 
         if (method == "wallet") {
             const recentlyPurchasedCourses = await this.UserCourseModel.find({ authority: transactionResponse.identifier }, { status: "ok" })

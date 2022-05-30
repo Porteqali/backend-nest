@@ -49,5 +49,27 @@ export class AnalyticsService {
             { $inc: { count: incrementBy } },
             { upsert: true },
         ).exec();
+
+        // const record = await this.AnalyticModel.findOne({
+        //     marketer: marketer,
+        //     teacher: teacher,
+        //     infoName: infoName,
+        //     forGroup: forGroup,
+        //     type: type,
+        //     date: date,
+        // }).exec();
+        // if (record) {
+        //     await this.AnalyticModel.updateOne({ _id: record._id }, { count: record.count + incrementBy }).exec();
+        // } else {
+        //     await this.AnalyticModel.create({
+        //         marketer: marketer,
+        //         teacher: teacher,
+        //         infoName: infoName,
+        //         forGroup: forGroup,
+        //         type: type,
+        //         date: date,
+        //         count: incrementBy,
+        //     });
+        // }
     }
 }
