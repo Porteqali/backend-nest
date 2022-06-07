@@ -402,7 +402,7 @@ export class ImporterController {
                     title: row.title,
                     slug: row.slug,
                     description: row.desc,
-                    body: row.text.replaceAll('../../img/blogs/',`/file/public/article_images/`),
+                    body: row.text.replaceAll("../../img/blogs/", `/file/public/article_images/`),
                     tags: [],
                     metadata: { thumbnail: `/file/public/article_images/${row.blog_image}`, title: "", description: "", author: "", keywords: "" },
                     status: row.disabled == "1" ? "pending" : "published",
