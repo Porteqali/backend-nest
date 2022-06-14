@@ -152,6 +152,7 @@ export class CommentsController {
             topComment: input.topComment || null,
             text: input.text,
             status: "waiting_for_review",
+            createdAt: new Date(Date.now()),
         });
 
         return res.json({});

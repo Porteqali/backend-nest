@@ -144,6 +144,7 @@ export class CommentsController {
             topComment: comment._id,
             text: input.comment,
             status: "active",
+            createdAt: new Date(Date.now()),
         });
 
         return res.end();
