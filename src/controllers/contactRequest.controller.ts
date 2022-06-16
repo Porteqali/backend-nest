@@ -23,6 +23,7 @@ export class ContactRequestController {
             email: input.email,
             issue: input.issue,
             message: input.text,
+            createdAt: new Date(Date.now()),
         });
         return res.json({});
     }

@@ -57,7 +57,11 @@ export class AuthController {
         const code = Math.floor(100000 + Math.random() * 900000);
 
         // if the user does not exists before create the user
-        await this.UserModel.updateOne({ [field]: inputs.username }, { [verificationCodeField]: code.toString() }, { upsert: true }).exec();
+        await this.UserModel.updateOne(
+            { [field]: inputs.username },
+            { [verificationCodeField]: code.toString(), createdAt: new Date(Date.now()) },
+            { upsert: true },
+        ).exec();
 
         if (field == "email") {
             let html = await readFile("./src/notifications/templates/verficationEmail.html").then((buffer) => buffer.toString());
