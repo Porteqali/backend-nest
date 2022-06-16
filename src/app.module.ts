@@ -55,6 +55,7 @@ import { UserRoadmapController } from "./controllers/web/userRoadmap.controller"
 import { UserRoadmapSchema } from "./models/userRoadmaps.schema";
 import { RoadmapQuestionController } from "./controllers/roadmapQuestions.controller";
 import { RoadmapQuestionSchema } from "./models/roadmapQuestions.schema";
+import { MarketerCoursesSchema } from "./models/marketerCourses.schema";
 
 @Module({
     imports: [
@@ -90,6 +91,7 @@ import { RoadmapQuestionSchema } from "./models/roadmapQuestions.schema";
             { name: "WalletTransaction", schema: WalletTransactionSchema },
             { name: "Metadata", schema: MetadataSchema },
             { name: "Analytic", schema: AnalyticsSchema },
+            { name: "MarketerCourse", schema: MarketerCoursesSchema },
             { name: "Major", schema: MajorSchema },
             { name: "Bundle", schema: BundleSchema },
             { name: "UserRoadmap", schema: UserRoadmapSchema },
