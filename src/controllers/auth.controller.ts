@@ -195,6 +195,12 @@ export class AuthController {
                 status: "active",
                 createdAt: new Date(Date.now()),
             });
+
+            // register user with marketer if cookie available
+            await this.authService.registerUserForMarketer(req, user._id);
+
+            // count user in analytics
+            await this.analyticsService.analyticCountUp(req, null, null, 1, "new-users", "total");
         }
 
         // generate token and session

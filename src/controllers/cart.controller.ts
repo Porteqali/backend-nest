@@ -245,7 +245,7 @@ export class CartController {
             if (userCourse.status != "waiting_for_payment") continue;
 
             // increase the buyCount of the course
-            await this.CourseModel.updateOne({ _id: userCourse.course }, { $inc: { buyCount: 1 } });
+            await this.CourseModel.updateOne({ _id: userCourse.course }, { $inc: { buyCount: 1 } }).exec();
             await this.CourseAnalyticModel.updateOne({ course: userCourse.course, type: "today" }, { $inc: { buyCount: 1 } }, { upsert: true }).exec();
             await this.CourseAnalyticModel.updateOne({ course: userCourse.course, type: "current-month" }, { $inc: { buyCount: 1 } }, { upsert: true }).exec();
 

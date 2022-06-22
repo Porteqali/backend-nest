@@ -238,7 +238,7 @@ export class DashboardController {
 
         let courseAnalytics;
         if (type == "all-times") {
-            courseAnalytics = await this.CourseModel.aggregate().sort({ viewCount: "desc" }).project({ course: "$_id", viewCount: 1 }).limit(6).exec();
+            courseAnalytics = await this.CourseModel.aggregate().sort({ viewCount: -1 }).project({ course: "$_id", viewCount: 1 }).limit(6).exec();
         } else {
             courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ viewCount: "desc" }).select("course viewCount").limit(6).exec();
         }
@@ -275,7 +275,7 @@ export class DashboardController {
 
         let courseAnalytics;
         if (type == "all-times") {
-            courseAnalytics = await this.CourseModel.aggregate().sort({ buyCount: "desc" }).project({ course: "$_id", buyCount: 1 }).limit(6).exec();
+            courseAnalytics = await this.CourseModel.aggregate().sort({ buyCount: -1 }).project({ course: "$_id", buyCount: 1 }).limit(6).exec();
         } else {
             courseAnalytics = await this.CourseAnalyticModel.find({ type: type }).sort({ buyCount: "desc" }).select("course buyCount").limit(6).exec();
         }
