@@ -215,8 +215,8 @@ export class DiscountController {
     async addDiscount(@Body() input: CreateNewDiscountDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
         if (!(await this.authService.authorize(req, "admin", ["admin.discounts.add"]))) throw new ForbiddenException();
 
-        const startDate = Jmoment.from(input.startDate, "fa").toDate();
-        const endDate = Jmoment.from(input.endDate, "fa").toDate();
+        const startDate = Jmoment.from(input.startDate, "fa").add("day", 1).toDate();
+        const endDate = Jmoment.from(input.endDate, "fa").add("day", 1).toDate();
 
         await this.DiscountModel.create({
             name: input.name,
@@ -229,6 +229,7 @@ export class DiscountController {
             emmitTo: input.emmitTo,
             emmitToId: input.emmitToId || null,
             code: input.code || null,
+            createdAt: new Date(Date.now()),
         });
 
         return res.end();
@@ -238,8 +239,8 @@ export class DiscountController {
     async editDiscount(@Body() input: UpdateDiscountDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
         if (!(await this.authService.authorize(req, "admin", ["admin.discounts.edit"]))) throw new ForbiddenException();
 
-        const startDate = Jmoment.from(input.startDate, "fa").toDate();
-        const endDate = Jmoment.from(input.endDate, "fa").toDate();
+        const startDate = Jmoment.from(input.startDate, "fa").add("day", 1).toDate();
+        const endDate = Jmoment.from(input.endDate, "fa").add("day", 1).toDate();
 
         const emmitToId: any = input.emmitToId;
 

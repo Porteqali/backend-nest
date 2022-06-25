@@ -134,7 +134,7 @@ export class ImporterController {
             case "CommissionPayments":
                 await this.import_CommissionPayments(json);
                 break;
-            case "CourseRatings":
+            case "CourseRating":
                 await this.import_CourseRatings(json);
                 break;
             case "MarketerCourses":
@@ -578,14 +578,13 @@ export class ImporterController {
             for (let i = 0; i < json.length; i++) {
                 const row = json[i];
 
-                let user_id = null;
                 const user = await this.UserModel.findOne({ email: row.user_email.toLowerCase() }).exec();
-                if (!!user) user_id = user._id;
+                if (!user) continue;
 
-                const course = await this.CourseModel.findOne({ oid: row.course_id }).exec();
+                const course = await this.CourseModel.findOne({ oid: parseInt(row.course_id) }).exec();
                 if (!course) continue;
 
-                imports.push({ user: user_id, course: course._id, rating: parseInt(row.rating), createdAt: new Date(row.created_at) });
+                imports.push({ user: user._id, course: course._id, rating: parseInt(row.rating), createdAt: new Date(row.created_at) });
             }
             await this.CourseRatingModel.insertMany(imports);
         } catch (e) {

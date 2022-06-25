@@ -62,7 +62,9 @@ export class UserController {
         if (error) throw new InternalServerErrorException();
 
         const xls = json2xls(results);
-        await writeFile("./storage/private/user_export.xlsx", xls, "binary").catch((e) => {});
+        await writeFile("./storage/private/user_export.xlsx", xls, "binary").catch((e) => {
+            console.log(e);
+        });
 
         return res.json({ link: `file/private/user_export.xlsx` });
     }
