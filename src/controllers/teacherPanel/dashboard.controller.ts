@@ -26,8 +26,8 @@ export class DashboardController {
 
     @Get("/general-details-info")
     async getGeneralDetails(@Req() req: Request, @Res() res: Response): Promise<void | Response> {
-        const startOfLastMonth = moment().startOf("month").subtract(2, "days").format("YYYY-MM-01T12:00:00");
-        const endOfLastMonth = moment().startOf("month").subtract(1, "day").format("YYYY-MM-DDT12:00:00");
+        const startOfLastMonth = new Date(moment().startOf("month").subtract(2, "days").format("YYYY-MM-01T12:00:00"));
+        const endOfLastMonth = new Date(moment().startOf("month").subtract(1, "day").format("YYYY-MM-DDT12:00:00"));
         const startOfMonth = moment().startOf("month").toDate();
         const endOfMonth = moment().endOf("month").add(1, "day").toDate();
 
