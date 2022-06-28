@@ -54,7 +54,7 @@ export class UserWalletController {
             paidAmount: 0,
             authority: identifier,
             paymentMethod: method,
-            ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,
+            ip: req.headers.ipaddr || req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,
         });
 
         // send back the identifier and gateway redirection url

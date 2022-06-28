@@ -21,14 +21,20 @@ export class AuthService {
         const payload = {
             session_id: sessionId,
             user_id: req.user,
-            ip_addr: req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,
+            ip_addr: req.headers.ipaddr || req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,
             user_agent: req.headers["user-agent"],
         };
         return sign(payload, process.env.JWT_SECRET);
     }
 
     async getSession(req: Request) {
-        const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
+        const ip = req.headers.ipaddr || req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
+
+        console.log({
+            "x-forwarded-for": req.headers["x-forwarded-for"],
+            remoteAddress: req.socket.remoteAddress,
+            ip: ip,
+        });
 
         await this.SessionModel.updateOne(
             { user: req.user, userAgent: req.headers["user-agent"], ip: ip },
