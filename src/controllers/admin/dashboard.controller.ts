@@ -234,6 +234,9 @@ export class DashboardController {
             case "last-month":
                 type = "last-month";
                 break;
+            case "all-times":
+                type = "all-times";
+                break;
         }
 
         let courseAnalytics;
@@ -246,7 +249,8 @@ export class DashboardController {
         const courseIds = [];
         const courses = [];
         courseAnalytics.forEach((item) => {
-            courses.push(item.toJSON());
+            if (type == "all-times") courses.push(item);
+            else courses.push(item.toJSON());
             courseIds.push(item.course);
         });
 
@@ -271,6 +275,9 @@ export class DashboardController {
             case "last-month":
                 type = "last-month";
                 break;
+            case "all-times":
+                type = "all-times";
+                break;
         }
 
         let courseAnalytics;
@@ -283,7 +290,8 @@ export class DashboardController {
         const courseIds = [];
         const courses = [];
         courseAnalytics.forEach((item) => {
-            courses.push(item.toJSON());
+            if (type == "all-times") courses.push(item);
+            else courses.push(item.toJSON());
             courseIds.push(item.course);
         });
 
