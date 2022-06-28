@@ -30,12 +30,6 @@ export class AuthService {
     async getSession(req: Request) {
         const ip = req.headers.ipaddr || req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
-        console.log({
-            "x-forwarded-for": req.headers["x-forwarded-for"],
-            remoteAddress: req.socket.remoteAddress,
-            ip: ip,
-        });
-
         await this.SessionModel.updateOne(
             { user: req.user, userAgent: req.headers["user-agent"], ip: ip },
             { expireAt: new Date(Date.now() + parseInt(process.env.SESSION_EXPIRE_TIME) * 1000), updatedAt: new Date(Date.now()) },
