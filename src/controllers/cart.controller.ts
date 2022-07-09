@@ -151,7 +151,13 @@ export class CartController {
         // calc cart total
         const cartInfo = await this.cartService.cartTotal(req, courses, couponCode);
 
-        if (type == "bundle") cartInfo.payablePrice = cartInfo.payablePrice - cartInfo.payablePrice * (bundle.discountPercent / 100);
+        if (type == "bundle") {
+            cartInfo.payablePrice = cartInfo.payablePrice - cartInfo.payablePrice * (bundle.discountPercent / 100);
+            for (let i = 0; i < cartInfo.courses.length; i++) {
+                const discountedPrice = cartInfo.courses[i].discountInfo.discountedPrice;
+                cartInfo.courses[i].discountInfo.discountedPrice = discountedPrice - discountedPrice * (bundle.discountPercent / 100);
+            }
+        }
 
         if (method == "wallet") {
             // check if user have enough money in wallet
@@ -242,7 +248,9 @@ export class CartController {
         let totalCuts = 0;
         for (let i = 0; i < userCourses.length; i++) {
             const userCourse = userCourses[i];
-            if (userCourse.status != "waiting_for_payment") continue;
+
+            // TODO: this is commented for testing... dont remove
+            // if (userCourse.status != "waiting_for_payment") continue;
 
             // increase the buyCount of the course
             await this.CourseModel.updateOne({ _id: userCourse.course }, { $inc: { buyCount: 1 } }).exec();
