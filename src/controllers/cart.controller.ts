@@ -248,9 +248,7 @@ export class CartController {
         let totalCuts = 0;
         for (let i = 0; i < userCourses.length; i++) {
             const userCourse = userCourses[i];
-
-            // TODO: this is commented for testing... dont remove
-            // if (userCourse.status != "waiting_for_payment") continue;
+            if (userCourse.status != "waiting_for_payment") continue;
 
             // increase the buyCount of the course
             await this.CourseModel.updateOne({ _id: userCourse.course }, { $inc: { buyCount: 1 } }).exec();

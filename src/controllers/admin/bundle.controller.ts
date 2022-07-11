@@ -26,6 +26,14 @@ export class BundleController {
         if (!bundleResult) throw new NotFoundException();
         const bundle: any = bundleResult.toJSON();
 
+        for (let i = 0; i < bundle.courses.length; i++) {
+            bundle.courses[i].course = {
+                _id: bundle.courses[i].course._id,
+                name: bundle.courses[i].course.name,
+                image: bundle.courses[i].course.image,
+            };
+        }
+
         return res.json({ courses: bundle.courses, bundle: bundle });
     }
 
