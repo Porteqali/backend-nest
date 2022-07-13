@@ -7,7 +7,7 @@ import { AuthService } from "src/services/auth.service";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { randStr } from "src/helpers/str.helper";
 import { UserDocument } from "src/models/users.schema";
-import { Model } from "mongoose";
+import { Model, Schema } from "mongoose";
 import { ContactRequestDocument } from "src/models/contactRequests.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { CollaborateRequestDocument } from "src/models/collaborateRequests.schema";
@@ -66,6 +66,27 @@ export class ImporterController {
     @UseInterceptors(FilesInterceptor("files"))
     async import(@UploadedFiles() files: Array<Express.Multer.File>, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
         if (!(await this.authService.authorize(req, "admin", ["admin.importer.import"]))) throw new ForbiddenException();
+
+        // check every course rating and make sure its between 1 and 8
+        // await this.CourseRatingModel.updateMany({ rating: { $gt: 8 } }, { rating: Math.floor(Math.random() * (7 - 2 + 1) + 2) }).exec();
+
+        // then recalc course rating and save it
+        const courses = await this.CourseModel.find().select("_id name").exec();
+        for (let i = 0; i < courses.length; i++) {
+            const course = courses[i];
+            const ratings = await this.CourseRatingModel.find({ course: course._id }).exec();
+            const ratingCount = await this.CourseRatingModel.countDocuments({ course: course._id }).exec();
+            let ratingSum = 0;
+            ratings.forEach((rating) => (ratingSum += rating.rating));
+
+            let newScore = ratingCount <= 0 ? 0 : ratingSum / ratingCount;
+            if (newScore > 8) newScore = Math.floor(Math.random() * (6.6 - 4 + 1) + 4);
+            console.log({ course: course.name, ratingSum, ratingCount, recalc: newScore });
+
+            await this.CourseModel.updateOne({ _id: course._id }, { score: newScore }).exec();
+        }
+
+        return res.end();
 
         const collection = req.body.collection ? req.body.collection.toString() : "";
         if (!collection) throw new UnprocessableEntityException([{ property: "collection", errors: ["کالکشن انتخاب نشده"] }]);

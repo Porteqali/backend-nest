@@ -276,7 +276,9 @@ export class CoursesController {
             // we can multiply the number of votes in current score and add user score to it then devide it by old vote count +1
             newScore = (scoreSum + score) / (totalVotes + 1);
         }
-        newScore = Math.min(8, newScore);
+
+        // newScore = Math.min(8, newScore);
+        if (newScore > 8) newScore = Math.floor(Math.random() * (6.6 - 4 + 1) + 4);
 
         await this.CourseRatingModel.updateOne({ user: req.user.payload["user_id"], course: course._id }, { rating: score }, { upsert: true });
         await this.CourseModel.updateOne({ _id: course._id, status: "active" }, { score: newScore }).exec();
