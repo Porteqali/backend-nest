@@ -3,7 +3,7 @@ import { ForbiddenException, InternalServerErrorException, NotFoundException, Un
 import { Request as exRequest, Response } from "express";
 import { Request } from "src/interfaces/Request";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { Model, Schema, Types } from "mongoose";
 import { unlink, readFile } from "fs/promises";
 import { hash } from "bcrypt";
 import { UserDocument } from "src/models/users.schema";
@@ -399,6 +399,7 @@ export class MarketerController {
         const bulkAmount = req.body.bulkAmount ? parseInt(req.body.bulkAmount) : 0;
         const emmitTo = req.body.emmitTo;
         const emmitToId = req.body.emmitToId;
+        const marketerId: any = new Types.ObjectId(req.params.id);
 
         if (emmitTo !== "allCourses" && !emmitToId) {
             throw new UnprocessableEntityException([{ property: "emmitToId", errors: ["دوره یا گروه دوره مورد نظر را مشخص کنید"] }]);
@@ -447,7 +448,7 @@ export class MarketerController {
         }
 
         for (let i = 0; i < arrayToInsert.length; i++) {
-            await this.MarketerCourseModel.updateOne({ course: arrayToInsert[i].course }, { ...arrayToInsert[i] }, { upsert: true }).exec();
+            await this.MarketerCourseModel.updateOne({ marketer: marketerId, course: arrayToInsert[i].course }, { ...arrayToInsert[i] }, { upsert: true }).exec();
         }
         return res.end();
     }
@@ -458,6 +459,7 @@ export class MarketerController {
 
         const emmitTo = req.query.emmitTo;
         const emmitToId = req.query.emmitToId;
+        const marketerId: any = new Types.ObjectId(req.params.id);
 
         if (emmitTo !== "allCourses" && !emmitToId) {
             throw new UnprocessableEntityException([{ property: "emmitToId", errors: ["دوره یا گروه دوره مورد نظر را مشخص کنید"] }]);
@@ -481,7 +483,7 @@ export class MarketerController {
                 break;
         }
 
-        await this.MarketerCourseModel.deleteMany({ course: { $in: arrayToDelete } }).exec();
+        await this.MarketerCourseModel.deleteMany({ marketer: marketerId, course: { $in: arrayToDelete } }).exec();
         return res.end();
     }
 

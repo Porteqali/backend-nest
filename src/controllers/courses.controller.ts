@@ -228,6 +228,15 @@ export class CoursesController {
             return topic;
         });
 
+        // attach course's exersise file prefix to file's name
+        for (let i = 0; i < course.exerciseFiles.length; i++) {
+            try {
+                const file = course.exerciseFiles[i].file;
+                const extension = file.slice(((file.lastIndexOf(".") - 1) >>> 0) + 2);
+                course.exerciseFiles[i].name = `${course.exerciseFiles[i].name}.${extension}`;
+            } catch (e) {}
+        }
+
         const numberOfVotes = await this.CourseRatingModel.countDocuments({ course: course._id }).exec();
         const numberOfTopVotes = await this.CourseRatingModel.countDocuments({ course: course._id, rating: 8 }).exec();
 

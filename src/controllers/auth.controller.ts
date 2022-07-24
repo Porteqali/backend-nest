@@ -31,13 +31,14 @@ export class AuthController {
     public async sendCode(@Body() inputs: SendCodeDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
         let field = "mobile";
         let verificationCodeField = "mobileVerificationCode";
-        const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(inputs.username);
+        const username: string = inputs.username.trim();
+        const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(username);
         if (isEmail) {
             field = "email";
             verificationCodeField = "emailVerificationCode";
         }
 
-        const user = await this.UserModel.findOne({ [field]: inputs.username }).exec();
+        const user = await this.UserModel.findOne({ [field]: username }).exec();
         if (user) {
             if (!!user.mobileVerifiedAt || !!user.emailVerifiedAt) {
                 if (user.name != "" && user.family != "") {
@@ -58,7 +59,7 @@ export class AuthController {
 
         // if the user does not exists before create the user
         await this.UserModel.updateOne(
-            { [field]: inputs.username },
+            { [field]: username },
             { [verificationCodeField]: code.toString(), createdAt: new Date(Date.now()) },
             { upsert: true },
         ).exec();
@@ -67,12 +68,12 @@ export class AuthController {
             let html = await readFile("./src/notifications/templates/verficationEmail.html").then((buffer) => buffer.toString());
             html = html.replace(/{{url}}/g, req.headers.origin);
             html = html.replace("{{code}}", code.toString());
-            await Email(`کد تایید ${code} | گروه آموزشی پرتقال`, inputs.username, html)
-                .then(async () => await this.UserModel.updateOne({ email: inputs.username }, { verficationCodeSentAt: new Date(Date.now()) }).exec())
+            await Email(`کد تایید ${code} | گروه آموزشی پرتقال`, username, html)
+                .then(async () => await this.UserModel.updateOne({ email: username }, { verficationCodeSentAt: new Date(Date.now()) }).exec())
                 .catch((e) => console.log(e));
         } else {
-            await Sms("verify", inputs.username, null, [code.toString()], "porteqal")
-                .then(async () => await this.UserModel.updateOne({ mobile: inputs.username }, { verficationCodeSentAt: new Date(Date.now()) }).exec())
+            await Sms("verify", username, null, [code.toString()], "porteqal")
+                .then(async () => await this.UserModel.updateOne({ mobile: username }, { verficationCodeSentAt: new Date(Date.now()) }).exec())
                 .catch((e) => console.log(e));
         }
 
@@ -84,14 +85,15 @@ export class AuthController {
         let field = "mobile";
         let verifiedAtField = "mobileVerifiedAt";
         let verificationCodeField = "mobileVerificationCode";
-        const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(inputs.username);
+        const username: string = inputs.username.trim();
+        const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(username);
         if (isEmail) {
             field = "email";
             verifiedAtField = "emailVerifiedAt";
             verificationCodeField = "emailVerificationCode";
         }
 
-        const user = await this.UserModel.findOne({ [field]: inputs.username, [verificationCodeField]: inputs.code }).exec();
+        const user = await this.UserModel.findOne({ [field]: username, [verificationCodeField]: inputs.code }).exec();
         if (!user) throw new UnprocessableEntityException([{ property: "code", errors: ["کد وارد شده نادرست است"] }]);
 
         // check the time with verficationCodeSentAt field
@@ -101,7 +103,7 @@ export class AuthController {
             throw new UnprocessableEntityException([{ property: "code", errors: ["کد وارد شده منقضی شده، لطفا دوباره تلاش کنید"] }]);
         }
 
-        await this.UserModel.updateOne({ [field]: inputs.username, [verificationCodeField]: inputs.code }, { [verifiedAtField]: new Date(Date.now()) }).exec();
+        await this.UserModel.updateOne({ [field]: username, [verificationCodeField]: inputs.code }, { [verifiedAtField]: new Date(Date.now()) }).exec();
 
         // check if the name and family field is full
         if (!user.name || !user.family) {
@@ -120,7 +122,8 @@ export class AuthController {
     async register(@Body() inputs: RegisterDto, @Req() req: Request, @Res() res: Response): Promise<void | Response> {
         let field = "mobile";
         let verificationCodeField = "mobileVerificationCode";
-        const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(inputs.username);
+        const username: string = inputs.username.trim();
+        const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(username);
         if (isEmail) {
             field = "email";
             verificationCodeField = "emailVerificationCode";
@@ -130,12 +133,12 @@ export class AuthController {
             throw new UnauthorizedException([{ property: "password", errors: ["رمزعبورها باهم همخوانی ندارند"] }]);
         }
 
-        const user = await this.UserModel.findOne({ [field]: inputs.username, [verificationCodeField]: inputs.code }).exec();
+        const user = await this.UserModel.findOne({ [field]: username, [verificationCodeField]: inputs.code }).exec();
         if (!user) throw new UnauthorizedException([{ property: "", errors: ["کاربر پیدا نشد"] }]);
 
         // update user's info and set status to active
         await this.UserModel.updateOne(
-            { [field]: inputs.username, [verificationCodeField]: inputs.code },
+            { [field]: username, [verificationCodeField]: inputs.code },
             { name: inputs.name, family: inputs.family, password: await hash(inputs.password, 5), status: "active" },
         ).exec();
 

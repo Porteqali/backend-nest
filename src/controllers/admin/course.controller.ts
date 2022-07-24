@@ -316,6 +316,7 @@ export class CourseController {
             showInNew: input.showInNew == "true" ? true : false,
             commission: input.commission || null,
             tags: input.tags ? JSON.parse(input.tags) : null,
+            createdAt: new Date(Date.now()),
         });
 
         return res.end();

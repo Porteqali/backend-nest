@@ -41,7 +41,7 @@ export class AuthService {
     }
 
     async authenticate(username_field: string = "email", username: string, password: string) {
-        const user = await this.UserModel.findOne({ [username_field]: username });
+        const user = await this.UserModel.findOne({ [username_field]: username }).exec();
         if (!user) throw new UnauthorizedException([{ property: "", errors: ["نام کاربری یا رمزعبور نادرست است"] }]);
 
         let hash = user.password.replace(/^\$2y(.+)$/i, "$2a$1"); // modification regex

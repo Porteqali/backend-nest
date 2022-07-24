@@ -183,7 +183,8 @@ export class CartController {
         if (!identifier || identifier == "") throw new UnprocessableEntityException([{ property: "cart", errors: ["خطا در ارتباط با درگاه پرداخت"] }]);
 
         // cancel any unpayed course
-        await this.UserCourseModel.updateMany({ course: { $in: courseIds }, status: "waiting_for_payment" }, { status: "cancel" }).exec();
+        // TODO: this is commented for testing
+        // await this.UserCourseModel.updateMany({ course: { $in: courseIds }, status: "waiting_for_payment" }, { status: "cancel" }).exec();
 
         // create a course purchase records
         await this.cartService.submitCoursesForUser(req, cartInfo.courses, cartInfo.payablePrice, paymentGateway.getMethod(), identifier);

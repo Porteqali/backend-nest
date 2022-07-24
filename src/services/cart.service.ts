@@ -131,6 +131,7 @@ export class CartService {
                 coursePayablePrice: course.discountInfo.discountedPrice,
                 totalPrice: totalPrice,
                 paidAmount: 0,
+                status: "waiting_for_payment",
                 authority: identifier,
                 paymentMethod: method,
                 ip: req.headers.ipaddr || req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,

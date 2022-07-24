@@ -214,6 +214,7 @@ export class UserController {
                 authority: randStr(20),
                 paymentMethod: "admin-added",
                 status: "ok",
+                createdAt: new Date(Date.now()),
             });
         }
 
