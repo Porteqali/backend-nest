@@ -218,6 +218,8 @@ export class DiscountController {
         const startDate = Jmoment.from(input.startDate, "fa").add("day", 1).toDate();
         const endDate = Jmoment.from(input.endDate, "fa").add("day", 1).toDate();
 
+        const code: string = input.code.trim() || null;
+
         await this.DiscountModel.create({
             name: input.name,
             type: input.type,
@@ -228,7 +230,7 @@ export class DiscountController {
             status: input.status,
             emmitTo: input.emmitTo,
             emmitToId: input.emmitToId || null,
-            code: input.code || null,
+            code: code,
             createdAt: new Date(Date.now()),
         });
 
@@ -241,6 +243,8 @@ export class DiscountController {
 
         const startDate = Jmoment.from(input.startDate, "fa").add("day", 1).toDate();
         const endDate = Jmoment.from(input.endDate, "fa").add("day", 1).toDate();
+
+        const code: string = input.code.trim() || null;
 
         const emmitToId: any = input.emmitToId;
 
@@ -256,7 +260,7 @@ export class DiscountController {
                 status: input.status,
                 emmitTo: input.emmitTo,
                 emmitToId: emmitToId || null,
-                code: input.code || null,
+                code: code,
             },
         );
 
