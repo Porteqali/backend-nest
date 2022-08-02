@@ -15,6 +15,7 @@ import { CourseAnalyticDocument } from "src/models/courseAnalytics.schema";
 import { AnalyticsService } from "src/services/analytics.service";
 import { BundleDocument } from "src/models/bundles.schema";
 import { loadUser } from "src/helpers/auth.helper";
+import { AnalyticsCheckDocument } from "src/models/analyticsCheck.schema";
 
 @Controller("")
 export class CartController {
@@ -29,6 +30,7 @@ export class CartController {
         @InjectModel("Discount") private readonly DiscountModel: Model<DiscountDocument>,
         @InjectModel("UserCourse") private readonly UserCourseModel: Model<UserCourseDocument>,
         @InjectModel("CourseAnalytic") private readonly CourseAnalyticModel: Model<CourseAnalyticDocument>,
+        @InjectModel("AnalyticsCheck") private readonly AnalyticsCheckModel: Model<AnalyticsCheckDocument>,
     ) {}
 
     @Post("check-coupon-code")
@@ -270,8 +272,23 @@ export class CartController {
             await this.cartService.activateInRoadmap(req.user.user._id, userCourse.course);
         }
 
-        // calculate the income for analytics
-        await this.analyticsService.analyticCountUp(req, null, null, userCourses[0].totalPrice - totalCuts, "income", "total");
+        if (userCourses[0].status == "waiting_for_payment") {
+            // calculate the income for analytics
+            await this.analyticsService.analyticCountUp(req, null, null, userCourses[0].totalPrice - totalCuts, "income", "total");
+            
+            // log for analyticCountUp
+            try {
+                await this.AnalyticsCheckModel.create({
+                    authority: userCourses[0].authority,
+                    totalPrice: userCourses[0].totalPrice,
+                    totalCuts: totalCuts,
+                    amountAdded: userCourses[0].totalPrice - totalCuts,
+                    createdAt: new Date(Date.now()),
+                });
+            } catch (e) {
+                console.log(`AnalyticsCheckModel create error:${e}`);
+            }
+        }
 
         if (method == "wallet") {
             const recentlyPurchasedCourses = await this.UserCourseModel.find({ authority: transactionResponse.identifier }, { status: "ok" })
